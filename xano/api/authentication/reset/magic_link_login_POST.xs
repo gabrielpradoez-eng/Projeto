@@ -27,7 +27,6 @@ query "reset/magic-link-login" verb=POST {
         "created_at"
         "name"
         "email"
-        "account_id"
         "role"
         "password_reset.token"
         "password_reset.expiration"
@@ -69,7 +68,6 @@ query "reset/magic-link-login" verb=POST {
     db.edit "" {
       field_name = "id"
       field_value = $user.id
-      enforce_hidden_fields = false
       data = {
         password_reset: {
         token     : $user.password_reset.token
@@ -80,17 +78,16 @@ query "reset/magic-link-login" verb=POST {
     } as $user1
   
     // Create an event log for password reset login
-    function.run "Getting Started Template/create_event_log" {
+    function.run "Quick Start/log_event" {
       input = {
-        user_id   : $user.id
-        account_id: $user.account_id
-        action    : "login_for_password_reset"
-        metadata  : $user1
+        user_id : $user.id
+        action  : "login_for_password_reset"
+        metadata: $user1
       }
     } as $event_log
   }
 
   response = {authToken: $auth_token, user_id: $user1.id}
   tags = ["xano:quick-start"]
-  guid = "OrwZxzPKK-Uettnw8VXweOS_DdM"
+  guid = "wTDgMuabm1E2RMw_pNoPsOIvnhk"
 }

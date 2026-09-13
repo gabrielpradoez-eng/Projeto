@@ -30,8 +30,6 @@ query "message/send_welcome_email" verb=POST {
       value = "<html><body><h1>Welcome, " ~ $user_record.name ~ "!</h1><p>Thank you for joining our service. We're excited to have you!</p><p>Best regards,<br>The Team</p></body></html>"
     }
   
-    // Send Email Function will ONLY send to the instance owner email with the free credits. Provide your own Resend API key and account for additional capability.
-  
     // Send welcome email
     util.send_email {
       service_provider = "xano"
@@ -40,17 +38,16 @@ query "message/send_welcome_email" verb=POST {
     } as $send_email
   
     // Log welcome email sent for user
-    function.run "Getting Started Template/create_event_log" {
+    function.run "Quick Start/log_event" {
       input = {
-        user_id   : $input.user_id
-        account_id: $user_record.account_id
-        action    : "welcome_email_sent"
-        metadata  : {}
+        user_id : $input.user_id
+        action  : "welcome_email_sent"
+        metadata: {}
       }
     } as $event_log
   }
 
   response = $send_email
   tags = ["xano:quick-start"]
-  guid = "I7iJyrF1g20uB84_1NxGpfzLOjc"
+  guid = "SHLN30yeZ96mho8BQOLiZ14lWjg"
 }

@@ -8,7 +8,7 @@ query "reset/request-reset-link" verb=GET {
 
   stack {
     // Generate a one-time magic link
-    function.run "Getting Started Template/generate_magic_link" {
+    function.run "Quick Start/generate_magic_link" {
       input = {email: $input.email}
     } as $token_and_email
   
@@ -24,7 +24,10 @@ query "reset/request-reset-link" verb=GET {
   
     // Create magic link
     var $magic_link {
-      value = $api_base_url ~ "/1_start_here_demo_page#/update-password" ~ "?magic_token=" ~ $token_and_email.token ~ "&email=" ~ $token_and_email.email
+      value = $api_base_url
+        |concat:"1_start_here_demo_page#/update-password":"/"
+        |concat:$token_and_email.token:"?magic_token="
+        |concat:$token_and_email.email:""
     }
   
     // Create HTML message to include magic reset password link
@@ -55,8 +58,6 @@ query "reset/request-reset-link" verb=GET {
         """
     } as $message
   
-    // Send Email Function will ONLY send to the instance owner email with the free credits. Provide your own Resend API key and account for additional capability.
-  
     // Send email with password reset link
     util.send_email {
       service_provider = "xano"
@@ -70,5 +71,5 @@ query "reset/request-reset-link" verb=GET {
   }
 
   tags = ["xano:quick-start"]
-  guid = "9FLwxi5uOJ24gomL6pqVwy43h78"
+  guid = "vDJl3HyU_GNXiJVbQaWYUBTedoU"
 }

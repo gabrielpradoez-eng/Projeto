@@ -29,26 +29,23 @@ query "reset/update_password" verb=POST {
     db.edit "" {
       field_name = "id"
       field_value = $auth.id
-      enforce_hidden_fields = false
       data = {password: $input.password}
     } as $user
   
     // Create event log
-    function.run "Getting Started Template/create_event_log" {
+    function.run "Quick Start/log_event" {
       input = {
-        user_id   : $user.id
-        account_id: $user.account_id
-        action    : "reset_password"
-        metadata  : $user
+        user_id : $user.id
+        action  : "reset_password"
+        metadata: $user
       }
     } as $event_log
   }
 
-  response = {}
-    |set:"message":({}
-      |set:"success":"true"
-      |set:"message":"Password updated"
-    )
+  response = {
+    message: {"success":"true","message":"Password updated"}
+  }
+
   tags = ["xano:quick-start"]
-  guid = "xJQFwcziTHQuaHf02TiW_bI03I0"
+  guid = "6MzYK_KbFrQTyNkXqMZjeBwWKwM"
 }
