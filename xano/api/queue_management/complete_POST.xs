@@ -44,6 +44,21 @@ query complete verb=POST {
           field_value = $atendimento.id
           data = {ended_at: "now"}
         } as $atendimento_finalizado
+
+        db.query rastreamentos_senha {
+          where = $db.rastreamentos_senha.senha_id == $input.senha_id && $db.rastreamentos_senha.revogada_at == null
+          return = {type: "list"}
+        } as $rastreamentos
+
+        foreach ($rastreamentos.items) {
+          each as $rastreamento {
+            db.edit rastreamentos_senha {
+              field_name = "id"
+              field_value = $rastreamento.id
+              data = {revogada_at: "now"}
+            } as $rastreamento_revogado
+          }
+        }
       }
     }
   

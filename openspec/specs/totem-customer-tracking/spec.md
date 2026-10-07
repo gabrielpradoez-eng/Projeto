@@ -1,8 +1,10 @@
+# Totem e Acompanhamento do Cliente Specification
+
 ## Purpose
 
 Esta capability permite emitir senhas presenciais em um Totem simples e acompanhar individualmente o andamento da fila. O Xano mantém a autoridade sobre emissão, autorização, status, posição e estimativa, enquanto o Streamlit apresenta os dados ao cliente.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Totem lists queues available for ticket issuance
 O sistema SHALL apresentar no Totem somente serviços e filas que o backend autorizar para emissão no estabelecimento selecionado.
@@ -31,19 +33,27 @@ O sistema SHALL permitir que um cliente emita uma senha selecionando uma fila di
 - **THEN** o Totem SHALL comunicar que a senha não foi confirmada e SHALL evitar apresentar uma emissão como concluída.
 
 ### Requirement: Secure customer ticket tracking
-O sistema SHALL permitir acompanhar uma senha usando a referência opaca emitida pelo backend e SHALL revelar somente os dados mínimos necessários ao titular dessa referência.
+O sistema SHALL permitir acompanhar uma senha usando a referência opaca emitida pelo backend enquanto ela estiver válida e SHALL revelar somente os dados mínimos necessários ao titular dessa referência.
 
 #### Scenario: Consultar senha aguardando
 - **WHEN** o cliente consulta uma referência válida cuja senha está aguardando
 - **THEN** o backend SHALL retornar status, posição atual na fila e estimativa de espera quando disponível, e a interface SHALL apresentar os valores retornados.
 
-#### Scenario: Senha chamada ou concluída
-- **WHEN** o cliente consulta uma referência válida cuja senha foi chamada ou concluída
+#### Scenario: Senha chamada
+- **WHEN** o cliente consulta uma referência válida cuja senha foi chamada
 - **THEN** o backend SHALL retornar o status atualizado e SHALL omitir posição de espera quando ela não for aplicável.
 
 #### Scenario: Referência inválida ou não autorizada
 - **WHEN** o cliente consulta uma referência inválida, revogada ou não autorizada
 - **THEN** o backend SHALL negar os dados da senha e a interface SHALL apresentar uma mensagem genérica sem revelar a existência ou os dados de outras senhas.
+
+#### Scenario: Senha concluída invalida a referência
+- **WHEN** a senha associada à referência atinge o status `concluido`
+- **THEN** o backend SHALL negar imediatamente novas consultas com essa referência.
+
+#### Scenario: Referência atinge o prazo máximo
+- **WHEN** se completam 24 horas desde a emissão da senha
+- **THEN** o backend SHALL negar novas consultas com a referência, mesmo que a senha ainda não esteja concluída.
 
 #### Scenario: Encerrar sessão compartilhada do Totem
 - **WHEN** uma nova sessão de atendimento é iniciada no Totem compartilhado

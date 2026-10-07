@@ -24,6 +24,7 @@ table senhas {
 
   index = [
     {type: "primary", field: [{name: "id"}]}
+    {type: "btree|unique", field: [{name: "fila_id"}, {name: "numero"}]}
     {type: "btree", field: [{name: "fila_id"}]}
     {type: "btree", field: [{name: "usuario_id"}]}
     {type: "btree", field: [{name: "status"}]}

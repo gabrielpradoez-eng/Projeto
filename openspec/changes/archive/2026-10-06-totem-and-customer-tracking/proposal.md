@@ -1,11 +1,11 @@
 ## Why
 
-Clientes precisam emitir uma senha presencialmente com poucos passos e depois saber se ela continua aguardando, foi chamada ou foi concluída, além de entender sua posição na fila. Hoje o protótipo Streamlit reúne a emissão em uma aba genérica e não oferece acompanhamento individual; esta mudança define uma experiência dedicada sem deslocar para a interface a autoridade sobre filas e senhas.
+Clientes precisam emitir uma senha presencialmente com poucos passos e acompanhar seu status e posição enquanto aguardam atendimento. Hoje o protótipo Streamlit reúne a emissão em uma aba genérica e não oferece acompanhamento individual; esta mudança define uma experiência dedicada sem deslocar para a interface a autoridade sobre filas e senhas.
 
 ## What Changes
 
 - Criar uma interface Streamlit de Totem com seleção de serviço/fila disponíveis e confirmação clara da senha emitida.
-- Oferecer ao cliente uma tela de acompanhamento de uma senha, exibindo estado, posição na fila e estimativa quando fornecida pelo backend.
+- Oferecer ao cliente uma tela de acompanhamento de uma senha, exibindo status, posição na fila e estimativa quando fornecida pelo backend; encerrar a referência quando a senha for concluída ou após 24 horas da emissão, o que ocorrer primeiro.
 - Definir contratos Xano para emissão e consulta individual do acompanhamento, incluindo autorização e cálculo server-side de posição/estimativa.
 - Exibir estados de carregamento, fila indisponível, referência inválida e falha temporária, com atualização periódica dos dados fornecidos pelo backend.
 - Fora de escopo: painel público de chamadas, painel de atendente, notificações push/SMS, aplicação mobile nativa, pagamentos e definição de políticas de prioridade ou previsão de espera.

@@ -9,7 +9,11 @@ table usuarios {
     email email
     password password
     enum role?=usuario {
-      values = ["admin", "atendente", "usuario"]
+      values = ["admin", "atendente", "usuario", "totem"]
+    }
+
+    int estabelecimento_id? {
+      table = "estabelecimentos"
     }
   }
 
