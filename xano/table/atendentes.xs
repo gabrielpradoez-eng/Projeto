@@ -12,6 +12,8 @@ table atendentes {
     int estabelecimento_id {
       table = "estabelecimentos"
     }
+
+    text destino_label?
   
     bool ativo?=true
   }

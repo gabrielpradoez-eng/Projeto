@@ -12,6 +12,14 @@ table atendimentos {
     int atendente_id {
       table = "atendentes"
     }
+
+    int estabelecimento_id? {
+      table = "estabelecimentos"
+    }
+
+    int numero_senha?
+    text destino_label?
+    text display_event_key?
   
     timestamp started_at?
     timestamp ended_at?
@@ -21,6 +29,8 @@ table atendimentos {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "senha_id"}]}
     {type: "btree", field: [{name: "atendente_id"}]}
+    {type: "btree", field: [{name: "estabelecimento_id"}]}
+    {type: "btree|unique", field: [{name: "display_event_key"}]}
   ]
 
   guid = "2vCe-cHsizBbfr_e42-p6v839vY"

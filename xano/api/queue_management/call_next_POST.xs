@@ -48,6 +48,8 @@ query call_next verb=POST {
       error_type = "notfound"
       error = "Não há senhas aguardando nesta fila."
     }
+
+    security.create_uuid as $display_event_key
   
     // 4. Iniciar atendimento atômicamente
     db.transaction {
@@ -64,6 +66,10 @@ query call_next verb=POST {
           data = {
             senha_id    : $proxima_senha.id
             atendente_id: $atendente.id
+            estabelecimento_id: $atendente.estabelecimento_id
+            numero_senha: $senha_atualizada.numero
+            destino_label: $atendente.destino_label ?? "Guichê não informado"
+            display_event_key: $display_event_key
             started_at  : "now"
           }
         } as $atendimento

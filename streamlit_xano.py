@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from xano_client import XanoClient, XanoConfigurationError
+from xano_client import DisplayFeedClient, XanoClient, XanoConfigurationError
 
 
 @st.cache_resource(show_spinner=False)
@@ -45,3 +45,25 @@ def get_xano_client() -> XanoClient:
         ) from None
 
     return _cached_client(**values)
+
+
+@st.cache_resource(show_spinner=False)
+def _cached_display_client(feed_url: str, credential: str) -> DisplayFeedClient:
+    return DisplayFeedClient(feed_url=feed_url, credential=credential)
+
+
+def get_display_feed_client() -> DisplayFeedClient:
+    test_client = st.session_state.get("_display_feed_client_override")
+    if test_client is not None:
+        return test_client
+
+    try:
+        settings = st.secrets["tv_display"]
+        feed_url = settings["feed_url"]
+        credential = settings["credential"]
+    except (KeyError, FileNotFoundError):
+        raise XanoConfigurationError(
+            "O feed Xano do painel TV não está configurado neste ambiente."
+        ) from None
+
+    return _cached_display_client(feed_url, credential)

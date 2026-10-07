@@ -28,6 +28,66 @@ class QueueUnavailableError(XanoClientError):
     """Raised when a queue cannot accept a ticket at confirmation time."""
 
 
+class DisplayFeedClient:
+    def __init__(
+        self, *, feed_url: str, credential: str, timeout: float = 5.0
+    ) -> None:
+        self._feed_url = feed_url
+        self._credential = credential
+        self._timeout = timeout
+
+    def fetch_snapshot(self) -> dict[str, Any]:
+        result = self._request(
+            "POST",
+            self._feed_url,
+            {"credential": self._credential},
+            timeout=self._timeout,
+        )
+        if not isinstance(result, dict):
+            raise XanoRequestError("O feed de chamadas retornou uma resposta inválida.")
+
+        current_call = result.get("current_call")
+        history = result.get("history")
+        if current_call is not None and not isinstance(current_call, dict):
+            raise XanoRequestError("O feed de chamadas retornou uma resposta inválida.")
+        if not isinstance(history, list) or not isinstance(result.get("snapshot_at"), str):
+            raise XanoRequestError("O feed de chamadas retornou uma resposta inválida.")
+        return result
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        payload: dict[str, Any],
+        *,
+        timeout: float,
+    ) -> Any:
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        request = Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers,
+            method=method,
+        )
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                body = response.read()
+        except HTTPError as exc:
+            error = XanoRequestError("O feed de chamadas recusou a solicitação.")
+            error.status_code = exc.code
+            raise error from None
+        except (URLError, TimeoutError, OSError):
+            raise XanoRequestError("Não foi possível atualizar o painel de chamadas.") from None
+
+        try:
+            return json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            raise XanoRequestError("O feed de chamadas retornou uma resposta inválida.") from None
+
+
 class XanoClient:
     def __init__(
         self,
