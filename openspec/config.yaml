@@ -1,34 +1,40 @@
 schema: spec-driven
+
 githubCopilot:
   cloudAgent: true
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Project: FilaSmart - Sistema de Gestão de Filas e Atendimentos
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Domain: Sistema para emissão de senhas, controle de filas em tempo real, chamadas em painéis públicos, gestão de atendimento por guichê e métricas de desempenho.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+  Tech stack:
+    - Backend & Banco de Dados: Xano (APIs REST / WebSockets / Lógica de Negócio)
+    - Frontend / Interfaces: Streamlit e Reflex (Python)
+    - Comunicação / Integração: Consumo das APIs REST e WebSockets do Xano via Python
+
+  Architecture: O Xano atua como o backend centralizador das regras de negócio, persistência de dados e controle de chamadas. As interfaces em Streamlit e Reflex atuarão como as aplicações cliente (Totem de atendimento, Painel de Chamadas público, Painel do Atendente e Dashboard Administrativo), consumindo os serviços do Xano.
+
+  Development: Implementar mudanças de forma incremental utilizando a metodologia OpenSpec.
+
+  Language: Escrever todos os artefatos OpenSpec em português brasileiro (pt-BR).
+
+rules:
+  proposal:
+    - Descrever claramente o problema, objetivo e escopo da mudança.
+    - Explicitar o que está fora do escopo (Non-goals).
+
+  specs:
+    - Escrever requisitos verificáveis com cenários claros.
+
+  tasks:
+    - Dividir as tarefas em etapas pequenas, objetivas e verificáveis.
+
+operations:
+  apply:
+    guidance:
+      - Executar verificações e testes relevantes antes de dar a tarefa como concluída.
+
+  archive:
+    guidance:
+      - Confirmar que a implementação atende exatamente o que foi especificado nas specs.
