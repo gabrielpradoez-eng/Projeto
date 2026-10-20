@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from analytics_client import AnalyticsClient
 from xano_client import DisplayFeedClient, XanoClient, XanoConfigurationError
 
 
@@ -67,3 +68,36 @@ def get_display_feed_client() -> DisplayFeedClient:
         ) from None
 
     return _cached_display_client(feed_url, credential)
+
+
+def analytics_login(email: str, password: str) -> str:
+    try:
+        login_url = st.secrets["analytics"]["login_url"]
+    except (KeyError, FileNotFoundError):
+        raise XanoConfigurationError(
+            "A autenticação analítica com Xano não está configurada neste ambiente."
+        ) from None
+    return AnalyticsClient.authenticate(login_url, email, password)
+
+
+def get_analytics_client(auth_token: str | None = None) -> AnalyticsClient:
+    test_client = st.session_state.get("_analytics_client_override")
+    if test_client is not None:
+        return test_client
+
+    try:
+        settings = st.secrets["analytics"]
+        token = auth_token or st.session_state.get("analytics_auth_token")
+        if not token:
+            raise XanoConfigurationError("Entre com uma conta administradora do Xano.")
+        return AnalyticsClient(
+            options_url=settings["options_url"],
+            report_url=settings["report_url"],
+            auth_token=token,
+        )
+    except XanoConfigurationError:
+        raise
+    except (KeyError, FileNotFoundError):
+        raise XanoConfigurationError(
+            "A integração analítica com Xano não está configurada neste ambiente."
+        ) from None
