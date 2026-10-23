@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from streamlit.testing.v1 import AppTest
 
+from views.display_view import REFRESH_INTERVALS_SECONDS, _refresh_interval
 from xano_client import DisplayFeedClient, XanoRequestError
 
 
@@ -181,3 +182,34 @@ def test_successful_reused_snapshot_is_not_misclassified_as_stale():
     assert not app.exception
     assert not app.warning
     assert [metric.value for metric in app.metric] == ["31"]
+
+
+def test_refresh_interval_uses_allowed_presets_and_defaults_invalid_values():
+    assert REFRESH_INTERVALS_SECONDS == (3, 5, 10, 15, 30, 60)
+    assert _refresh_interval(5).total_seconds() == 5
+    assert _refresh_interval(30).total_seconds() == 30
+    assert _refresh_interval(7).total_seconds() == 5
+
+
+def test_changing_refresh_interval_preserves_snapshot_and_does_not_repeat_alert():
+    fake = FakeDisplayClient(
+        [
+            snapshot("event-1", 31),
+            snapshot("event-2", 32),
+            snapshot("event-2", 32),
+        ]
+    )
+    app = display_app(fake)
+    assert app.selectbox(key="tv_refresh_interval_seconds").value == 5
+
+    app.run()
+    assert [item.value for item in app.success] == ["Nova chamada"]
+    assert [metric.value for metric in app.metric] == ["32"]
+
+    app.selectbox(key="tv_refresh_interval_seconds").set_value(10).run()
+
+    assert not app.exception
+    assert app.session_state["tv_refresh_interval_seconds"] == 10
+    assert app.session_state["tv_last_snapshot"]["current_call"]["event_key"] == "event-2"
+    assert [metric.value for metric in app.metric] == ["32"]
+    assert not app.success

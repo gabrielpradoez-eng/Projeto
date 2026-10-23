@@ -69,10 +69,29 @@ def render_totem_view(*, centralized: bool = False) -> None:
         try:
             with st.spinner("Solicitando a emissão da senha..."):
                 issued = client.issue_ticket(selected_queue_id)
-        except QueueUnavailableError:
-            st.warning("A fila selecionada deixou de estar disponível. Selecione outra.")
+        except QueueUnavailableError as exc:
+            status = getattr(exc, "status_code", None)
+            message = getattr(exc, "api_message", None)
+            if status is not None:
+                detail = f"Xano recusou a emissão (HTTP {status})"
+                if message:
+                    detail += f": {message}"
+                st.error(detail)
+            else:
+                st.warning(
+                    message
+                    or "A fila selecionada deixou de estar disponível. Selecione outra."
+                )
         except XanoClientError as exc:
-            st.error(str(exc))
+            status = getattr(exc, "status_code", None)
+            message = getattr(exc, "api_message", None)
+            if status is not None:
+                detail = f"Falha na emissão no Xano (HTTP {status})"
+                if message:
+                    detail += f": {message}"
+                st.error(detail)
+            else:
+                st.error(str(exc))
         else:
             st.session_state.ticket_number = issued["numero"]
             st.session_state.ticket_reference = issued["referencia_rastreamento"]

@@ -1,8 +1,26 @@
+import io
+import json
 from pathlib import Path
+from unittest.mock import patch
+from urllib.error import HTTPError
 
 from streamlit.testing.v1 import AppTest
 
-from xano_client import XanoRequestError
+from xano_client import XanoClient, XanoRequestError
+
+
+class FakeResponse:
+    def __init__(self, payload):
+        self.body = json.dumps(payload).encode("utf-8")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return False
+
+    def read(self):
+        return self.body
 
 
 class FakeTotemClient:
@@ -19,7 +37,6 @@ class FakeTotemClient:
                 "servico_nome": "Atendimento geral",
             }
         ]
-
 
 class FakeDisplayClient:
     def __init__(self):
@@ -85,6 +102,383 @@ def test_navigation_renders_only_the_selected_view_and_preserves_session_state()
     assert app.session_state["user_id"] == 42
     assert app.session_state["establishment_id"] == 7
     assert app.session_state["totem_queue_id"] == 9
+
+
+def test_totem_issue_posts_the_xano_contract_and_renders_confirmed_ticket():
+    requests = []
+    responses = [
+        {"authToken": "totem-token", "user_id": 19},
+        [
+            {
+                "fila_id": 9,
+                "fila_nome": "Fila principal",
+                "servico_id": 4,
+                "servico_nome": "Atendimento geral",
+            }
+        ],
+        [
+            {
+                "fila_id": 9,
+                "fila_nome": "Fila principal",
+                "servico_id": 4,
+                "servico_nome": "Atendimento geral",
+            }
+        ],
+        {
+            "numero": 23,
+            "status": "aguardando",
+            "referencia_rastreamento": "opaque-reference",
+            "expira_at": "2026-10-24T12:00:00Z",
+        },
+    ]
+
+    def fake_urlopen(request, timeout):
+        requests.append(request)
+        assert timeout == 8.0
+        return FakeResponse(responses.pop(0))
+
+    client = XanoClient(
+        login_url="https://xano.invalid/auth/login",
+        queues_url="https://xano.invalid/totem/queues",
+        issue_url="https://xano.invalid/totem/issue",
+        tracking_url="https://xano.invalid/tracking",
+        email="totem@example.invalid",
+        password="local-test-password",
+    )
+    app = unified_app(_xano_client_override=client)
+
+    with patch("xano_client.urlopen", side_effect=fake_urlopen):
+        app.run()
+        app.button[1].click().run()
+
+    assert not app.exception
+    assert len(requests) == 4
+    login_request, first_queue_request, queue_request, issue_request = requests
+    assert login_request.full_url.endswith("/auth/login")
+    assert json.loads(login_request.data.decode("utf-8")) == {
+        "email": "totem@example.invalid",
+        "field_value": "totem@example.invalid",
+        "password": "local-test-password",
+    }
+    assert first_queue_request.full_url.endswith("/totem/queues")
+    assert queue_request.full_url.endswith("/totem/queues")
+    assert issue_request.full_url.endswith("/totem/issue")
+    assert issue_request.get_method() == "POST"
+    assert issue_request.get_header("Authorization") == "Bearer totem-token"
+    assert json.loads(issue_request.data.decode("utf-8")) == {"fila_id": 9}
+    assert app.session_state["ticket_number"] == 23
+    assert app.session_state["ticket_reference"] == "opaque-reference"
+    assert "Senha confirmada: 23" in str([item.value for item in app.success])
+
+
+def test_totem_shows_xano_status_and_message_when_ticket_issue_is_rejected():
+    requests = []
+    queue_response = [
+        {
+            "fila_id": 9,
+            "fila_nome": "Fila principal",
+            "servico_id": 4,
+            "servico_nome": "Atendimento geral",
+        }
+    ]
+
+    def fake_urlopen(request, timeout):
+        requests.append(request)
+        if request.full_url.endswith("/auth/login"):
+            return FakeResponse({"authToken": "totem-token", "user_id": 19})
+        if request.full_url.endswith("/totem/queues"):
+            return FakeResponse(queue_response)
+        raise HTTPError(
+            request.full_url,
+            400,
+            "Bad Request",
+            hdrs=None,
+            fp=io.BytesIO(
+                b'{"code":"ERROR_CODE_INPUT_ERROR",'
+                b'"message":"Esta fila est\\u00e1 fechada no momento."}'
+            ),
+        )
+
+    client = XanoClient(
+        login_url="https://xano.invalid/auth/login",
+        queues_url="https://xano.invalid/totem/queues",
+        issue_url="https://xano.invalid/totem/issue",
+        tracking_url="https://xano.invalid/tracking",
+        email="totem@example.invalid",
+        password="local-test-password",
+    )
+    app = unified_app(_xano_client_override=client)
+    with patch("xano_client.urlopen", side_effect=fake_urlopen):
+        app.run()
+        app.button[1].click().run()
+
+    assert not app.exception
+    issue_request = requests[-1]
+    assert issue_request.full_url.endswith("/totem/issue")
+    assert json.loads(issue_request.data.decode("utf-8")) == {"fila_id": 9}
+    assert any(
+        "HTTP 400" in item.value
+        and "Esta fila está fechada no momento." in item.value
+        for item in app.error
+    )
+    assert "ticket_reference" not in app.session_state
+
+
+def test_public_client_view_issues_and_tracks_ticket_with_server_side_xano_client():
+    requests = []
+    queues = [
+        {
+            "fila_id": 9,
+            "fila_nome": "Fila principal",
+            "servico_id": 4,
+            "servico_nome": "Atendimento geral",
+        }
+    ]
+
+    def fake_urlopen(request, timeout):
+        requests.append(request)
+        if request.full_url.endswith("/auth/login"):
+            return FakeResponse({"authToken": "server-totem-token", "user_id": 19})
+        if request.full_url.endswith("/totem/queues"):
+            return FakeResponse(queues)
+        if request.full_url.endswith("/totem/issue"):
+            return FakeResponse(
+                {
+                    "numero": 24,
+                    "status": "aguardando",
+                    "referencia_rastreamento": "private-tracking-reference",
+                }
+            )
+        if request.full_url.endswith("/tracking"):
+            return FakeResponse(
+                {
+                    "numero": 24,
+                    "fila": "Fila principal",
+                    "servico": "Atendimento geral",
+                    "status": "aguardando",
+                    "posicao": 2,
+                    "tempo_estimado_min": 10,
+                    "atualizado_at": "2026-10-23T20:00:00Z",
+                }
+            )
+        raise AssertionError(f"Unexpected Xano URL: {request.full_url}")
+
+    client = XanoClient(
+        login_url="https://xano.invalid/auth/login",
+        queues_url="https://xano.invalid/totem/queues",
+        issue_url="https://xano.invalid/totem/issue",
+        tracking_url="https://xano.invalid/tracking",
+        email="totem@example.invalid",
+        password="local-test-password",
+    )
+    app = unified_app(
+        app_view="Cliente",
+        _xano_client_override=client,
+        authToken="admin-token-must-not-be-used",
+    )
+
+    with patch("xano_client.urlopen", side_effect=fake_urlopen):
+        app.run()
+        assert app.radio(key="app_view").value == "Cliente"
+        assert "Cliente" in app.radio(key="app_view").options
+        next(
+            button for button in app.button if button.label == "Emitir senha"
+        ).click().run()
+
+        assert not app.exception
+        assert app.session_state["client_ticket_number"] == 24
+        assert app.session_state["client_ticket_reference"] == (
+            "private-tracking-reference"
+        )
+        assert app.session_state["client_tracking_result"]["posicao"] == 2
+        assert app.session_state["authToken"] == "admin-token-must-not-be-used"
+        assert "2" in str([metric.value for metric in app.metric])
+
+        rendered = str(
+            [
+                element.value
+                for collection in (
+                    app.title,
+                    app.header,
+                    app.subheader,
+                    app.markdown,
+                    app.caption,
+                    app.info,
+                    app.warning,
+                    app.error,
+                )
+                for element in collection
+            ]
+        )
+        assert "private-tracking-reference" not in rendered
+        assert "local-test-password" not in rendered
+
+        login_request = next(
+            request for request in requests if request.full_url.endswith("/auth/login")
+        )
+        issue_request = next(
+            request for request in requests if request.full_url.endswith("/totem/issue")
+        )
+        tracking_request = next(
+            request for request in requests if request.full_url.endswith("/tracking")
+        )
+        assert json.loads(login_request.data.decode("utf-8")) == {
+            "email": "totem@example.invalid",
+            "field_value": "totem@example.invalid",
+            "password": "local-test-password",
+        }
+        assert issue_request.get_method() == "POST"
+        assert issue_request.get_header("Authorization") == "Bearer server-totem-token"
+        assert json.loads(issue_request.data.decode("utf-8")) == {"fila_id": 9}
+        assert tracking_request.get_method() == "POST"
+        assert tracking_request.get_header("Authorization") == "Bearer server-totem-token"
+        assert json.loads(tracking_request.data.decode("utf-8")) == {
+            "referencia": "private-tracking-reference"
+        }
+        assert all("private-tracking-reference" not in request.full_url for request in requests)
+
+        next(
+            button
+            for button in app.button
+            if button.label == "Iniciar novo atendimento"
+        ).click().run()
+
+    assert not app.exception
+    assert "client_ticket_reference" not in app.session_state
+    assert "client_ticket_number" not in app.session_state
+    assert "client_tracking_result" not in app.session_state
+    assert "Emitir senha" in str([button.label for button in app.button])
+
+
+def test_public_client_view_reports_xano_issue_rejection_without_confirming_ticket():
+    queues = [
+        {
+            "fila_id": 9,
+            "fila_nome": "Fila principal",
+            "servico_id": 4,
+            "servico_nome": "Atendimento geral",
+        }
+    ]
+
+    def fake_urlopen(request, timeout):
+        if request.full_url.endswith("/auth/login"):
+            return FakeResponse({"authToken": "server-totem-token", "user_id": 19})
+        if request.full_url.endswith("/totem/queues"):
+            return FakeResponse(queues)
+        raise HTTPError(
+            request.full_url,
+            400,
+            "Bad Request",
+            hdrs=None,
+            fp=io.BytesIO(
+                b'{"code":"ERROR_CODE_INPUT_ERROR",'
+                b'"message":"Esta fila est\\u00e1 fechada no momento."}'
+            ),
+        )
+
+    client = XanoClient(
+        login_url="https://xano.invalid/auth/login",
+        queues_url="https://xano.invalid/totem/queues",
+        issue_url="https://xano.invalid/totem/issue",
+        tracking_url="https://xano.invalid/tracking",
+        email="totem@example.invalid",
+        password="local-test-password",
+    )
+    app = unified_app(app_view="Cliente", _xano_client_override=client)
+
+    with patch("xano_client.urlopen", side_effect=fake_urlopen):
+        app.run()
+        next(
+            button for button in app.button if button.label == "Emitir senha"
+        ).click().run()
+
+    assert not app.exception
+    assert any(
+        "HTTP 400" in item.value
+        and "Esta fila está fechada no momento." in item.value
+        for item in app.error
+    )
+    assert not app.success
+    assert "client_ticket_reference" not in app.session_state
+
+
+def test_public_client_view_retains_last_confirmed_tracking_result_on_temporary_error():
+    class TemporaryTrackingFailureClient:
+        def __init__(self):
+            self.tracking_calls = 0
+
+        def list_queues(self):
+            return [
+                {
+                    "fila_id": 9,
+                    "fila_nome": "Fila principal",
+                    "servico_id": 4,
+                    "servico_nome": "Atendimento geral",
+                }
+            ]
+
+        def issue_ticket(self, queue_id):
+            assert queue_id == 9
+            return {
+                "numero": 25,
+                "referencia_rastreamento": "opaque-reference",
+            }
+
+        def track_ticket(self, reference):
+            assert reference == "opaque-reference"
+            self.tracking_calls += 1
+            if self.tracking_calls > 1:
+                raise XanoRequestError("temporarily unavailable")
+            return {
+                "status": "aguardando",
+                "posicao": 3,
+                "tempo_estimado_min": 12,
+                "atualizado_at": "2026-10-23T20:00:00Z",
+            }
+
+    client = TemporaryTrackingFailureClient()
+    app = unified_app(
+        app_view="Cliente",
+        _xano_client_override=client,
+        authToken="admin-token",
+    )
+
+    app.run()
+    next(
+        button for button in app.button if button.label == "Emitir senha"
+    ).click().run()
+    confirmed_result = app.session_state["client_tracking_result"]
+    assert confirmed_result["posicao"] == 3
+
+    app.run()
+
+    assert not app.exception
+    assert app.session_state["client_tracking_result"] == confirmed_result
+    assert any("última atualização confirmada" in item.value for item in app.warning)
+    assert app.session_state["client_ticket_reference"] == "opaque-reference"
+    assert app.session_state["authToken"] == "admin-token"
+
+
+def test_public_client_view_clears_previous_session_when_no_queues_are_available():
+    class EmptyQueueClient:
+        def list_queues(self):
+            return []
+
+    app = unified_app(
+        app_view="Cliente",
+        _xano_client_override=EmptyQueueClient(),
+        client_queue_id=9,
+        client_ticket_reference="old-reference",
+        client_ticket_number=26,
+        client_tracking_result={"status": "aguardando"},
+    ).run()
+
+    assert not app.exception
+    assert "Não há filas disponíveis" in str([item.value for item in app.info])
+    assert not any(button.label == "Emitir senha" for button in app.button)
+    assert "client_ticket_reference" not in app.session_state
+    assert "client_ticket_number" not in app.session_state
+    assert "client_tracking_result" not in app.session_state
 
 
 def test_analytics_view_preserves_separate_authentication_tokens():

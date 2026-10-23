@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Any
 
 import streamlit as st
@@ -7,6 +8,15 @@ import streamlit as st
 from streamlit_xano import get_display_feed_client
 from tv_sound import notification_tone
 from xano_client import XanoClientError
+
+
+REFRESH_INTERVALS_SECONDS = (3, 5, 10, 15, 30, 60)
+
+
+def _refresh_interval(seconds: int) -> timedelta:
+    if seconds not in REFRESH_INTERVALS_SECONDS:
+        seconds = 5
+    return timedelta(seconds=seconds)
 
 
 def _validate_snapshot(snapshot: dict[str, Any]) -> None:
@@ -21,9 +31,23 @@ def _validate_snapshot(snapshot: dict[str, Any]) -> None:
 
 def render_display_view() -> None:
     st.header("Painel de chamadas", anchor=False)
-    st.toggle("Ativar som", key="tv_sound_enabled")
+    st.session_state.setdefault("tv_refresh_interval_seconds", 5)
+    if st.session_state["tv_refresh_interval_seconds"] not in REFRESH_INTERVALS_SECONDS:
+        st.session_state["tv_refresh_interval_seconds"] = 5
+    settings_column, sound_column = st.columns([1, 1])
+    with settings_column:
+        st.selectbox(
+            "Atualizar a cada",
+            options=REFRESH_INTERVALS_SECONDS,
+            format_func=lambda seconds: f"{seconds} s",
+            key="tv_refresh_interval_seconds",
+        )
+    with sound_column:
+        st.toggle("Ativar som", key="tv_sound_enabled")
 
-    @st.fragment(run_every="5s")
+    @st.fragment(
+        run_every=_refresh_interval(st.session_state["tv_refresh_interval_seconds"])
+    )
     def render_call_feed() -> None:
         st.session_state.setdefault("tv_last_event_key", None)
         st.session_state.setdefault("tv_has_initial_snapshot", False)

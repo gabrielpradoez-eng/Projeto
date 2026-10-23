@@ -55,6 +55,7 @@ def test_login_is_cached_and_requests_use_bearer_token():
     login_payload = json.loads(requests[0].data.decode("utf-8"))
     assert login_payload == {
         "email": "totem@example.invalid",
+        "field_value": "totem@example.invalid",
         "password": "server-only-password",
     }
     assert requests[1].get_header("Authorization") == "Bearer server-token"

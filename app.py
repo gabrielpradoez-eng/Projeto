@@ -5,12 +5,14 @@ import streamlit as st
 from backend_queue import QueueBackend
 from views.admin_view import render_admin_view
 from views.analytics_view import render_analytics_view
+from views.client_view import render_client_view
 from views.display_view import render_display_view
 from views.totem_view import render_tracking_view, render_totem_view
 
 
 APPLICATION_VIEWS = (
     "Totem",
+    "Cliente",
     "Acompanhar senha",
     "Painel TV",
     "Administração",
@@ -62,6 +64,8 @@ def main() -> None:
 
     if selected_view == "Totem":
         render_totem_view(centralized=True)
+    elif selected_view == "Cliente":
+        render_client_view()
     elif selected_view == "Acompanhar senha":
         render_tracking_view(centralized=True)
     elif selected_view == "Painel TV":

@@ -19,6 +19,17 @@ class XanoConfigurationError(XanoClientError):
 class XanoRequestError(XanoClientError):
     """Raised when Xano is unavailable or returns an unexpected response."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        api_message: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+        self.api_message = api_message
+
 
 class TrackingUnavailableError(XanoClientError):
     """Raised when a tracking reference is invalid, expired, or revoked."""
@@ -26,6 +37,36 @@ class TrackingUnavailableError(XanoClientError):
 
 class QueueUnavailableError(XanoClientError):
     """Raised when a queue cannot accept a ticket at confirmation time."""
+
+    def __init__(
+        self,
+        message: str = "A fila selecionada não está disponível.",
+        *,
+        status_code: int | None = None,
+        api_message: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+        self.api_message = api_message
+
+
+def _api_error_message(error: HTTPError) -> str | None:
+    try:
+        body = error.read(4096).decode("utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    if not body:
+        return None
+
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return body[:500]
+    if isinstance(payload, dict):
+        message = payload.get("message")
+        if isinstance(message, str) and message:
+            return message[:500]
+    return None
 
 
 class DisplayFeedClient:
@@ -124,7 +165,10 @@ class XanoClient:
             )
         except XanoRequestError as exc:
             if getattr(exc, "status_code", None) in {400, 404, 422}:
-                raise QueueUnavailableError from None
+                raise QueueUnavailableError(
+                    status_code=exc.status_code,
+                    api_message=exc.api_message,
+                ) from None
             raise
         if not isinstance(result, dict):
             raise XanoRequestError("Resposta inválida do serviço de emissão.")
@@ -163,7 +207,11 @@ class XanoClient:
             response = self._request(
                 "POST",
                 self._login_url,
-                {"email": self._email, "password": self._password},
+                {
+                    "email": self._email,
+                    "field_value": self._email,
+                    "password": self._password,
+                },
             )
             token = response.get("authToken") if isinstance(response, dict) else None
             if not isinstance(token, str) or not token:
@@ -197,8 +245,11 @@ class XanoClient:
             with urlopen(request, timeout=self._timeout) as response:
                 body = response.read()
         except HTTPError as exc:
-            error = XanoRequestError("O serviço Xano recusou a solicitação.")
-            error.status_code = exc.code
+            error = XanoRequestError(
+                "O serviço Xano recusou a solicitação.",
+                status_code=exc.code,
+                api_message=_api_error_message(exc),
+            )
             raise error from None
         except (URLError, TimeoutError, OSError):
             raise XanoRequestError("Não foi possível conectar ao serviço Xano.") from None
