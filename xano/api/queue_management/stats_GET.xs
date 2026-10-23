@@ -1,6 +1,7 @@
 // Retorna estatísticas em tempo real de uma fila específica
 query stats verb=GET {
   api_group = "Queue Management"
+  auth = "usuarios"
 
   input {
     int fila_id {
@@ -9,26 +10,57 @@ query stats verb=GET {
   }
 
   stack {
-    // 1. Obter informações da fila
+    precondition (($auth.role == "admin") || ($auth.role == "atendente")) {
+      error_type = "accessdenied"
+      error = "Acesso restrito a administradores e atendentes."
+    }
+
     db.get filas {
       field_name = "id"
       field_value = $input.fila_id
     } as $fila
+
+    precondition ($fila != null) {
+      error_type = "notfound"
+      error = "Fila não encontrada."
+    }
+
+    db.get servicos {
+      field_name = "id"
+      field_value = $fila.servico_id
+    } as $servico
+
+    precondition ($servico != null) {
+      error_type = "notfound"
+      error = "Serviço não encontrado."
+    }
+
+    precondition (($auth.role != "admin") || ($auth.estabelecimento_id == null) || ($auth.estabelecimento_id == $servico.estabelecimento_id)) {
+      error_type = "accessdenied"
+      error = "Você não tem acesso a esta fila."
+    }
+
+    db.get atendentes {
+      field_name = "usuario_id"
+      field_value = $auth.id
+    } as $atendente
+
+    precondition (($auth.role != "atendente") || (($atendente != null) && ($atendente.ativo) && ($atendente.estabelecimento_id == $servico.estabelecimento_id))) {
+      error_type = "accessdenied"
+      error = "Você não tem acesso a esta fila."
+    }
   
-    // 2. Contar pessoas aguardando
     db.query senhas {
       where = $db.senhas.fila_id == $input.fila_id && $db.senhas.status == "aguardando"
       return = {type: "count"}
     } as $aguardando_count
   
-    // 3. Obter últimas 20 senhas chamadas para calcular tempo médio recente
     db.query senhas {
       where = $db.senhas.fila_id == $input.fila_id && $db.senhas.chamado_at != null
       sort = {chamado_at: "desc"}
       return = {type: "list", paging: {page: 1, per_page: 20}}
     } as $recentes
   
-    // 4. Calcular tempo médio em minutos
     var $senhas_list {
       value = $recentes.items
     }

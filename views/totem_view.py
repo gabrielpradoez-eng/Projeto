@@ -1,0 +1,180 @@
+from __future__ import annotations
+
+import streamlit as st
+
+from streamlit_xano import get_xano_client
+from xano_client import (
+    QueueUnavailableError,
+    TrackingUnavailableError,
+    XanoClientError,
+)
+
+
+_CUSTOMER_SESSION_KEYS = (
+    "ticket_reference",
+    "ticket_number",
+    "tracking_result",
+    "tracking_active",
+    "tracking_ended",
+    "tracking_input",
+)
+
+
+def start_new_session() -> None:
+    for key in _CUSTOMER_SESSION_KEYS:
+        st.session_state.pop(key, None)
+
+
+def _return_to_totem(centralized: bool) -> None:
+    start_new_session()
+    if centralized:
+        st.session_state["app_view"] = "Totem"
+        st.rerun()
+    st.switch_page("app_pages/totem.py")
+
+
+def render_totem_view(*, centralized: bool = False) -> None:
+    st.header("Retire sua senha")
+
+    if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
+        start_new_session()
+        st.rerun()
+
+    try:
+        with st.spinner("Carregando filas disponíveis..."):
+            client = get_xano_client()
+            queues = client.list_queues()
+    except XanoClientError as exc:
+        st.error(str(exc))
+        return
+
+    if not queues:
+        st.info("Não há filas disponíveis para emissão neste momento.")
+        return
+
+    queue_by_id = {item["fila_id"]: item for item in queues}
+    if st.session_state.get("totem_queue_id") not in queue_by_id:
+        st.session_state["totem_queue_id"] = next(iter(queue_by_id))
+    selected_queue_id = st.selectbox(
+        "Serviço",
+        options=list(queue_by_id),
+        format_func=lambda queue_id: (
+            f"{queue_by_id[queue_id]['servico_nome']} · "
+            f"{queue_by_id[queue_id]['fila_nome']}"
+        ),
+        key="totem_queue_id",
+    )
+
+    if st.button("Emitir senha", type="primary", icon=":material/confirmation_number:"):
+        try:
+            with st.spinner("Solicitando a emissão da senha..."):
+                issued = client.issue_ticket(selected_queue_id)
+        except QueueUnavailableError:
+            st.warning("A fila selecionada deixou de estar disponível. Selecione outra.")
+        except XanoClientError as exc:
+            st.error(str(exc))
+        else:
+            st.session_state.ticket_number = issued["numero"]
+            st.session_state.ticket_reference = issued["referencia_rastreamento"]
+            st.session_state.tracking_active = True
+            st.session_state.tracking_ended = False
+            st.session_state.tracking_result = None
+            st.success(f"Senha confirmada: {issued['numero']}")
+
+    if st.session_state.get("ticket_reference"):
+        st.divider()
+        st.subheader(f"Sua senha: {st.session_state.ticket_number}")
+        st.write("Referência de acompanhamento")
+        st.code(st.session_state.ticket_reference, language=None)
+        if centralized:
+            if st.button(
+                "Acompanhar minha senha", icon=":material/pending_actions:"
+            ):
+                st.session_state["app_view"] = "Acompanhar senha"
+                st.rerun()
+        else:
+            st.page_link(
+                "app_pages/tracking.py",
+                label="Acompanhar minha senha",
+                icon=":material/pending_actions:",
+            )
+
+
+def render_tracking_view(*, centralized: bool = False) -> None:
+    st.header("Acompanhe sua senha")
+
+    if st.session_state.get("tracking_ended"):
+        st.info("Este acompanhamento foi encerrado ou a referência não está disponível.")
+        if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
+            _return_to_totem(centralized)
+        return
+
+    if not st.session_state.get("tracking_active"):
+        with st.form("tracking_reference_form"):
+            reference = st.text_input(
+                "Referência de acompanhamento",
+                type="password",
+                autocomplete="off",
+            )
+            submitted = st.form_submit_button(
+                "Acompanhar", type="primary", icon=":material/search:"
+            )
+        if submitted:
+            if reference.strip():
+                st.session_state.ticket_reference = reference.strip()
+                st.session_state.tracking_active = True
+                st.session_state.tracking_ended = False
+                st.session_state.tracking_result = None
+                st.rerun()
+            st.warning("Informe a referência de acompanhamento.")
+        return
+
+    @st.fragment(run_every="15s")
+    def render_tracking() -> None:
+        if st.session_state.get("tracking_ended"):
+            st.info(
+                "Este acompanhamento foi encerrado ou a referência não está disponível."
+            )
+            return
+
+        st.button("Atualizar agora", icon=":material/refresh:")
+        try:
+            with st.spinner("Atualizando o acompanhamento..."):
+                client = get_xano_client()
+                result = client.track_ticket(st.session_state.ticket_reference)
+        except TrackingUnavailableError:
+            st.session_state.tracking_ended = True
+            st.session_state.tracking_active = False
+            st.session_state.tracking_result = None
+            st.info(
+                "Este acompanhamento foi encerrado ou a referência não está disponível."
+            )
+            return
+        except XanoClientError:
+            previous = st.session_state.get("tracking_result")
+            if previous is None:
+                st.warning("Não foi possível consultar o estado atual da senha.")
+                return
+            st.warning(
+                "Estado atual desconhecido. Abaixo está a última atualização confirmada."
+            )
+            result = previous
+            st.caption(f"Última atualização confirmada: {result['atualizado_at']}")
+
+        st.session_state.tracking_result = result
+        st.subheader(f"Senha {result['numero']}")
+        st.write(f"{result['servico']} · {result['fila']}")
+        st.metric("Status", result["status"])
+        if result.get("posicao") is not None:
+            st.metric("Posição na fila", result["posicao"])
+            estimate = result.get("tempo_estimado_min")
+            st.metric(
+                "Espera estimada",
+                f"{estimate} min" if estimate is not None else "—",
+            )
+        st.caption(f"Atualizado: {result['atualizado_at']}")
+
+    render_tracking()
+
+    if st.button("Encerrar e iniciar novo atendimento", icon=":material/close:"):
+        _return_to_totem(centralized)

@@ -11,8 +11,8 @@ function "Quick Start/generate_magic_link" {
     }
   
     // Gets the user record by email
-    db.query "" {
-      where = $db.user.email == $input.email
+    db.query usuarios {
+      where = $db.usuarios.email == $input.email
       return = {type: "single"}
     } as $user
   
@@ -24,11 +24,15 @@ function "Quick Start/generate_magic_link" {
   
     // Creates a unique UUID as token
     security.create_uuid as $token
+
+    var $token_hash {
+      value = $token|sha256
+    }
   
     // Builds the password reset object
     var $password_reset {
       value = {}
-        |set:"token":$token
+        |set:"token":$token_hash
         |set:"expiration":(now
           |add_secs_to_timestamp:(3600|to_int)
         )
@@ -36,7 +40,7 @@ function "Quick Start/generate_magic_link" {
     }
   
     // Updates the user record with the password reset object
-    db.edit "" {
+    db.edit usuarios {
       field_name = "id"
       field_value = $user|get:"id":0
       data = {password_reset: $password_reset}

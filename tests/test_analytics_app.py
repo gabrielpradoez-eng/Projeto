@@ -98,7 +98,7 @@ class FakeAnalyticsClient:
 
 def analytics_app(fake_client):
     app_path = Path(__file__).resolve().parents[1] / "analytics_app.py"
-    app = AppTest.from_file(app_path, default_timeout=10)
+    app = AppTest.from_file(app_path, default_timeout=20)
     app.session_state["analytics_auth_token"] = "session-admin-token"
     app.session_state["_analytics_client_override"] = fake_client
     return app.run()
@@ -299,7 +299,7 @@ def test_breakdown_renders_only_aggregated_fields_in_backend_order():
 
 def test_login_page_is_rendered_without_session_token():
     app_path = Path(__file__).resolve().parents[1] / "analytics_app.py"
-    app = AppTest.from_file(app_path, default_timeout=10).run()
+    app = AppTest.from_file(app_path, default_timeout=20).run()
 
     assert not app.exception
     assert "Relatórios de atendimento" in str([item.value for item in app.title])

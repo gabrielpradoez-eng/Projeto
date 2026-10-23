@@ -1,7 +1,7 @@
 // Allows user to update the password in the password reset flow
 query "reset/update_password" verb=POST {
   api_group = "Authentication"
-  auth = ""
+  auth = "usuarios"
 
   input {
     text password? filters=trim|min:8
@@ -15,7 +15,7 @@ query "reset/update_password" verb=POST {
     }
   
     // Get user record based on the id of the auth token
-    db.get "" {
+    db.get usuarios {
       field_name = "id"
       field_value = $auth.id
     } as $user
@@ -26,7 +26,7 @@ query "reset/update_password" verb=POST {
     }
   
     // Update user record with the new password
-    db.edit "" {
+    db.edit usuarios {
       field_name = "id"
       field_value = $auth.id
       data = {password: $input.password}

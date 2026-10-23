@@ -13,7 +13,7 @@ function "Quick Start/log_event" {
 
   stack {
     // Add a new user event log entry
-    db.add "" {
+    db.add event_log {
       data = {
         created_at: "now"
         user_id   : $input.user_id

@@ -1,14 +1,14 @@
 // Get the user record belonging to the authentication token
 query "auth/me" verb=GET {
   api_group = "Authentication"
-  auth = ""
+  auth = "usuarios"
 
   input {
   }
 
   stack {
     // Get the user record based on the auth ID
-    db.get "" {
+    db.get usuarios {
       field_name = "id"
       field_value = $auth.id
       output = ["id", "created_at", "name", "email", "role"]

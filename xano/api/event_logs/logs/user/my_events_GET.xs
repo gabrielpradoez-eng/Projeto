@@ -1,14 +1,14 @@
 // Pull all event logs for the authenticated user
 query "logs/user/my_events" verb=GET {
   api_group = "Event Logs"
-  auth = ""
+  auth = "usuarios"
 
   input {
   }
 
   stack {
     // Retrieve event logs for the authenticated user
-    db.query "" {
+    db.query event_log {
       where = $db.event_log.user_id == $auth.id
       return = {type: "list"}
     } as $user_events

@@ -10,7 +10,7 @@ query "auth/signup" verb=POST {
 
   stack {
     // Check if a user record with that email exists
-    db.get "" {
+    db.get usuarios {
       field_name = "email"
       field_value = $input.email
     } as $user
@@ -22,19 +22,19 @@ query "auth/signup" verb=POST {
     }
   
     // Create a new user record
-    db.add "" {
+    db.add usuarios {
       data = {
         created_at: "now"
         name      : $input.name
         email     : $input.email
         password  : $input.password
-        role      : "member"
+        role      : "usuario"
       }
     } as $user
   
     // Create an authentiction token
     security.create_auth_token {
-      table = ""
+      table = "usuarios"
       extras = {}
       expiration = 86400
       id = $user.id

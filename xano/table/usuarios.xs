@@ -15,6 +15,8 @@ table usuarios {
     int estabelecimento_id? {
       table = "estabelecimentos"
     }
+
+    json password_reset?
   }
 
   index = [

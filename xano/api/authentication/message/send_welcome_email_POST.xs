@@ -1,6 +1,7 @@
 // Use this endpoint to send a welcome email to a user
 query "message/send_welcome_email" verb=POST {
   api_group = "Authentication"
+  auth = "usuarios"
 
   input {
     // The ID of the user to send the welcome email to.
@@ -9,10 +10,15 @@ query "message/send_welcome_email" verb=POST {
 
   stack {
     // Retrieve the user record for the given user ID.
-    db.get "" {
+    db.get usuarios {
       field_name = "id"
       field_value = $input.user_id
     } as $user_record
+
+    precondition (($auth.role == "admin") || ($auth.id == $input.user_id)) {
+      error_type = "accessdenied"
+      error = "Você não tem permissão para enviar esta mensagem."
+    }
   
     // Ensure the user record exists before proceeding.
     precondition ($user_record != null) {

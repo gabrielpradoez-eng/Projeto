@@ -19,7 +19,7 @@ query "reset/magic-link-login" verb=POST {
     }
   
     // Get the user record with the email from the URL
-    db.get "" {
+    db.get usuarios {
       field_name = "email"
       field_value = $input.email
       output = [
@@ -33,15 +33,17 @@ query "reset/magic-link-login" verb=POST {
         "password_reset.used"
       ]
     } as $user
-  
-    // Validate the UUID matches the hashed value
-    security.check_password {
-      text_password = $input.magic_token
-      hash_password = $user.password_reset.token
-    } as $verify_token
-  
-    // Verify the UUID validation is true
-    precondition ($verify_token) {
+
+    precondition ($user != null) {
+      error_type = "notfound"
+      error = "The token did not match"
+    }
+
+    var $magic_token_hash {
+      value = $input.magic_token|sha256
+    }
+
+    precondition ($magic_token_hash == $user.password_reset.token) {
       error_type = "unauthorized"
       error = "The token did not match"
     }
@@ -58,14 +60,14 @@ query "reset/magic-link-login" verb=POST {
   
     // Create an authentication token
     security.create_auth_token {
-      table = ""
+      table = "usuarios"
       extras = ""
       expiration = 86400
       id = $user.id
     } as $auth_token
   
     // Update the user record that the password reset token has been used
-    db.edit "" {
+    db.edit usuarios {
       field_name = "id"
       field_value = $user.id
       data = {
