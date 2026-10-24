@@ -48,4 +48,5 @@ query "totem/queues" verb=GET {
   }
 
   response = $opcoes
+  guid = "Vf3U1M9jxB9kU_5rnHo-EiW9qDQ"
 }

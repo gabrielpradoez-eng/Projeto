@@ -19,4 +19,5 @@ table rastreamentos_senha {
     {type: "btree", field: [{name: "senha_id"}]}
     {type: "btree", field: [{name: "expira_at"}]}
   ]
+  guid = "R8yYpB1isoCTDATQeQOwxVQsM9M"
 }

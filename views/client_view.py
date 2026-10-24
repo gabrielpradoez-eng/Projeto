@@ -3,6 +3,7 @@ from __future__ import annotations
 import streamlit as st
 
 from streamlit_xano import get_xano_client
+from views.issue_error import render_ticket_issue_error
 from xano_client import (
     QueueUnavailableError,
     TrackingUnavailableError,
@@ -104,28 +105,13 @@ def render_client_view() -> None:
                 with st.spinner("Solicitando a emissão da senha..."):
                     issued = client.issue_ticket(selected_queue_id)
             except QueueUnavailableError as exc:
-                status = getattr(exc, "status_code", None)
-                message = getattr(exc, "api_message", None)
-                if status is not None:
-                    detail = f"Xano recusou a emissão (HTTP {status})"
-                    if message:
-                        detail += f": {message}"
-                    st.error(detail)
-                else:
-                    st.warning(
-                        message or "A fila selecionada não está disponível."
-                    )
+                render_ticket_issue_error(
+                    exc,
+                    fallback_message="A fila selecionada não está disponível.",
+                )
                 return
             except XanoClientError as exc:
-                status = getattr(exc, "status_code", None)
-                message = getattr(exc, "api_message", None)
-                if status is not None:
-                    detail = f"Falha na emissão no Xano (HTTP {status})"
-                    if message:
-                        detail += f": {message}"
-                    st.error(detail)
-                else:
-                    st.error(str(exc))
+                render_ticket_issue_error(exc)
                 return
 
             number = issued.get("numero")

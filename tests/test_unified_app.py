@@ -6,7 +6,8 @@ from urllib.error import HTTPError
 
 from streamlit.testing.v1 import AppTest
 
-from xano_client import XanoClient, XanoRequestError
+from xano_client import QueueUnavailableError, XanoClient, XanoRequestError
+from views.issue_error import render_ticket_issue_error
 
 
 class FakeResponse:
@@ -70,6 +71,109 @@ def unified_app(**session_values):
     for key, value in session_values.items():
         app.session_state[key] = value
     return app
+
+
+def test_admin_login_does_not_display_local_sample_users(monkeypatch):
+    import app as unified_app_module
+
+    class LocalSamples:
+        users = {
+            1: type(
+                "SampleUser",
+                (),
+                {
+                    "name": "Sample Admin",
+                    "role": "admin",
+                    "email": "sample-admin@example.invalid",
+                },
+            )()
+        }
+
+    monkeypatch.setattr(
+        unified_app_module, "_admin_login_defaults", lambda: ("", "")
+    )
+    app = unified_app(
+        app_view="Administração",
+        backend=LocalSamples(),
+    ).run()
+
+    assert not app.exception
+    assert any(field.label == "E-mail" for field in app.text_input)
+    assert any(field.label == "Senha" for field in app.text_input)
+    rendered_text = " ".join(str(element.value) for element in app.markdown)
+    assert "Usuários de exemplo" not in rendered_text
+    assert "sample-admin@example.invalid" not in rendered_text
+
+
+def test_admin_view_stores_authenticated_xano_identity(monkeypatch):
+    import app as unified_app_module
+    from backend_queue import QueueBackend
+
+    backend = QueueBackend()
+    backend.authenticate = lambda _email, _password: {
+        "id": 987,
+        "user_id": 987,
+        "name": "Remote Admin",
+        "email": "admin@example.com",
+        "role": "admin",
+        "establishment_id": None,
+        "authToken": "remote-auth-token",
+    }
+    monkeypatch.setattr(
+        unified_app_module, "_admin_login_defaults", lambda: ("", "")
+    )
+    app = unified_app(
+        app_view="Administração",
+        backend=backend,
+    ).run()
+
+    next(field for field in app.text_input if field.label == "E-mail").set_value(
+        "admin@example.com"
+    )
+    next(field for field in app.text_input if field.label == "Senha").set_value(
+        "test-password"
+    )
+    next(button for button in app.button if button.label == "Entrar").click().run()
+
+    assert not app.exception
+    assert app.session_state["user"]["id"] == 987
+    assert app.session_state["user"]["role"] == "admin"
+    assert app.session_state["authToken"] == "remote-auth-token"
+    assert app.session_state["user_id"] == 987
+
+
+def test_admin_view_does_not_create_session_from_invalid_xano_identity(monkeypatch):
+    import app as unified_app_module
+    from backend_queue import AccessDeniedError, QueueBackend
+
+    backend = QueueBackend()
+
+    def reject_login(_email, _password):
+        raise AccessDeniedError("Resposta de autenticação inválida.")
+
+    backend.authenticate = reject_login
+    monkeypatch.setattr(
+        unified_app_module, "_admin_login_defaults", lambda: ("", "")
+    )
+    app = unified_app(
+        app_view="Administração",
+        backend=backend,
+    ).run()
+
+    next(field for field in app.text_input if field.label == "E-mail").set_value(
+        "admin@example.com"
+    )
+    next(field for field in app.text_input if field.label == "Senha").set_value(
+        "test-password"
+    )
+    next(button for button in app.button if button.label == "Entrar").click().run()
+
+    assert not app.exception
+    assert app.session_state["user"] is None
+    assert "authToken" not in app.session_state
+    assert "Resposta de autenticação inválida." in str(
+        [item.value for item in app.error]
+    )
 
 
 def test_navigation_renders_only_the_selected_view_and_preserves_session_state():
@@ -220,6 +324,10 @@ def test_totem_shows_xano_status_and_message_when_ticket_issue_is_rejected():
         "HTTP 400" in item.value
         and "Esta fila está fechada no momento." in item.value
         for item in app.error
+    )
+    assert "ERROR_CODE_INPUT_ERROR" in str([item.value for item in app.code])
+    assert "Esta fila está fechada no momento." in str(
+        [item.value for item in app.code]
     )
     assert "ticket_reference" not in app.session_state
 
@@ -398,8 +506,26 @@ def test_public_client_view_reports_xano_issue_rejection_without_confirming_tick
         and "Esta fila está fechada no momento." in item.value
         for item in app.error
     )
+    assert "ERROR_CODE_INPUT_ERROR" in str([item.value for item in app.code])
+    assert "Esta fila está fechada no momento." in str(
+        [item.value for item in app.code]
+    )
     assert not app.success
     assert "client_ticket_reference" not in app.session_state
+
+
+def test_ticket_issue_error_shows_clear_fallback_when_xano_body_is_empty():
+    error = QueueUnavailableError(status_code=404)
+    with (
+        patch("views.issue_error.st.error") as show_error,
+        patch("views.issue_error.st.caption") as show_caption,
+    ):
+        render_ticket_issue_error(error)
+
+    show_error.assert_called_once_with("Xano recusou a emissão (HTTP 404)")
+    show_caption.assert_called_once_with(
+        "O Xano não forneceu detalhes adicionais no corpo da resposta."
+    )
 
 
 def test_public_client_view_retains_last_confirmed_tracking_result_on_temporary_error():

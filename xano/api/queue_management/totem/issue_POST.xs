@@ -79,4 +79,5 @@ query "totem/issue" verb=POST {
     referencia_rastreamento: $referencia
     expira_at           : $rastreamento.expira_at
   }
+  guid = "mHvW2yiw4lS3gSmZ1FYfOgi5gLU"
 }

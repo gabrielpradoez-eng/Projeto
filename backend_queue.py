@@ -163,42 +163,66 @@ class QueueBackend:
     def authenticate(self, email: str, password: str) -> Dict[str, Any]:
         """Endpoint: POST /auth/login"""
         url = f"{self.base_url}/auth/login"
-        payload = {
-            "email": email,
-            "field_value": email,
-            "password": password,
-        }
+        payload = {"email": email, "password": password}
 
         try:
             response = requests.post(url, json=payload, timeout=10)
 
             if response.status_code == 200:
                 data = response.json()
-                auth_token = data.get("authToken")
-                user_id = data.get("user_id")
-                if not isinstance(auth_token, str) or not auth_token or not isinstance(user_id, int):
+                if not isinstance(data, dict):
                     raise AccessDeniedError("Resposta de autenticação inválida.")
 
-                user_record = next(
-                    (u for u in self.users.values() if u.email.strip().lower() == email.strip().lower()),
-                    None
+                auth_token = data.get("authToken")
+                remote_user = data.get("user")
+                if (
+                    not isinstance(auth_token, str)
+                    or not auth_token.strip()
+                    or not isinstance(remote_user, dict)
+                ):
+                    raise AccessDeniedError("Resposta de autenticação inválida.")
+
+                user_id = remote_user.get("id")
+                name = remote_user.get("name")
+                user_email = remote_user.get("email")
+                remote_role = remote_user.get("role")
+                establishment_id = remote_user.get("estabelecimento_id")
+                role_mapping = {
+                    "admin": "admin",
+                    "atendente": "attendant",
+                    "usuario": "user",
+                }
+                role = (
+                    role_mapping.get(remote_role)
+                    if isinstance(remote_role, str)
+                    else None
                 )
 
-                if user_record:
-                    user_dict = user_record.to_public_dict()
-                else:
-                    user_dict = {
-                        "id": 1,
-                        "name": email.split("@")[0].title(),
-                        "email": email,
-                        "role": "admin",
-                        "establishment_id": 1,
-                    }
+                if (
+                    type(user_id) is not int
+                    or user_id <= 0
+                    or not isinstance(name, str)
+                    or not name.strip()
+                    or not isinstance(user_email, str)
+                    or not user_email.strip()
+                    or role is None
+                    or (
+                        establishment_id is not None
+                        and type(establishment_id) is not int
+                    )
+                ):
+                    raise AccessDeniedError("Resposta de autenticação inválida.")
 
-                user_dict["id"] = user_id
-                user_dict["user_id"] = user_id
-                user_dict["authToken"] = auth_token
-                self._record_log(user_dict["id"], "login", {"email": email})
+                user_dict = {
+                    "id": user_id,
+                    "user_id": user_id,
+                    "name": name,
+                    "email": user_email,
+                    "role": role,
+                    "establishment_id": establishment_id,
+                    "authToken": auth_token.strip(),
+                }
+                self._record_log(user_id, "login", {"email": user_email})
                 return user_dict
             elif response.status_code in (400, 401, 403, 404):
                 raise AccessDeniedError("Credenciais inválidas ou usuário não cadastrado.")

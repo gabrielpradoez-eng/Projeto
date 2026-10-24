@@ -56,10 +56,10 @@ query "analytics/report" verb=POST {
       join = {
         servico: {
           table: "servicos"
-          where: $db.filas.servico_id == $db.servicos.id
+          where: ($db.filas.servico_id == $db.servicos.id)
         }
       }
-      where = $db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id)
+      where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id))
       sort = {nome: "asc"}
       return = {type: "list", paging: {page: 1, per_page: 101}}
     } as $filas
@@ -81,42 +81,42 @@ query "analytics/report" verb=POST {
     foreach ($filas.items) {
       each as $fila {
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end)
           return = {type: "count"}
         } as $issued_count
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.chamado_at >= $input.period_start && $db.senhas.chamado_at < $input.period_end
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.chamado_at >= $input.period_start && $db.senhas.chamado_at < $input.period_end)
           return = {type: "count"}
         } as $called_count
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.concluido_at >= $input.period_start && $db.senhas.concluido_at < $input.period_end
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.concluido_at >= $input.period_start && $db.senhas.concluido_at < $input.period_end)
           return = {type: "count"}
         } as $completed_event_count
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "aguardando"
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "aguardando")
           return = {type: "count"}
         } as $cohort_waiting
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "chamado"
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "chamado")
           return = {type: "count"}
         } as $cohort_called
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "concluido"
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "concluido")
           return = {type: "count"}
         } as $cohort_completed
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "cancelado"
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.created_at >= $input.period_start && $db.senhas.created_at < $input.period_end && $db.senhas.status == "cancelado")
           return = {type: "count"}
         } as $cohort_cancelled
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.chamado_at >= $input.period_start && $db.senhas.chamado_at < $input.period_end && $db.senhas.created_at != null
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.chamado_at >= $input.period_start && $db.senhas.chamado_at < $input.period_end && $db.senhas.created_at != null)
           return = {type: "count"}
         } as $wait_sample_count
 
@@ -126,7 +126,7 @@ query "analytics/report" verb=POST {
         }
 
         db.query senhas {
-          where = $db.senhas.fila_id == $fila.id && $db.senhas.chamado_at >= $input.period_start && $db.senhas.chamado_at < $input.period_end && $db.senhas.created_at != null
+          where = ($db.senhas.fila_id == $fila.id && $db.senhas.chamado_at >= $input.period_start && $db.senhas.chamado_at < $input.period_end && $db.senhas.created_at != null)
           sort = {chamado_at: "asc"}
           return = {type: "list", paging: {page: 1, per_page: 1000}}
         } as $wait_samples
@@ -139,10 +139,10 @@ query "analytics/report" verb=POST {
           join = {
             senha: {
               table: "senhas"
-              where: $db.atendimentos.senha_id == $db.senhas.id
+              where: ($db.atendimentos.senha_id == $db.senhas.id)
             }
           }
-          where = $db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senhas.fila_id == $fila.id
+          where = ($db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senhas.fila_id == $fila.id)
           return = {type: "count"}
         } as $service_sample_count
 
@@ -155,10 +155,10 @@ query "analytics/report" verb=POST {
           join = {
             senha: {
               table: "senhas"
-              where: $db.atendimentos.senha_id == $db.senhas.id
+              where: ($db.atendimentos.senha_id == $db.senhas.id)
             }
           }
-          where = $db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senhas.fila_id == $fila.id
+          where = ($db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senhas.fila_id == $fila.id)
           sort = {ended_at: "asc"}
           return = {type: "list", paging: {page: 1, per_page: 1000}}
         } as $service_samples
@@ -225,14 +225,14 @@ query "analytics/report" verb=POST {
               join = {
                 fila: {
                   table: "filas"
-                  where: $db.senhas.fila_id == $db.filas.id
+                  where: ($db.senhas.fila_id == $db.filas.id)
                 }
                 servico: {
                   table: "servicos"
-                  where: $db.filas.servico_id == $db.servicos.id
+                  where: ($db.filas.servico_id == $db.servicos.id)
                 }
               }
-              where = $db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.created_at >= $bucket_start && $db.senhas.created_at < $bucket_end
+              where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.created_at >= $bucket_start && $db.senhas.created_at < $bucket_end)
               return = {type: "count"}
             } as $daily_issued
 
@@ -240,14 +240,14 @@ query "analytics/report" verb=POST {
               join = {
                 fila: {
                   table: "filas"
-                  where: $db.senhas.fila_id == $db.filas.id
+                  where: ($db.senhas.fila_id == $db.filas.id)
                 }
                 servico: {
                   table: "servicos"
-                  where: $db.filas.servico_id == $db.servicos.id
+                  where: ($db.filas.servico_id == $db.servicos.id)
                 }
               }
-              where = $db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.chamado_at >= $bucket_start && $db.senhas.chamado_at < $bucket_end
+              where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.chamado_at >= $bucket_start && $db.senhas.chamado_at < $bucket_end)
               return = {type: "count"}
             } as $daily_called
 
@@ -255,14 +255,14 @@ query "analytics/report" verb=POST {
               join = {
                 fila: {
                   table: "filas"
-                  where: $db.senhas.fila_id == $db.filas.id
+                  where: ($db.senhas.fila_id == $db.filas.id)
                 }
                 servico: {
                   table: "servicos"
-                  where: $db.filas.servico_id == $db.servicos.id
+                  where: ($db.filas.servico_id == $db.servicos.id)
                 }
               }
-              where = $db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.concluido_at >= $bucket_start && $db.senhas.concluido_at < $bucket_end
+              where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.concluido_at >= $bucket_start && $db.senhas.concluido_at < $bucket_end)
               return = {type: "count"}
             } as $daily_completed
 

@@ -65,4 +65,5 @@ query "tv/feed" verb=POST {
     history    : $historico
     snapshot_at: now
   }
+  guid = "8LbNgwMW__IZyMmMI_Na-SqoVOo"
 }

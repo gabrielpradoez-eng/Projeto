@@ -1,5 +1,6 @@
 import io
 import json
+import logging
 from urllib.error import HTTPError
 from unittest.mock import patch
 
@@ -113,3 +114,103 @@ def test_ticket_issue_404_becomes_queue_unavailable_error():
     with patch("xano_client.urlopen", side_effect=fake_urlopen):
         with pytest.raises(QueueUnavailableError):
             make_client().issue_ticket(4)
+
+
+def test_ticket_issue_preserves_structured_xano_error_without_exposing_secrets():
+    body = json.dumps(
+        {
+            "code": "ERROR_CODE_INPUT_ERROR",
+            "message": "Fila encerrada para emissão.",
+            "accessToken": "response-secret-token",
+        }
+    ).encode("utf-8")
+
+    def fake_urlopen(request, timeout):
+        if request.full_url.endswith("/login"):
+            return FakeResponse({"authToken": "server-token"})
+        raise HTTPError(
+            request.full_url,
+            400,
+            "bad request",
+            hdrs=None,
+            fp=io.BytesIO(body),
+        )
+
+    with patch("xano_client.urlopen", side_effect=fake_urlopen):
+        with pytest.raises(QueueUnavailableError) as error:
+            make_client().issue_ticket(4)
+
+    assert error.value.status_code == 400
+    assert error.value.api_code == "ERROR_CODE_INPUT_ERROR"
+    assert error.value.api_message == "Fila encerrada para emissão."
+    assert "Fila encerrada para emissão." in error.value.api_body
+    assert "response-secret-token" not in error.value.api_body
+    assert "[REDACTED]" in error.value.api_body
+
+
+@pytest.mark.parametrize(
+    ("response_body", "expected_body", "expected_message"),
+    [
+        (b"Xano validation failed", "Xano validation failed", "Xano validation failed"),
+        (b"token=hidden-value", "token=[REDACTED]", "token=[REDACTED]"),
+        (b"", None, None),
+    ],
+)
+def test_ticket_issue_preserves_non_json_or_empty_error_body(
+    response_body, expected_body, expected_message
+):
+    def fake_urlopen(request, timeout):
+        if request.full_url.endswith("/login"):
+            return FakeResponse({"authToken": "server-token"})
+        raise HTTPError(
+            request.full_url,
+            422,
+            "unprocessable",
+            hdrs=None,
+            fp=io.BytesIO(response_body),
+        )
+
+    with patch("xano_client.urlopen", side_effect=fake_urlopen):
+        with pytest.raises(QueueUnavailableError) as error:
+            make_client().issue_ticket(4)
+
+    assert error.value.status_code == 422
+    assert error.value.api_body == expected_body
+    assert error.value.api_message == expected_message
+
+
+def test_ticket_issue_logs_endpoint_and_status_without_query_or_credentials(caplog):
+    requests = []
+    client = XanoClient(
+        login_url="https://xano.invalid/login",
+        queues_url="https://xano.invalid/queues",
+        issue_url="https://xano.invalid/issue?api_key=private-query-key",
+        tracking_url="https://xano.invalid/tracking",
+        email="totem@example.invalid",
+        password="test-password",
+    )
+
+    def fake_urlopen(request, timeout):
+        requests.append(request)
+        if request.full_url.endswith("/login"):
+            return FakeResponse({"authToken": "server-token"})
+        raise HTTPError(
+            request.full_url,
+            400,
+            "bad request",
+            hdrs=None,
+            fp=io.BytesIO(b'{"code":"QUEUE_CLOSED","message":"closed"}'),
+        )
+
+    with patch("xano_client.urlopen", side_effect=fake_urlopen):
+        with caplog.at_level(logging.WARNING, logger="xano_client"):
+            with pytest.raises(QueueUnavailableError):
+                client.issue_ticket(4)
+
+    assert "method=POST path=/issue status=400 api_code=QUEUE_CLOSED" in caplog.text
+    assert "private-query-key" not in caplog.text
+    assert "server-token" not in caplog.text
+    assert "totem@example.invalid" not in caplog.text
+    issue_request = requests[-1]
+    assert issue_request.get_method() == "POST"
+    assert json.loads(issue_request.data.decode("utf-8")) == {"fila_id": 4}

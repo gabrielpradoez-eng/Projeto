@@ -64,4 +64,5 @@ query tracking verb=POST {
     tempo_estimado_min  : $tempo_estimado_min
     atualizado_at       : now
   }
+  guid = "3iC4CqZrL0USN_Q8Bf8glkjhmV4"
 }

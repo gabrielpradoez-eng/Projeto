@@ -17,4 +17,5 @@ table tv_displays {
     {type: "btree|unique", field: [{name: "credential_hash"}]}
     {type: "btree", field: [{name: "estabelecimento_id"}]}
   ]
+  guid = "eC8hXCaG1VSGnNtiOlOTHn8ifDE"
 }

@@ -49,9 +49,6 @@ def render_admin_view(
 
     if user is None:
         st.info("Faça login para acessar o núcleo da operação da fila.")
-        st.subheader("Usuários de exemplo")
-        for record in backend.users.values():
-            st.write(f"- {record.name} ({record.role}) — {record.email}")
         return
 
     if user.get("role") not in {"admin", "attendant", "user"}:

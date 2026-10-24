@@ -1,11 +1,26 @@
 from __future__ import annotations
 
 import json
+import logging
+import re
 import threading
 import time
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
+
+
+logger = logging.getLogger(__name__)
+_MAX_API_ERROR_BODY_BYTES = 4096
+_SENSITIVE_API_KEY = re.compile(
+    r"(?:token|password|secret|authorization|credential|api[_-]?key)", re.IGNORECASE
+)
+_BEARER_VALUE = re.compile(r"(?i)(\bbearer\s+)[A-Za-z0-9._~+/-]+=*")
+_SENSITIVE_TEXT_VALUE = re.compile(
+    r"(?i)(\b(?:access[_-]?token|refresh[_-]?token|token|password|secret|"
+    r"authorization|credential|api[_-]?key)\b\s*[:=]\s*)([^\s,;\"']+)"
+)
 
 
 class XanoClientError(Exception):
@@ -25,10 +40,14 @@ class XanoRequestError(XanoClientError):
         *,
         status_code: int | None = None,
         api_message: str | None = None,
+        api_code: str | None = None,
+        api_body: str | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.api_message = api_message
+        self.api_code = api_code
+        self.api_body = api_body
 
 
 class TrackingUnavailableError(XanoClientError):
@@ -44,29 +63,77 @@ class QueueUnavailableError(XanoClientError):
         *,
         status_code: int | None = None,
         api_message: str | None = None,
+        api_code: str | None = None,
+        api_body: str | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.api_message = api_message
+        self.api_code = api_code
+        self.api_body = api_body
 
 
-def _api_error_message(error: HTTPError) -> str | None:
+def _redact_api_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: (
+                "[REDACTED]"
+                if _SENSITIVE_API_KEY.search(str(key))
+                else _redact_api_value(item)
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact_api_value(item) for item in value]
+    if isinstance(value, str):
+        value = _BEARER_VALUE.sub(r"\1[REDACTED]", value)
+        return _SENSITIVE_TEXT_VALUE.sub(r"\1[REDACTED]", value)
+    return value
+
+
+def _api_error_details(
+    error: HTTPError,
+) -> tuple[str | None, str | None, str | None]:
     try:
-        body = error.read(4096).decode("utf-8")
-    except (OSError, UnicodeDecodeError):
-        return None
+        raw_body = error.read(_MAX_API_ERROR_BODY_BYTES + 1)
+    except OSError:
+        return None, None, None
+    was_truncated = len(raw_body) > _MAX_API_ERROR_BODY_BYTES
+    body = raw_body[:_MAX_API_ERROR_BODY_BYTES].decode("utf-8", errors="replace")
     if not body:
-        return None
+        return None, None, None
 
     try:
         payload = json.loads(body)
     except json.JSONDecodeError:
-        return body[:500]
+        safe_body = _redact_api_value(body)
+        message = safe_body[:500]
+        return (
+            f"{safe_body}{'… [truncado]' if was_truncated else ''}",
+            None,
+            message,
+        )
     if isinstance(payload, dict):
         message = payload.get("message")
-        if isinstance(message, str) and message:
-            return message[:500]
-    return None
+        code = payload.get("code")
+        safe_payload = _redact_api_value(payload)
+        safe_body = json.dumps(safe_payload, ensure_ascii=False)
+        if was_truncated:
+            safe_body += "… [truncado]"
+        safe_message = _redact_api_value(message)
+        return (
+            safe_body,
+            code[:200] if isinstance(code, str) else None,
+            safe_message[:500]
+            if isinstance(safe_message, str) and safe_message
+            else None,
+        )
+    safe_body = _redact_api_value(body)
+    return (
+        f"{safe_body}{'… [truncado]' if was_truncated else ''}",
+        None,
+        None,
+    )
 
 
 class DisplayFeedClient:
@@ -168,6 +235,8 @@ class XanoClient:
                 raise QueueUnavailableError(
                     status_code=exc.status_code,
                     api_message=exc.api_message,
+                    api_code=exc.api_code,
+                    api_body=exc.api_body,
                 ) from None
             raise
         if not isinstance(result, dict):
@@ -245,10 +314,26 @@ class XanoClient:
             with urlopen(request, timeout=self._timeout) as response:
                 body = response.read()
         except HTTPError as exc:
+            api_body, api_code, api_message = _api_error_details(exc)
+            path = urlsplit(url).path or "/"
+            logged_api_code = (
+                re.sub(r"[^A-Za-z0-9_.-]", "_", api_code)[:100]
+                if api_code
+                else "-"
+            )
+            logger.warning(
+                "Xano request failed: method=%s path=%s status=%d api_code=%s",
+                method,
+                path,
+                exc.code,
+                logged_api_code,
+            )
             error = XanoRequestError(
                 "O serviço Xano recusou a solicitação.",
                 status_code=exc.code,
-                api_message=_api_error_message(exc),
+                api_message=api_message,
+                api_code=api_code,
+                api_body=api_body,
             )
             raise error from None
         except (URLError, TimeoutError, OSError):
