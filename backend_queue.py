@@ -113,31 +113,20 @@ class QueueBackend:
 
     def __init__(self) -> None:
         try:
-            self.base_url = st.secrets["xano"]["base_url"].rstrip("/")
+            settings = st.secrets["xano"]
         except (KeyError, FileNotFoundError):
-            self.base_url = "https://x8ki-letl-twmt.n7.xano.io/api:-8IXPb-r"
+            settings = {}
+        self.base_url = settings.get("base_url", "").rstrip("/")
+        self.login_url = settings.get("login_url", "")
+        self.me_url = settings.get("me_url", "")
+        if not self.me_url and self.login_url.endswith("/auth/login"):
+            self.me_url = self.login_url.removesuffix("/auth/login") + "/auth/me"
 
-        # Armazenamento em memória para dados de cadastro local/múltipla leitura
-        self.users: Dict[int, UserRecord] = {
-            1: UserRecord(1, "Admin FilaSmart", "admin@filasmart.com", "senha123", "admin", 1),
-            2: UserRecord(2, "Atendente Geral", "atendente@filasmart.com", "atendente123", "attendant", 1),
-            3: UserRecord(3, "Cliente Teste", "cliente@filasmart.com", "cliente123", "user"),
-        }
-
-        self.establishments: Dict[int, EstablishmentRecord] = {
-            1: EstablishmentRecord(1, "Filial Centro"),
-            2: EstablishmentRecord(2, "Filial Norte"),
-        }
-
-        self.services: Dict[int, ServiceRecord] = {
-            1: ServiceRecord(1, 1, "Atendimento Geral", 10),
-            2: ServiceRecord(2, 1, "Financeiro", 15),
-        }
-
-        self.queues: Dict[int, QueueRecord] = {
-            1: QueueRecord(1, 1, "Fila Geral", "open"),
-            2: QueueRecord(2, 2, "Fila Financeiro", "open"),
-        }
+        # Estruturas locais legadas não são fontes de dados da interface operacional.
+        self.users: Dict[int, UserRecord] = {}
+        self.establishments: Dict[int, EstablishmentRecord] = {}
+        self.services: Dict[int, ServiceRecord] = {}
+        self.queues: Dict[int, QueueRecord] = {}
 
         self.tickets: Dict[int, TicketRecord] = {}
         self.logs: List[Dict[str, Any]] = []
@@ -162,8 +151,10 @@ class QueueBackend:
 
     def authenticate(self, email: str, password: str) -> Dict[str, Any]:
         """Endpoint: POST /auth/login"""
-        url = f"{self.base_url}/auth/login"
+        url = self.login_url
         payload = {"email": email, "password": password}
+        if not self.login_url:
+            raise AccessDeniedError("Configure [xano].login_url para autenticação.")
 
         try:
             response = requests.post(url, json=payload, timeout=10)
@@ -175,6 +166,25 @@ class QueueBackend:
 
                 auth_token = data.get("authToken")
                 remote_user = data.get("user")
+                if (
+                    remote_user is None
+                    and isinstance(auth_token, str)
+                    and auth_token.strip()
+                    and type(data.get("user_id")) is int
+                    and data["user_id"] > 0
+                ):
+                    if not self.me_url:
+                        raise AccessDeniedError("Configure login_url e me_url do Xano.")
+                    identity_response = requests.get(
+                        self.me_url,
+                        headers=self._get_headers(auth_token.strip()),
+                        timeout=10,
+                    )
+                    if identity_response.status_code != 200:
+                        raise AccessDeniedError("Não foi possível confirmar o usuário no Xano.")
+                    remote_user = identity_response.json()
+                    if not isinstance(remote_user, dict) or remote_user.get("id") != data["user_id"]:
+                        raise AccessDeniedError("Resposta de autenticação inválida.")
                 if (
                     not isinstance(auth_token, str)
                     or not auth_token.strip()
@@ -229,8 +239,8 @@ class QueueBackend:
             else:
                 raise AccessDeniedError(f"Erro na autenticação ({response.status_code}): {response.text}")
 
-        except requests.exceptions.RequestException as exc:
-            raise AccessDeniedError(f"Erro de conexão com o Xano: {str(exc)}")
+        except (requests.exceptions.RequestException, ValueError):
+            raise AccessDeniedError("Não foi possível autenticar no Xano.") from None
 
     def emit_ticket(self, queue_id: int, user_id: int, token: Optional[str] = None) -> Dict[str, Any]:
         """Endpoint: POST /join -> {"fila_id": int}"""
@@ -254,7 +264,7 @@ class QueueBackend:
                     id=ticket_id,
                     queue_id=queue_id,
                     user_id=user_id,
-                    number=res_data.get("number", ticket_id),
+                    number=res_data.get("numero", res_data.get("number", ticket_id)),
                     status=res_data.get("status", "waiting"),
                     created_at=self._now(),
                 )
@@ -289,7 +299,7 @@ class QueueBackend:
                     id=ticket_id,
                     queue_id=queue_id,
                     user_id=attendant_id,
-                    number=senha_info.get("number", 1) if isinstance(senha_info, dict) else 1,
+                    number=senha_info.get("numero", senha_info.get("number", ticket_id)) if isinstance(senha_info, dict) else ticket_id,
                     status="called",
                     called_at=self._now(),
                 )
@@ -336,16 +346,31 @@ class QueueBackend:
         except requests.exceptions.RequestException as exc:
             raise InvalidQueueStateError(f"Erro de conexão ao finalizar atendimento: {str(exc)}")
 
-    def get_attendant_dashboard(self, token: Optional[str] = None) -> Dict[str, Any]:
-        """Endpoint: GET /attendant/dashboard"""
-        url = f"{self.base_url}/attendant/dashboard"
+    def get_attendant_dashboard(self, token: Optional[str] = None) -> list[dict]:
+        """Leia o estado compartilhado da operação no Xano a cada atualização."""
+        if not self.base_url:
+            raise InvalidQueueStateError("Configure [xano].base_url para o grupo Queue Management.")
         try:
-            response = requests.get(url, headers=self._get_headers(token), timeout=10)
-            if response.status_code == 200:
-                return response.json()
-            return {}
-        except Exception:
-            return {}
+            response = requests.get(
+                f"{self.base_url}/attendant/dashboard",
+                headers=self._get_headers(token), timeout=10,
+            )
+            if response.status_code in (401, 403):
+                raise AccessDeniedError("O Xano não autorizou o acesso às filas deste atendente.")
+            if response.status_code != 200:
+                raise InvalidQueueStateError(f"Não foi possível consultar as filas (HTTP {response.status_code}).")
+            rows = response.json()
+            if not isinstance(rows, list) or any(
+                not isinstance(row, dict) or type(row.get("id")) is not int
+                or not isinstance(row.get("nome"), str)
+                or type(row.get("total_aguardando")) is not int
+                or (row.get("em_atendimento") is not None and not isinstance(row["em_atendimento"], dict))
+                for row in rows
+            ):
+                raise InvalidQueueStateError("Resposta inválida do painel de atendimento.")
+            return rows
+        except (requests.RequestException, ValueError):
+            raise InvalidQueueStateError("Não foi possível consultar o painel do Xano.") from None
 
     def register_establishment(self, name: str) -> Dict[str, Any]:
         if not name or not name.strip():

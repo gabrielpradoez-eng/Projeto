@@ -6,6 +6,16 @@ import pytest
 from backend_queue import AccessDeniedError, InvalidQueueStateError, QueueBackend
 
 
+@pytest.fixture(autouse=True)
+def configured_xano(monkeypatch):
+    monkeypatch.setattr("backend_queue.st.secrets", {
+        "xano": {
+            "base_url": "https://xano.invalid/api:queues",
+            "login_url": "https://xano.invalid/api:auth/auth/login",
+        }
+    })
+
+
 def response(status_code, payload=None):
     result = Mock(status_code=status_code, text="")
     result.json.return_value = payload or {}
@@ -120,7 +130,7 @@ def test_authenticate_uses_remote_identity_and_maps_xano_roles(
 @pytest.mark.parametrize(
     "payload",
     [
-        {"authToken": "server-token", "user_id": 42},
+        {"authToken": "server-token", "user_id": "invalid"},
         {
             "authToken": "server-token",
             "user": {
@@ -210,3 +220,41 @@ def test_call_next_and_complete_requires_establishment_scope_and_status(monkeypa
             ticket_id=ticket["id"],
             attendant_id=attendant["id"],
         )
+
+
+def test_legacy_login_confirms_identity_using_me_and_separate_api_groups(monkeypatch):
+    backend = QueueBackend()
+    post = Mock(return_value=response(200, {"authToken": "token", "user_id": 42}))
+    get = Mock(return_value=response(200, login_payload(42, "atendente")["user"]))
+    monkeypatch.setattr("backend_queue.requests.post", post)
+    monkeypatch.setattr("backend_queue.requests.get", get)
+    assert backend.authenticate("staff@example.invalid", "password")["id"] == 42
+    assert post.call_args.args[0] == "https://xano.invalid/api:auth/auth/login"
+    assert get.call_args.args[0] == "https://xano.invalid/api:auth/auth/me"
+    assert get.call_args.kwargs["headers"]["Authorization"] == "Bearer token"
+
+
+def test_legacy_login_rejects_identity_mismatch(monkeypatch):
+    backend = QueueBackend()
+    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=response(200, {"authToken": "token", "user_id": 42})))
+    monkeypatch.setattr("backend_queue.requests.get", Mock(return_value=response(200, login_payload(43, "admin")["user"])))
+    with pytest.raises(AccessDeniedError):
+        backend.authenticate("staff@example.invalid", "password")
+    assert backend.logs == []
+
+
+def test_dashboard_reads_shared_state_and_rejects_permission_failure(monkeypatch):
+    backend = QueueBackend()
+    rows = [{"id": 9, "nome": "Fila real", "total_aguardando": 3, "em_atendimento": {"id": 57, "numero": 23}}]
+    get = Mock(side_effect=[response(200, rows), response(403)])
+    monkeypatch.setattr("backend_queue.requests.get", get)
+    assert backend.get_attendant_dashboard("token") == rows
+    assert get.call_args.args[0] == "https://xano.invalid/api:queues/attendant/dashboard"
+    with pytest.raises(AccessDeniedError):
+        backend.get_attendant_dashboard("token")
+
+
+def test_call_next_uses_actual_xano_number(monkeypatch):
+    backend = QueueBackend()
+    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=response(200, {"senha": {"id": 57, "numero": 23}})))
+    assert backend.call_next_token(9, 42, "token")["number"] == 23

@@ -17,6 +17,7 @@ Antes de importar os componentes do Xano, consulte `docs/xano-import-order.md` e
 
 ## Pendências antes do uso completo
 
-- A administração mantém cadastros, senhas e logs em memória na sessão, além de fazer chamadas para alguns endpoints. É necessário integrar essas operações e suas leituras ao Xano e validar os fluxos entre sessões.
+- O painel de atendentes consulta `attendant/dashboard` para ler filas e o atendimento atual no Xano. Cadastros devem ser mantidos no console Xano até existir uma API administrativa com autorização adequada. A interface não oferece mais os cadastros temporários da sessão.
+- Configure `login_url` do grupo Authentication e `base_url` do grupo Queue Management. O login legado com `authToken` e `user_id` é confirmado por `auth/me` (ou `me_url` explícita).
 - Configure as credenciais e permissões das contas e do painel de TV no Xano e teste cada perfil e operação.
 - Valide a instalação, os testes e os fluxos completos no ambiente de destino antes de tratar o deploy como pronto.
