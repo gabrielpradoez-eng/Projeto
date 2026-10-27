@@ -35,6 +35,10 @@ def login_payload(user_id, role, *, email="remote@example.com", establishment_id
     }
 
 
+def ticket_payload(status="aguardando", *, number=23, ticket_id=57):
+    return {"id": ticket_id, "numero": number, "fila_id": 1, "usuario_id": 3, "status": status}
+
+
 def test_admin_login_defaults_read_xano_seed_settings(monkeypatch):
     import app
 
@@ -170,19 +174,19 @@ def test_emit_ticket_uses_next_number_and_queue_state(monkeypatch):
     post = Mock(
         side_effect=[
             response(200, login_payload(3, "usuario", email="client@example.com")),
-            response(200, {"id": 1, "number": 1, "status": "waiting"}),
+            response(200, ticket_payload(number=1, ticket_id=1)),
             response(400),
         ]
     )
     monkeypatch.setattr("backend_queue.requests.post", post)
 
     user = backend.authenticate("cliente@filasmart.com", "cliente123")
-    ticket = backend.emit_ticket(queue_id=1, user_id=user["id"])
+    ticket = backend.emit_ticket(queue_id=1, user_id=user["id"], token=user["authToken"])
     assert ticket["status"] == "waiting"
     assert ticket["number"] == 1
 
     with pytest.raises(InvalidQueueStateError):
-        backend.emit_ticket(queue_id=999, user_id=user["id"])
+        backend.emit_ticket(queue_id=999, user_id=user["id"], token=user["authToken"])
 
 
 def test_call_next_and_complete_requires_establishment_scope_and_status(monkeypatch):
@@ -191,16 +195,17 @@ def test_call_next_and_complete_requires_establishment_scope_and_status(monkeypa
         side_effect=[
             response(200, login_payload(2, "atendente", email="staff@example.com", establishment_id=1)),
             response(200, login_payload(3, "usuario", email="client@example.com")),
-            response(200, {"id": 1, "number": 1, "status": "waiting"}),
-            response(200, {"senha": {"id": 1, "number": 1}}),
-            response(200),
+            response(200, ticket_payload(number=1, ticket_id=1)),
+            response(200, {"senha": ticket_payload("chamado", number=1, ticket_id=1)}),
+            response(200, {"senha": ticket_payload("concluido", number=1, ticket_id=1)}),
+            response(400),
         ]
     )
     monkeypatch.setattr("backend_queue.requests.post", post)
 
     attendant = backend.authenticate("atendente@filasmart.com", "atendente123")
     client = backend.authenticate("cliente@filasmart.com", "cliente123")
-    ticket = backend.emit_ticket(queue_id=1, user_id=client["id"])
+    ticket = backend.emit_ticket(queue_id=1, user_id=client["id"], token=client["authToken"])
 
     called = backend.call_next_token(
         queue_id=1,
@@ -211,14 +216,14 @@ def test_call_next_and_complete_requires_establishment_scope_and_status(monkeypa
 
     completed = backend.complete_service(
         ticket_id=ticket["id"],
-        attendant_id=attendant["id"],
+        attendant_id=attendant["id"], token=attendant["authToken"],
     )
     assert completed["status"] == "completed"
 
     with pytest.raises(InvalidQueueStateError):
         backend.complete_service(
             ticket_id=ticket["id"],
-            attendant_id=attendant["id"],
+            attendant_id=attendant["id"], token=attendant["authToken"],
         )
 
 
@@ -256,5 +261,70 @@ def test_dashboard_reads_shared_state_and_rejects_permission_failure(monkeypatch
 
 def test_call_next_uses_actual_xano_number(monkeypatch):
     backend = QueueBackend()
-    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=response(200, {"senha": {"id": 57, "numero": 23}})))
-    assert backend.call_next_token(9, 42, "token")["number"] == 23
+    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=response(200, {"senha": ticket_payload("chamado")})))
+    assert backend.call_next_token(1, 42, "token")["number"] == 23
+
+
+@pytest.mark.parametrize("payload", [{}, {"senha": {}}, {"senha": {"id": 57}}, {"senha": ticket_payload("aguardando")}])
+def test_call_next_rejects_incomplete_or_wrong_status_without_inventing_ticket(monkeypatch, payload):
+    backend = QueueBackend()
+    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=response(200, payload)))
+    with pytest.raises(InvalidQueueStateError):
+        backend.call_next_token(1, 2, "token")
+    assert backend.tickets == {}
+
+
+def test_operation_errors_do_not_expose_response_body(monkeypatch):
+    backend = QueueBackend()
+    rejected = response(500)
+    rejected.text = "password=private-secret Bearer sensitive-token"
+    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=rejected))
+    with pytest.raises(InvalidQueueStateError) as error:
+        backend.call_next_token(1, 2, "token")
+    assert "private-secret" not in str(error.value)
+    assert "sensitive-token" not in str(error.value)
+
+
+def test_timeout_does_not_retry_mutation_or_confirm_success(monkeypatch):
+    import requests
+    backend = QueueBackend()
+    post = Mock(side_effect=requests.Timeout("sensitive-url"))
+    monkeypatch.setattr("backend_queue.requests.post", post)
+    with pytest.raises(InvalidQueueStateError, match="Atualize o painel"):
+        backend.call_next_token(1, 2, "token")
+    assert post.call_count == 1
+    assert not backend.tickets
+
+
+def test_completion_after_new_session_uses_remote_response(monkeypatch):
+    backend = QueueBackend()
+    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=response(200, {"senha": ticket_payload("concluido")})))
+    assert backend.complete_service(57, 2, "token")["number"] == 23
+
+
+def test_mutation_requires_token_before_sending_request(monkeypatch):
+    backend = QueueBackend()
+    post = Mock()
+    monkeypatch.setattr("backend_queue.requests.post", post)
+    with pytest.raises(AccessDeniedError):
+        backend.call_next_token(1, 2)
+    post.assert_not_called()
+
+
+@pytest.mark.parametrize("change", [{"status": []}, {"fila_id": 999}, {"id": True}, {"numero": 0}])
+def test_call_next_rejects_malformed_or_unrelated_ticket(monkeypatch, change):
+    backend = QueueBackend()
+    ticket = {**ticket_payload("chamado"), **change}
+    monkeypatch.setattr("backend_queue.requests.post", Mock(return_value=response(200, {"senha": ticket})))
+    with pytest.raises(InvalidQueueStateError):
+        backend.call_next_token(1, 2, "token")
+    assert not backend.tickets
+
+
+def test_dashboard_rejects_current_ticket_without_identity(monkeypatch):
+    backend = QueueBackend()
+    monkeypatch.setattr("backend_queue.requests.get", Mock(return_value=response(200, [
+        {"id": 9, "nome": "Fila", "total_aguardando": 0, "em_atendimento": {"numero": 23}}
+    ])))
+    with pytest.raises(InvalidQueueStateError, match="Resposta inválida"):
+        backend.get_attendant_dashboard("token")

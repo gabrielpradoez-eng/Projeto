@@ -641,3 +641,24 @@ def test_analytics_view_reports_backend_permission_denial_without_metrics():
         [item.value for item in app.error]
     )
     assert not app.metric
+
+
+def test_attendant_completes_remote_ticket_after_starting_a_new_session():
+    from unittest.mock import Mock
+    from backend_queue import QueueBackend
+
+    backend = QueueBackend()
+    remote_rows = [{"id": 9, "nome": "Fila remota", "total_aguardando": 2,
+                    "em_atendimento": {"id": 57, "numero": 23}}]
+    backend.get_attendant_dashboard = Mock(side_effect=[remote_rows, remote_rows, []])
+    backend.complete_service = Mock(return_value={"id": 57, "number": 23, "status": "completed"})
+    app = unified_app(app_view="Administração", backend=backend, user={
+        "id": 42, "user_id": 42, "name": "Atendente", "role": "attendant", "authToken": "operation-token"
+    }).run()
+    assert not app.exception
+    assert any("23" in str(item.value) for item in app.markdown)
+    assert not next(button for button in app.button if button.label == "Finalizar atendimento atual").disabled
+    next(button for button in app.button if button.label == "Finalizar atendimento atual").click().run()
+    assert not app.exception
+    backend.complete_service.assert_called_once_with(57, 42, token="operation-token")
+    assert not backend.tickets

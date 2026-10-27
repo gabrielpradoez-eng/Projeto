@@ -10,13 +10,28 @@ query complete verb=POST {
   }
 
   stack {
+    precondition ($auth.role == "atendente") {
+      error_type = "accessdenied"
+      error = "Apenas atendentes podem finalizar atendimentos."
+    }
+
+    db.get atendentes {
+      field_name = "usuario_id"
+      field_value = $auth.id
+    } as $atendente
+
+    precondition (($atendente != null) && ($atendente.ativo)) {
+      error_type = "accessdenied"
+      error = "Atendente inativo ou não cadastrado."
+    }
+
     // 1. Validar se a senha está sendo atendida
     db.get senhas {
       field_name = "id"
       field_value = $input.senha_id
     } as $senha
   
-    precondition ($senha.status == "chamado") {
+    precondition (($senha != null) && ($senha.status == "chamado")) {
       error_type = "inputerror"
       error = "Esta senha não está em atendimento ou já foi finalizada."
     }
@@ -28,6 +43,11 @@ query complete verb=POST {
       return = {type: "single"}
     } as $atendimento
   
+    precondition (($atendimento != null) && ($atendimento.atendente_id == $atendente.id) && ($atendimento.estabelecimento_id == $atendente.estabelecimento_id) && ($atendimento.ended_at == null)) {
+      error_type = "accessdenied"
+      error = "Você não pode finalizar este atendimento."
+    }
+
     // 3. Finalizar atômicamente
     db.transaction {
       stack {
