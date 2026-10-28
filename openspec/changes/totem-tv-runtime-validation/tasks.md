@@ -1,0 +1,6 @@
+- [x] Criar display de teste autorizado no estabelecimento 1 e validar feed.
+- [x] Criar identidade de teste Totem autorizada, restrita ao estabelecimento 1.
+- [x] Validar catálogo, emissão de senha 3, posição 2 e previsão 10 minutos.
+- [x] Validar chamada, alteração de posição e painel de TV.
+- [x] Validar finalização, revogação persistida e bloqueio do rastreamento.
+- [x] Publicar correção e atualizar PR com testes.

@@ -77,7 +77,7 @@ query complete verb=POST {
         } as $atendimento_finalizado
 
         db.query rastreamentos_senha {
-          where = $db.rastreamentos_senha.senha_id == $input.senha_id && $db.rastreamentos_senha.revogada_at == null
+          where = $db.rastreamentos_senha.senha_id == $input.senha_id && ($db.rastreamentos_senha.revogada_at == null || $db.rastreamentos_senha.revogada_at == 0)
           return = {type: "list"}
         } as $rastreamentos
 

@@ -72,3 +72,12 @@ def test_stats_exclude_unset_zero_timestamps_from_wait_average():
     query = source.split("as $aguardando_count", 1)[1].split("as $recentes", 1)[0]
     assert "$db.senhas.chamado_at > 0" in query
     assert "$db.senhas.chamado_at != null" not in query
+
+
+def test_completion_revokes_tracking_with_null_or_zero_timestamp():
+    source = (ROOT / "xano/api/queue_management/complete_POST.xs").read_text()
+    query = source.split("db.query rastreamentos_senha", 1)[1].split("as $rastreamentos", 1)[0]
+    assert "$db.rastreamentos_senha.senha_id == $input.senha_id" in query
+    assert "$db.rastreamentos_senha.revogada_at == null" in query
+    assert "$db.rastreamentos_senha.revogada_at == 0" in query
+    assert 'data = {revogada_at: "now"}' in source

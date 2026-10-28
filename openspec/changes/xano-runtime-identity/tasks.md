@@ -5,5 +5,5 @@
 - [x] Reproduzir consulta inválida no painel e consultar serviços autorizados antes das filas.
 - [x] Validar emissão, chamada, finalização, bloqueio de repetição e painel no runtime.
 - [x] Validar filtros do administrador e relatório com filtros específicos e opcionais vazios.
-- [ ] Validar fluxo positivo do Totem e TV com perfis próprios.
+- [x] Validar fluxo positivo do Totem e TV com perfis próprios.
 - [x] Executar 116 testes locais e atualizar PR.

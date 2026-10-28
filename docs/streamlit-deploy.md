@@ -45,3 +45,14 @@ O formulário administrativo permanece vazio mesmo quando Secrets de bootstrap e
 Com uma segunda senha aguardando, stats incluía chamado_at=0 e produzia média negativa. O filtro agora exige timestamp positivo; o teste real confirmou uma pessoa aguardando e média de 4,1 minutos da senha já chamada. A segunda senha está identificada como dado de teste e permanece aguardando.
 
 Validação local atual: 119 testes passaram, compilação Python e git diff --check passaram, health do Streamlit respondeu HTTP 200 e as seis visões abriram sem exceções sem Secrets configurados (exibindo o estado de configuração ausente). Isso não substitui login e operação ponta a ponta contra Xano. As correções de stats e TV/register foram publicadas. Os testes positivos Totem/TV aguardam autorização específica para as identidades técnicas e credenciais de display.
+
+
+### Testes positivos de Totem e TV concluídos
+
+Após autorização específica do usuário, foram criados uma identidade técnica Totem e um display de teste, ambos restritos ao estabelecimento de teste. A identidade não recebeu senha de login; tokens internos do console foram usados nos testes. As credenciais de display e rastreamento não foram incluídas no repositório.
+
+Totem/queues retornou apenas a fila autorizada. Totem/issue emitiu a senha 3, cujo rastreamento mostrou inicialmente posição 2 e previsão de 10 minutos. A chamada atendeu a senha 2 antes da 3; após finalizar a 2, o rastreamento da 3 mudou para posição 1 e previsão zero. Ao chamar a 3, o rastreamento mostrou chamado sem posição/previsão, e o feed da TV mostrou a 3 como atual, com 2 e 1 no histórico.
+
+A finalização da 3 gravou o horário de revogação no banco e invalidou a referência no primeiro bloqueio do rastreamento. O export de finalização agora inclui timestamps de revogação vazios representados por null ou zero. Todas as três senhas de teste estão concluídas.
+
+Validação local atual: 120 testes, compilação Python e git diff --check aprovados. Os testes no console Xano não substituem login com senha pela aplicação Streamlit. Para deploy, ainda são necessárias a conta Streamlit e a configuração privada das credenciais operacionais; a identidade técnica de teste não está pronta para login com senha.
