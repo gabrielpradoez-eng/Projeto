@@ -65,3 +65,10 @@ def test_join_queries_reference_their_declared_aliases():
     assert "servico_nome: $db.servico.nome" in report
     assert "$input.servico_id == 0" in report
     assert "$input.fila_id == 0" in report
+
+
+def test_stats_exclude_unset_zero_timestamps_from_wait_average():
+    source = (ROOT / "xano/api/queue_management/stats_GET.xs").read_text()
+    query = source.split("as $aguardando_count", 1)[1].split("as $recentes", 1)[0]
+    assert "$db.senhas.chamado_at > 0" in query
+    assert "$db.senhas.chamado_at != null" not in query

@@ -36,3 +36,12 @@ Exports de autenticação, autorização e operações corrigidos foram publicad
 Os horários de atendimento de teste atravessaram duas sessões; a duração longa exibida no relatório corresponde a esse intervalo, não a uma simulação de atendimento normal.
 
 Os fluxos positivos de Totem/TV ainda dependem de perfis/credenciais próprios; não foram considerados aprovados apenas por compilação. O deploy Streamlit ainda não foi executado.
+
+
+### Revisão adicional de acesso e inicialização
+
+O formulário administrativo permanece vazio mesmo quando Secrets de bootstrap estão presentes. O provisionamento de TV valida o estabelecimento autorizado antes de criar a credencial. Os endpoints Totem/issue e TV/register rejeitaram o perfil de cliente no runtime.
+
+Com uma segunda senha aguardando, stats incluía chamado_at=0 e produzia média negativa. O filtro agora exige timestamp positivo; o teste real confirmou uma pessoa aguardando e média de 4,1 minutos da senha já chamada. A segunda senha está identificada como dado de teste e permanece aguardando.
+
+Validação local atual: 119 testes passaram, compilação Python e git diff --check passaram, health do Streamlit respondeu HTTP 200 e as seis visões abriram sem exceções sem Secrets configurados (exibindo o estado de configuração ausente). Isso não substitui login e operação ponta a ponta contra Xano. As correções de stats e TV/register foram publicadas. Os testes positivos Totem/TV aguardam autorização específica para as identidades técnicas e credenciais de display.

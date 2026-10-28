@@ -21,18 +21,8 @@ APPLICATION_VIEWS = (
 
 
 def _admin_login_defaults() -> tuple[str, str]:
-    try:
-        settings = st.secrets["xano_seed"]
-        email = settings["admin_email"]
-        password = settings["admin_password"]
-    except (KeyError, FileNotFoundError):
-        return "", ""
-
-    if not isinstance(email, str) or not isinstance(password, str):
-        raise ValueError(
-            "As credenciais administrativas em [xano_seed] devem ser textos."
-        )
-    return email, password
+    # Bootstrap credentials must never be sent to an unauthenticated browser.
+    return "", ""
 
 
 def _initialize_session() -> None:

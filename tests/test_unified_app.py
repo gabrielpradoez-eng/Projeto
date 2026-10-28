@@ -662,3 +662,15 @@ def test_attendant_completes_remote_ticket_after_starting_a_new_session():
     assert not app.exception
     backend.complete_service.assert_called_once_with(57, 42, token="operation-token")
     assert not backend.tickets
+
+
+def test_admin_form_does_not_prefill_server_bootstrap_credentials():
+    app = unified_app(app_view="Administração", backend=object())
+    app.secrets["xano_seed"] = {
+        "admin_email": "private-admin@example.invalid",
+        "admin_password": "private-bootstrap-test-value",
+    }
+    app.run()
+    assert not app.exception
+    assert all(field.value == "" for field in app.text_input)
+    assert all("private-bootstrap-test-value" not in str(element.value) for element in app.markdown)

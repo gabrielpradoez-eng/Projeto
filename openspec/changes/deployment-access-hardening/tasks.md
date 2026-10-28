@@ -1,0 +1,5 @@
+- [x] Retirar credenciais de bootstrap do formulário e testar.
+- [x] Aplicar guarda de estabelecimento ao provisionamento de TV.
+- [x] Validar estatísticas com senha aguardando e timestamp vazio.
+- [x] Publicar exports e atualizar PR com evidências.
+- [ ] Testar Totem/TV positivos após autorização das identidades técnicas.

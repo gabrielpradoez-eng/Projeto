@@ -39,7 +39,7 @@ def ticket_payload(status="aguardando", *, number=23, ticket_id=57):
     return {"id": ticket_id, "numero": number, "fila_id": 1, "usuario_id": 3, "status": status}
 
 
-def test_admin_login_defaults_read_xano_seed_settings(monkeypatch):
+def test_admin_login_defaults_never_expose_xano_seed_settings(monkeypatch):
     import app
 
     monkeypatch.setattr(
@@ -55,10 +55,7 @@ def test_admin_login_defaults_read_xano_seed_settings(monkeypatch):
         ),
     )
 
-    assert app._admin_login_defaults() == (
-        "admin@example.invalid",
-        "test-password",
-    )
+    assert app._admin_login_defaults() == ("", "")
 
 
 def test_admin_login_defaults_are_blank_when_secrets_are_unavailable(monkeypatch):

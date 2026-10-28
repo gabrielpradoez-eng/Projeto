@@ -67,7 +67,7 @@ query stats verb=GET {
     } as $aguardando_count
   
     db.query senhas {
-      where = $db.senhas.fila_id == $input.fila_id && $db.senhas.chamado_at != null
+      where = $db.senhas.fila_id == $input.fila_id && $db.senhas.chamado_at > 0
       sort = {chamado_at: "desc"}
       return = {type: "list", paging: {page: 1, per_page: 20}}
     } as $recentes

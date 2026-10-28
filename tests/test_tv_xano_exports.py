@@ -44,3 +44,11 @@ def test_call_operation_persists_public_snapshot_without_client_identity():
     assert "destino_label:" in attendance_data
     assert "display_event_key: $display_event_key" in attendance_data
     assert "usuario_id:" not in attendance_data
+
+def test_display_provisioning_checks_admin_establishment_before_creating_credentials():
+    source = read_export("xano/api/queue_management/tv/register_POST.xs")
+    guards = source.split("security.create_uuid", 1)[0]
+    assert "$actor.estabelecimento_id == $input.estabelecimento_id" in guards
+    assert "$actor.estabelecimento_id == null" in guards
+    assert "$actor.estabelecimento_id == 0" in guards
+    assert "accessdenied" in guards

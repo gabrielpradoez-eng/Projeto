@@ -26,6 +26,11 @@ query "tv/register" verb=POST {
       error = "Apenas administradores podem provisionar displays."
     }
 
+    precondition (($actor.estabelecimento_id == null) || ($actor.estabelecimento_id == 0) || ($actor.estabelecimento_id == $input.estabelecimento_id)) {
+      error_type = "accessdenied"
+      error = "Você não tem acesso a este estabelecimento."
+    }
+
     db.get estabelecimentos {
       field_name = "id"
       field_value = $input.estabelecimento_id
