@@ -19,24 +19,24 @@ query "attendant/dashboard" verb=GET {
     }
   
     // 2. Buscar todas as filas do estabelecimento
-    db.query filas {
-      join = {
-        servico: {
-          table: "servicos"
-          where: $db.filas.servico_id == $db.servicos.id
-        }
-      }
-    
+    db.query servicos {
       where = $db.servicos.estabelecimento_id == $atendente.estabelecimento_id
       return = {type: "list"}
-    } as $filas
-  
+    } as $servicos
+
     // 3. Complementar cada fila com contagens
     var $dashboard {
       value = []
     }
   
-    foreach ($filas.items) {
+    foreach ($servicos) {
+      each as $servico {
+        db.query filas {
+          where = $db.filas.servico_id == $servico.id
+          return = {type: "list"}
+        } as $filas
+
+    foreach ($filas) {
       each as $fila {
         // Pessoas aguardando
         db.query senhas {
@@ -61,6 +61,8 @@ query "attendant/dashboard" verb=GET {
             em_atendimento  : $ultima_chamada
           }
         }
+      }
+    }
       }
     }
   }

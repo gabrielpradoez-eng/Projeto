@@ -10,7 +10,18 @@ query complete verb=POST {
   }
 
   stack {
-    precondition ($auth.role == "atendente") {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
+    precondition ($actor.role == "atendente") {
       error_type = "accessdenied"
       error = "Apenas atendentes podem finalizar atendimentos."
     }
@@ -70,7 +81,7 @@ query complete verb=POST {
           return = {type: "list"}
         } as $rastreamentos
 
-        foreach ($rastreamentos.items) {
+        foreach ($rastreamentos) {
           each as $rastreamento {
             db.edit rastreamentos_senha {
               field_name = "id"

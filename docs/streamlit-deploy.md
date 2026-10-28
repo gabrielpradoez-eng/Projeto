@@ -27,3 +27,12 @@ Antes de importar os componentes do Xano, consulte `docs/xano-import-order.md` e
 Os exports atualizados de `complete` e `call_next` incluem guardas de permissão e estado. Os exports de autenticação e reset limitam a auditoria a IDs, evitando registrar o objeto inteiro do usuário. Essas alterações de XanoScript não são aplicadas ao servidor por um commit no GitHub: valide-as no workspace antes de publicar.
 
 Os testes Python usam respostas simuladas, incluindo finalização após troca de sessão, timeout sem repetir mutações e respostas incompletas. Eles não validam a execução do XanoScript nem concorrência real. Antes de usar com público, teste chamadas simultâneas para confirmar ausência de senha duplicada e de dois atendimentos da mesma senha; uma transação isoladamente não demonstra essa garantia.
+
+
+## Validação de runtime em 28/10/2026
+
+Exports de autenticação, autorização e operações corrigidos foram publicados no Xano. Em dados identificados como teste, foram validados: emissão pelo cliente, chamada pelo atendente, finalização com status concluido e horário de encerramento, rejeição de finalização repetida, rejeição de administrador na finalização, painel sem atendimento ativo após encerramento, filtros administrativos e relatório com uma senha emitida/chamada/concluída. O relatório também passou sem os filtros opcionais de serviço/fila.
+
+Os horários de atendimento de teste atravessaram duas sessões; a duração longa exibida no relatório corresponde a esse intervalo, não a uma simulação de atendimento normal.
+
+Os fluxos positivos de Totem/TV ainda dependem de perfis/credenciais próprios; não foram considerados aprovados apenas por compilação. O deploy Streamlit ainda não foi executado.

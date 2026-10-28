@@ -10,7 +10,18 @@ query stats verb=GET {
   }
 
   stack {
-    precondition (($auth.role == "admin") || ($auth.role == "atendente")) {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
+    precondition (($actor.role == "admin") || ($actor.role == "atendente")) {
       error_type = "accessdenied"
       error = "Acesso restrito a administradores e atendentes."
     }
@@ -35,7 +46,7 @@ query stats verb=GET {
       error = "Serviço não encontrado."
     }
 
-    precondition (($auth.role != "admin") || ($auth.estabelecimento_id == null) || ($auth.estabelecimento_id == $servico.estabelecimento_id)) {
+    precondition (($actor.role != "admin") || ($actor.estabelecimento_id == null) || ($actor.estabelecimento_id == $servico.estabelecimento_id)) {
       error_type = "accessdenied"
       error = "Você não tem acesso a esta fila."
     }
@@ -45,7 +56,7 @@ query stats verb=GET {
       field_value = $auth.id
     } as $atendente
 
-    precondition (($auth.role != "atendente") || (($atendente != null) && ($atendente.ativo) && ($atendente.estabelecimento_id == $servico.estabelecimento_id))) {
+    precondition (($actor.role != "atendente") || (($atendente != null) && ($atendente.ativo) && ($atendente.estabelecimento_id == $servico.estabelecimento_id))) {
       error_type = "accessdenied"
       error = "Você não tem acesso a esta fila."
     }

@@ -29,7 +29,7 @@ def test_display_feed_orders_history_in_xano_and_limits_it_to_five():
 def test_admin_provisioning_returns_raw_credential_but_stores_only_hash():
     source = read_export("xano/api/queue_management/tv/register_POST.xs")
 
-    assert '$auth.role == "admin"' in source
+    assert '$actor.role == "admin"' in source
     assert "$credential|sha256" in source
     assert "credential: $credential" in source
     assert "credential_hash: $credential" not in source

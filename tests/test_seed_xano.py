@@ -212,8 +212,8 @@ def test_signup_role_matches_user_schema_enum_and_stats_require_scope():
     assert 'role      : "usuario"' in signup
     assert 'values = ["admin", "atendente", "usuario", "totem"]' in users_table
     assert 'auth = "usuarios"' in stats
-    assert '$auth.role == "admin"' in stats
-    assert '$auth.role == "atendente"' in stats
+    assert '$actor.role == "admin"' in stats
+    assert '$actor.role == "atendente"' in stats
     assert "$atendente.estabelecimento_id == $servico.estabelecimento_id" in stats
 
 

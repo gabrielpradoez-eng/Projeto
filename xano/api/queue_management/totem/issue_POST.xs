@@ -10,7 +10,18 @@ query "totem/issue" verb=POST {
   }
 
   stack {
-    precondition ($auth.role == "totem" && $auth.estabelecimento_id != null) {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
+    precondition ($actor.role == "totem" && $actor.estabelecimento_id != null) {
       error_type = "accessdenied"
       error = "Acesso restrito ao Totem autorizado."
     }
@@ -19,10 +30,10 @@ query "totem/issue" verb=POST {
       join = {
         servico: {
           table: "servicos"
-          where: $db.filas.servico_id == $db.servicos.id
+          where: $db.filas.servico_id == $db.servico.id
         }
       }
-      where = $db.filas.id == $input.fila_id && $db.filas.status == "aberta" && $db.servicos.estabelecimento_id == $auth.estabelecimento_id
+      where = $db.filas.id == $input.fila_id && $db.filas.status == "aberta" && $db.servico.estabelecimento_id == $actor.estabelecimento_id
       return = {type: "single"}
     } as $fila
 
