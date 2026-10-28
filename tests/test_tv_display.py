@@ -213,3 +213,36 @@ def test_changing_refresh_interval_preserves_snapshot_and_does_not_repeat_alert(
     assert app.session_state["tv_last_snapshot"]["current_call"]["event_key"] == "event-2"
     assert [metric.value for metric in app.metric] == ["32"]
     assert not app.success
+
+def test_feed_client_normalizes_real_xano_millisecond_timestamps():
+    data = snapshot("event-ms", 4)
+    data["snapshot_at"] = 1793212528244
+    data["current_call"]["chamado_at"] = 1793212528244
+    data["history"] = [dict(data["current_call"], numero=3)]
+    with patch("xano_client.urlopen", return_value=FakeResponse(data)):
+        result = DisplayFeedClient(feed_url="https://xano.invalid/tv/feed", credential="test").fetch_snapshot()
+    assert result["snapshot_at"] == "2026-10-28T18:35:28.244000Z"
+    assert result["current_call"]["chamado_at"] == result["snapshot_at"]
+    assert result["history"][0]["chamado_at"] == result["snapshot_at"]
+    assert not display_app(FakeDisplayClient([result])).exception
+
+
+def test_display_handles_first_call_after_empty_snapshot():
+    client = FakeDisplayClient([snapshot(None, None), snapshot("first-event", 4)])
+    app = display_app(client)
+    app.run()
+    assert not app.exception
+    assert any(item.value == "Nova chamada" for item in app.success)
+
+
+def test_feed_client_rejects_invalid_snapshot_timestamps():
+    for invalid in [None, False, 0, -1, float("inf"), ""]:
+        data = snapshot(None, None)
+        data["snapshot_at"] = invalid
+        with patch("xano_client.urlopen", return_value=FakeResponse(data)):
+            try:
+                DisplayFeedClient(feed_url="https://xano.invalid/tv/feed", credential="test").fetch_snapshot()
+            except XanoRequestError:
+                pass
+            else:
+                raise AssertionError(f"accepted invalid timestamp: {invalid!r}")

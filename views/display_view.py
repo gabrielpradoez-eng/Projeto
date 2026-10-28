@@ -91,7 +91,7 @@ def render_display_view() -> None:
             and event_key
             and event_key == st.session_state.get("tv_last_event_key")
             and previous_snapshot is not None
-            and previous_snapshot.get("current_call", {}).get("event_key") != event_key
+            and (previous_snapshot.get("current_call") or {}).get("event_key") != event_key
         )
 
         if should_signal:

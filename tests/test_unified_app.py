@@ -674,3 +674,48 @@ def test_admin_form_does_not_prefill_server_bootstrap_credentials():
     assert not app.exception
     assert all(field.value == "" for field in app.text_input)
     assert all("private-bootstrap-test-value" not in str(element.value) for element in app.markdown)
+
+
+class TrackingNavigationClient(FakeTotemClient):
+    def track_ticket(self, reference):
+        assert reference == "navigation-test-reference"
+        return {
+            "numero": 4, "fila": "Fila principal", "servico": "Atendimento geral",
+            "status": "aguardando", "posicao": 1, "tempo_estimado_min": 0,
+            "atualizado_at": "2026-10-28T18:00:00Z",
+        }
+
+
+def test_follow_ticket_button_changes_radio_before_widgets_are_created():
+    app = unified_app(
+        _xano_client_override=TrackingNavigationClient(), ticket_number=4,
+        ticket_reference="navigation-test-reference", tracking_active=True,
+    ).run()
+    next(button for button in app.button if button.label == "Acompanhar minha senha").click().run()
+    assert not app.exception
+    assert app.radio(key="app_view").value == "Acompanhar senha"
+    assert app.session_state["ticket_reference"] == "navigation-test-reference"
+    assert any(item.label == "Status" and item.value == "aguardando" for item in app.metric)
+
+
+def test_tracking_finish_returns_to_totem_and_clears_ticket_state():
+    app = unified_app(
+        app_view="Acompanhar senha", _xano_client_override=TrackingNavigationClient(),
+        ticket_number=4, ticket_reference="navigation-test-reference", tracking_active=True,
+    ).run()
+    next(button for button in app.button if button.label == "Encerrar e iniciar novo atendimento").click().run()
+    assert not app.exception
+    assert app.radio(key="app_view").value == "Totem"
+    assert "ticket_reference" not in app.session_state
+    assert "ticket_number" not in app.session_state
+
+
+def test_ended_tracking_can_start_new_totem_session():
+    app = unified_app(
+        app_view="Acompanhar senha", _xano_client_override=TrackingNavigationClient(),
+        ticket_number=4, ticket_reference="navigation-test-reference", tracking_ended=True,
+    ).run()
+    next(button for button in app.button if button.label == "Iniciar novo atendimento").click().run()
+    assert not app.exception
+    assert app.radio(key="app_view").value == "Totem"
+    assert "tracking_ended" not in app.session_state

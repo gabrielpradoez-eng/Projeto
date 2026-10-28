@@ -1,0 +1,3 @@
+- [x] Reproduzir falha no site publicado após emitir senha de teste.
+- [x] Corrigir callbacks, normalizar horários da TV e executar 126 testes.
+- [ ] Atualizar branch publicada e repetir teste no site.

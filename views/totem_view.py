@@ -30,8 +30,12 @@ def _return_to_totem(centralized: bool) -> None:
     start_new_session()
     if centralized:
         st.session_state["app_view"] = "Totem"
-        st.rerun()
+        return
     st.switch_page("app_pages/totem.py")
+
+
+def _open_tracking() -> None:
+    st.session_state["app_view"] = "Acompanhar senha"
 
 
 def render_totem_view(*, centralized: bool = False) -> None:
@@ -93,11 +97,10 @@ def render_totem_view(*, centralized: bool = False) -> None:
         st.write("Referência de acompanhamento")
         st.code(st.session_state.ticket_reference, language=None)
         if centralized:
-            if st.button(
-                "Acompanhar minha senha", icon=":material/pending_actions:"
-            ):
-                st.session_state["app_view"] = "Acompanhar senha"
-                st.rerun()
+            st.button(
+                "Acompanhar minha senha", icon=":material/pending_actions:",
+                on_click=_open_tracking,
+            )
         else:
             st.page_link(
                 "app_pages/tracking.py",
@@ -111,8 +114,10 @@ def render_tracking_view(*, centralized: bool = False) -> None:
 
     if st.session_state.get("tracking_ended"):
         st.info("Este acompanhamento foi encerrado ou a referência não está disponível.")
-        if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
-            _return_to_totem(centralized)
+        st.button(
+            "Iniciar novo atendimento", icon=":material/restart_alt:",
+            on_click=_return_to_totem, args=(centralized,),
+        )
         return
 
     if not st.session_state.get("tracking_active"):
@@ -182,5 +187,7 @@ def render_tracking_view(*, centralized: bool = False) -> None:
 
     render_tracking()
 
-    if st.button("Encerrar e iniciar novo atendimento", icon=":material/close:"):
-        _return_to_totem(centralized)
+    st.button(
+        "Encerrar e iniciar novo atendimento", icon=":material/close:",
+        on_click=_return_to_totem, args=(centralized,),
+    )

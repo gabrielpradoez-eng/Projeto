@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import math
+from datetime import datetime, timezone
 import logging
 import re
 import threading
@@ -136,6 +138,18 @@ def _api_error_details(
     )
 
 
+def _display_timestamp(value: Any) -> str:
+    if isinstance(value, str) and value.strip():
+        return value
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        try:
+            if math.isfinite(value) and value > 0:
+                return datetime.fromtimestamp(value / 1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+        except (OverflowError, OSError, ValueError):
+            pass
+    raise XanoRequestError("O feed de chamadas retornou um horário inválido.")
+
+
 class DisplayFeedClient:
     def __init__(
         self, *, feed_url: str, credential: str, timeout: float = 5.0
@@ -158,9 +172,17 @@ class DisplayFeedClient:
         history = result.get("history")
         if current_call is not None and not isinstance(current_call, dict):
             raise XanoRequestError("O feed de chamadas retornou uma resposta inválida.")
-        if not isinstance(history, list) or not isinstance(result.get("snapshot_at"), str):
+        if not isinstance(history, list) or any(not isinstance(call, dict) for call in history):
             raise XanoRequestError("O feed de chamadas retornou uma resposta inválida.")
-        return result
+        normalized = dict(result, snapshot_at=_display_timestamp(result.get("snapshot_at")))
+        def normalize_call(call):
+            call = dict(call)
+            if "chamado_at" in call:
+                call["chamado_at"] = _display_timestamp(call["chamado_at"])
+            return call
+        normalized["current_call"] = normalize_call(current_call) if current_call is not None else None
+        normalized["history"] = [normalize_call(call) for call in history]
+        return normalized
 
     def _request(
         self,
