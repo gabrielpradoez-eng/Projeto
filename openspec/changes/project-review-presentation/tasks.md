@@ -3,4 +3,5 @@
 - [x] Preparar catálogo e histórico de demonstração no Xano; feed TV corrigido e publicado.
 - [x] Conferir vínculos, nomes e contagens: quatro serviços/filas, 17 senhas, 16 atendimentos; repetição sem novas criações.
 - [x] Executar verificações finais: 177 testes, compileall e diff --check aprovados.
-- [ ] Publicar correções na branch de deploy e conferir o site.
+- [x] Publicar correções na branch de deploy (cd05715), versão 2026.10.29.5.
+- [ ] Confirmar versão 2026.10.29.5 no site; a primeira checagem confirmou login protegido, ainda na versão 2026.10.29.4.
