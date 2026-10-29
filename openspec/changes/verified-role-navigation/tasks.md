@@ -3,5 +3,5 @@
 - [x] Proteger atualizações automáticas após expiração/logout.
 - [x] Validar autenticação, isolamento e regressões: 163 testes, compileall e diff --check aprovados.
 - [x] Publicar versão 2026.10.29.4 na branch de deploy (b032564).
-- [ ] Conferir tela inicial protegida no aplicativo publicado.
+- [ ] Conferir tela inicial protegida após reboot pelo proprietário: a checagem pública ainda mostrou a versão anterior com navegação aberta. Reinício solicitado no painel autenticado do Streamlit.
 
