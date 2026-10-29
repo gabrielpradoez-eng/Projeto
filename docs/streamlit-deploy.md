@@ -56,3 +56,12 @@ Totem/queues retornou apenas a fila autorizada. Totem/issue emitiu a senha 3, cu
 A finalização da 3 gravou o horário de revogação no banco e invalidou a referência no primeiro bloqueio do rastreamento. O export de finalização agora inclui timestamps de revogação vazios representados por null ou zero. Todas as três senhas de teste estão concluídas.
 
 Validação local atual: 120 testes, compilação Python e git diff --check aprovados. Os testes no console Xano não substituem login com senha pela aplicação Streamlit. Para deploy, ainda são necessárias a conta Streamlit e a configuração privada das credenciais operacionais; a identidade técnica de teste não está pronta para login com senha.
+
+
+## Deploy público e verificação em 29/10/2026
+
+O usuário publicou https://filasmarttech.streamlit.app/ na branch codex/streamlit-deployment-preparation. O teste real confirmou login do Totem, catálogo, emissão da senha 4, posição 1 e atualização para chamado no acompanhamento direto. A senha 4 foi finalizada no Xano; todas as senhas de teste estão concluídas.
+
+O teste publicado revelou erro ao trocar o radio app_view depois da instanciação e rejeição de snapshot_at numérico no cliente de TV. A correção em callbacks e a normalização de timestamps em milissegundos estão na branch (commit 541081d); 126 testes passaram nessa alteração, junto com compileall e git diff --check.
+
+Em 29/10, o botão source confirmou que o deploy usa a branch correta, mas o runtime público ainda exibiu o caminho antigo sem callback no traceback, e a TV permaneceu indisponível. O proprietário precisa executar Reboot app no painel autenticado do Streamlit; a verificação final do comportamento corrigido ainda está pendente. Não é necessário alterar Secrets para essas correções de código.

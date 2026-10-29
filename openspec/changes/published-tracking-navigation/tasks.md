@@ -1,3 +1,6 @@
 - [x] Reproduzir falha no site publicado após emitir senha de teste.
 - [x] Corrigir callbacks, normalizar horários da TV e executar 126 testes.
-- [ ] Atualizar branch publicada e repetir teste no site.
+- [x] Atualizar a branch publicada com a correção (commit 541081d).
+- [x] Confirmar no site que a branch é a correta e que a instância ainda executa a versão anterior.
+- [x] Encerrar a senha 4 de teste no Xano com revogação de rastreamento.
+- [ ] Repetir navegação e TV no site após o proprietário executar Reboot app.
