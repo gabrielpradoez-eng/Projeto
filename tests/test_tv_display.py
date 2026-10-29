@@ -141,6 +141,18 @@ def test_empty_snapshot_renders_empty_call_and_history():
     assert "Nenhuma chamada anterior" in str([item.value for item in app.caption])
 
 
+def test_presentation_mode_can_be_entered_and_left_without_repeating_call_alert():
+    same = snapshot("event-1", 31)
+    app = display_app(FakeDisplayClient([same, same, same]))
+    app.toggle(key="tv_presentation_mode").set_value(True).run()
+    assert not app.exception
+    assert [item.value for item in app.metric] == ["31"]
+    assert not app.success
+    app.toggle(key="tv_presentation_mode").set_value(False).run()
+    assert not app.exception
+    assert app.session_state["tv_presentation_mode"] is False
+
+
 def test_history_is_truncated_to_five_without_reordering_backend_items():
     history = [
         {

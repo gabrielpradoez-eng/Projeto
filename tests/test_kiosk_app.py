@@ -74,6 +74,22 @@ def test_totem_lists_backend_options_and_confirms_issue():
     assert app.session_state["ticket_reference"] == "issued-reference"
 
 
+def test_totem_repeated_click_does_not_issue_another_ticket_and_reset_allows_next():
+    fake_client = FakeXanoClient()
+    app = kiosk_app(fake_client)
+    app.button[1].click().run()
+    assert app.get("download_button")
+    app.button[1].click().run()
+    assert not app.exception
+    assert fake_client.issued_queue_ids == [9]
+    assert app.button[1].disabled
+    app.button[0].click().run()
+    assert not app.get("download_button")
+    assert not app.button[1].disabled
+    app.button[1].click().run()
+    assert fake_client.issued_queue_ids == [9, 9]
+
+
 def test_tracking_page_displays_backend_status_and_position():
     fake_client = FakeXanoClient()
     app = kiosk_app(fake_client)

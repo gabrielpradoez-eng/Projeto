@@ -1,0 +1,5 @@
+- [x] Implementar identidade visual e navegação contextual.
+- [x] Implementar comprovante, proteção de emissão e orientação por status.
+- [x] Atualizar TV e apresentação de horários.
+- [x] Verificar regressões e novos comportamentos: 141 testes, compileall e diff --check aprovados.
+- [ ] Publicar e verificar visual no aplicativo.

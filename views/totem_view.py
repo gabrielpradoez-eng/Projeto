@@ -4,6 +4,7 @@ import streamlit as st
 
 from streamlit_xano import get_xano_client
 from views.issue_error import render_ticket_issue_error
+from views.presentation import format_timestamp, render_receipt, render_status_guidance
 from xano_client import (
     QueueUnavailableError,
     TrackingUnavailableError,
@@ -18,6 +19,8 @@ _CUSTOMER_SESSION_KEYS = (
     "tracking_active",
     "tracking_ended",
     "tracking_input",
+    "ticket_service",
+    "ticket_queue",
 )
 
 
@@ -39,6 +42,16 @@ def _open_tracking() -> None:
 
 
 def render_totem_view(*, centralized: bool = False) -> None:
+    if not st.session_state.get("ticket_reference"):
+        st.markdown(
+            '<div class="fs-steps"><div class="fs-step"><b>1</b><strong>Escolha o serviço</strong>'
+            '<p>Selecione o atendimento de que você precisa.</p></div>'
+            '<div class="fs-step"><b>2</b><strong>Retire sua senha</strong>'
+            '<p>Baixe e guarde seu comprovante.</p></div>'
+            '<div class="fs-step"><b>3</b><strong>Acompanhe sua vez</strong>'
+            '<p>Consulte o andamento e aguarde a chamada.</p></div></div>',
+            unsafe_allow_html=True,
+        )
     st.header("Retire sua senha")
 
     if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
@@ -70,7 +83,10 @@ def render_totem_view(*, centralized: bool = False) -> None:
         key="totem_queue_id",
     )
 
-    if st.button("Emitir senha", type="primary", icon=":material/confirmation_number:"):
+    if st.button(
+        "Emitir senha", type="primary", icon=":material/confirmation_number:",
+        disabled=bool(st.session_state.get("ticket_reference")),
+    ) and not st.session_state.get("ticket_reference"):
         try:
             with st.spinner("Solicitando a emissão da senha..."):
                 issued = client.issue_ticket(selected_queue_id)
@@ -86,6 +102,8 @@ def render_totem_view(*, centralized: bool = False) -> None:
         else:
             st.session_state.ticket_number = issued["numero"]
             st.session_state.ticket_reference = issued["referencia_rastreamento"]
+            st.session_state.ticket_service = queue_by_id[selected_queue_id]["servico_nome"]
+            st.session_state.ticket_queue = queue_by_id[selected_queue_id]["fila_nome"]
             st.session_state.tracking_active = True
             st.session_state.tracking_ended = False
             st.session_state.tracking_result = None
@@ -94,6 +112,12 @@ def render_totem_view(*, centralized: bool = False) -> None:
     if st.session_state.get("ticket_reference"):
         st.divider()
         st.subheader(f"Sua senha: {st.session_state.ticket_number}")
+        st.caption("Senha já emitida nesta sessão. Para outra pessoa, use Iniciar novo atendimento.")
+        render_receipt(
+            st.session_state.ticket_number, st.session_state.ticket_reference,
+            st.session_state.get("ticket_service", "—"),
+            st.session_state.get("ticket_queue", "—"), key="totem_receipt",
+        )
         st.write("Referência de acompanhamento")
         st.code(st.session_state.ticket_reference, language=None)
         if centralized:
@@ -179,15 +203,21 @@ def render_tracking_view(*, centralized: bool = False) -> None:
         st.session_state.tracking_result = result
         st.subheader(f"Senha {result['numero']}")
         st.write(f"{result['servico']} · {result['fila']}")
-        st.metric("Status", result["status"])
+        render_status_guidance(result["status"])
+        status_col, position_col, wait_col = st.columns(3)
+        with status_col:
+            st.metric("Status", result["status"])
         if result.get("posicao") is not None:
-            st.metric("Posição na fila", result["posicao"])
+            with position_col:
+                st.metric("Posição na fila", result["posicao"])
             estimate = result.get("tempo_estimado_min")
-            st.metric(
-                "Espera estimada",
-                f"{estimate} min" if estimate is not None else "—",
-            )
-        st.caption(f"Atualizado: {result['atualizado_at']}")
+            with wait_col:
+                st.metric(
+                    "Espera estimada",
+                    f"{estimate} min" if estimate is not None else "—",
+                )
+        st.caption(f"Atualizado: {format_timestamp(result['atualizado_at'])} · horário de São Paulo")
+        st.caption("Atualização automática a cada 15 segundos. A estimativa pode variar.")
 
     render_tracking()
 
