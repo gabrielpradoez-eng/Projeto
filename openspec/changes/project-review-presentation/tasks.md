@@ -4,4 +4,5 @@
 - [x] Conferir vínculos, nomes e contagens: quatro serviços/filas, 17 senhas, 16 atendimentos; repetição sem novas criações.
 - [x] Executar verificações finais: 177 testes, compileall e diff --check aprovados.
 - [x] Publicar correções na branch de deploy (cd05715), versão 2026.10.29.5.
-- [ ] Confirmar versão 2026.10.29.5 no site; a primeira checagem confirmou login protegido, ainda na versão 2026.10.29.4.
+- [x] Confirmar que o site exige login antes das funcionalidades; tentativa real de entrada recusada, com contrato de e-mail/senha conferido no Xano.
+- [ ] Confirmar versão 2026.10.29.5 após reboot pelo proprietário; o site ainda mostrou 2026.10.29.4 após nova carga. Validar login positivo com conta do aplicativo.
