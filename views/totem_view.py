@@ -41,6 +41,30 @@ def _open_tracking() -> None:
     st.session_state["app_view"] = "Acompanhar senha"
 
 
+def _render_issued_ticket(*, centralized: bool) -> None:
+    st.divider()
+    st.subheader(f"Sua senha: {st.session_state.ticket_number}")
+    st.caption("Senha já emitida nesta sessão. Para outra pessoa, use Iniciar novo atendimento.")
+    st.caption("Iniciar novo atendimento limpa este aparelho; não cancela a senha emitida.")
+    render_receipt(
+        st.session_state.ticket_number, st.session_state.ticket_reference,
+        st.session_state.get("ticket_service", "—"),
+        st.session_state.get("ticket_queue", "—"), key="totem_receipt",
+    )
+    st.write("Referência de acompanhamento")
+    st.code(st.session_state.ticket_reference, language=None)
+    if centralized:
+        st.button(
+            "Acompanhar minha senha", icon=":material/pending_actions:",
+            on_click=_open_tracking,
+        )
+    else:
+        st.page_link(
+            "app_pages/tracking.py", label="Acompanhar minha senha",
+            icon=":material/pending_actions:",
+        )
+
+
 def render_totem_view(*, centralized: bool = False) -> None:
     if not st.session_state.get("ticket_reference"):
         st.markdown(
@@ -57,6 +81,11 @@ def render_totem_view(*, centralized: bool = False) -> None:
     if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
         start_new_session()
         st.rerun()
+
+    if st.session_state.get("ticket_reference"):
+        st.button("Emitir senha", type="primary", icon=":material/confirmation_number:", disabled=True)
+        _render_issued_ticket(centralized=centralized)
+        return
 
     try:
         with st.spinner("Carregando filas disponíveis..."):
@@ -110,27 +139,7 @@ def render_totem_view(*, centralized: bool = False) -> None:
             st.success(f"Senha confirmada: {issued['numero']}")
 
     if st.session_state.get("ticket_reference"):
-        st.divider()
-        st.subheader(f"Sua senha: {st.session_state.ticket_number}")
-        st.caption("Senha já emitida nesta sessão. Para outra pessoa, use Iniciar novo atendimento.")
-        render_receipt(
-            st.session_state.ticket_number, st.session_state.ticket_reference,
-            st.session_state.get("ticket_service", "—"),
-            st.session_state.get("ticket_queue", "—"), key="totem_receipt",
-        )
-        st.write("Referência de acompanhamento")
-        st.code(st.session_state.ticket_reference, language=None)
-        if centralized:
-            st.button(
-                "Acompanhar minha senha", icon=":material/pending_actions:",
-                on_click=_open_tracking,
-            )
-        else:
-            st.page_link(
-                "app_pages/tracking.py",
-                label="Acompanhar minha senha",
-                icon=":material/pending_actions:",
-            )
+        _render_issued_ticket(centralized=centralized)
 
 
 def render_tracking_view(*, centralized: bool = False) -> None:
@@ -198,7 +207,7 @@ def render_tracking_view(*, centralized: bool = False) -> None:
                 "Estado atual desconhecido. Abaixo está a última atualização confirmada."
             )
             result = previous
-            st.caption(f"Última atualização confirmada: {result['atualizado_at']}")
+            st.caption(f"Última atualização confirmada: {format_timestamp(result['atualizado_at'])}")
 
         st.session_state.tracking_result = result
         st.subheader(f"Senha {result['numero']}")

@@ -52,7 +52,7 @@ def _render_tracking(client) -> None:
             st.warning(
                 "Status atual desconhecido. Exibindo a última atualização confirmada."
             )
-            st.caption(f"Última atualização confirmada: {result['atualizado_at']}")
+            st.caption(f"Última atualização confirmada: {format_timestamp(result['atualizado_at'])}")
         else:
             st.session_state["client_tracking_result"] = result
 

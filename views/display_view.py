@@ -76,7 +76,7 @@ def render_display_view() -> None:
             snapshot_is_stale = True
             st.warning(
                 "Conexão indisponível. Exibindo snapshot desatualizado de "
-                f"{snapshot['snapshot_at']}."
+                f"{format_timestamp(snapshot['snapshot_at'])}."
             )
 
         is_stale = snapshot_is_stale

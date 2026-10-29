@@ -90,6 +90,17 @@ def test_totem_repeated_click_does_not_issue_another_ticket_and_reset_allows_nex
     assert fake_client.issued_queue_ids == [9, 9]
 
 
+def test_issued_receipt_remains_available_without_another_catalog_request():
+    fake_client = FakeXanoClient()
+    app = kiosk_app(fake_client)
+    app.button[1].click().run()
+    calls_after_issue = fake_client.list_calls
+    app.run()
+    assert not app.exception
+    assert app.get("download_button")
+    assert fake_client.list_calls == calls_after_issue
+
+
 def test_tracking_page_displays_backend_status_and_position():
     fake_client = FakeXanoClient()
     app = kiosk_app(fake_client)
