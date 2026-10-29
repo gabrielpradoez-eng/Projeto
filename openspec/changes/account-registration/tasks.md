@@ -1,4 +1,8 @@
 - [x] Definir fluxos e regras de autorização.
-- [ ] Implementar formulários, integração e contratos Xano.
-- [ ] Testar validações, isolamento de perfis e falhas.
-- [ ] Publicar endpoints e código; conferir site publicado.
+- [x] Implementar formulários, integração e contratos Xano.
+- [x] Aprovar 190 testes, compileall e diff --check.
+- [x] Publicar signup e admin/attendants #4111932 no Xano.
+- [x] Testar no runtime: signup vazio retorna 400; atendentes sem autenticação retorna 401; cliente autenticado recebe acesso negado; administrador não é convertido em atendente.
+- [x] Publicar código na branch de deploy, versão 2026.10.29.6, commit 98fa0fa.
+- [ ] Confirmar os formulários na versão publicada pelo Streamlit.
+- [ ] Concluir cadastro positivo com senha definida pelo próprio titular e liberação de atendente pelo administrador.
