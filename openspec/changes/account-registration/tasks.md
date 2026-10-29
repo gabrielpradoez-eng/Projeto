@@ -4,5 +4,6 @@
 - [x] Publicar signup e admin/attendants #4111932 no Xano.
 - [x] Testar no runtime: signup vazio retorna 400; atendentes sem autenticação retorna 401; cliente autenticado recebe acesso negado; administrador não é convertido em atendente.
 - [x] Publicar código na branch de deploy, versão 2026.10.29.6, commit 98fa0fa.
+- [ ] Reboot pelo proprietário: o About ainda confirmou 2026.10.29.5 após atualização da página; o navegador disponível não oferece controle de gerenciamento/reboot.
 - [ ] Confirmar os formulários na versão publicada pelo Streamlit.
 - [ ] Concluir cadastro positivo com senha definida pelo próprio titular e liberação de atendente pelo administrador.
