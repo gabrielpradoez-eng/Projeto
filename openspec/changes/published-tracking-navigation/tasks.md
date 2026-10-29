@@ -3,4 +3,6 @@
 - [x] Atualizar a branch publicada com a correção (commit 541081d).
 - [x] Confirmar no site que a branch é a correta e que a instância ainda executa a versão anterior.
 - [x] Encerrar a senha 4 de teste no Xano com revogação de rastreamento.
-- [ ] Repetir navegação e TV no site após o proprietário executar Reboot app.
+- [x] Repetir teste após reboot informado pelo proprietário: ainda houve erro antigo e TV indisponível.
+- [x] Confirmar branch com git fetch e enviar atualização de app.py pela API de conteúdo do GitHub (16fb49a).
+- [ ] Examinar logs do último deploy fornecidos pelo proprietário para identificar a falha de atualização.
