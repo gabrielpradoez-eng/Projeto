@@ -79,6 +79,20 @@ def render_client_view() -> None:
     if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
         start_new_client_session()
 
+    if st.session_state.get("client_ticket_reference"):
+        render_receipt(
+            st.session_state["client_ticket_number"], st.session_state["client_ticket_reference"],
+            st.session_state.get("client_ticket_service", "—"),
+            st.session_state.get("client_ticket_queue", "—"), key="client_receipt",
+        )
+        try:
+            client = get_xano_client()
+        except XanoClientError:
+            st.warning("Não foi possível atualizar agora. Seu comprovante continua disponível.")
+            return
+        _render_tracking(client)
+        return
+
     try:
         with st.spinner("Carregando filas disponíveis..."):
             client = get_xano_client()

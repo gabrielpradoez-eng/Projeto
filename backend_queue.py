@@ -354,9 +354,9 @@ class QueueBackend:
                 raise InvalidQueueStateError(f"Não foi possível consultar as filas (HTTP {response.status_code}).")
             rows = response.json()
             if not isinstance(rows, list) or any(
-                not isinstance(row, dict) or type(row.get("id")) is not int
+                not isinstance(row, dict) or type(row.get("id")) is not int or row["id"] <= 0
                 or not isinstance(row.get("nome"), str)
-                or type(row.get("total_aguardando")) is not int
+                or type(row.get("total_aguardando")) is not int or row["total_aguardando"] < 0
                 or (row.get("em_atendimento") is not None and (
                     not isinstance(row["em_atendimento"], dict)
                     or type(row["em_atendimento"].get("id")) is not int

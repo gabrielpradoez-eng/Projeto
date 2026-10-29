@@ -536,6 +536,7 @@ def test_public_client_view_reports_xano_issue_rejection_without_confirming_tick
 def test_ticket_issue_error_shows_clear_fallback_when_xano_body_is_empty():
     error = QueueUnavailableError(status_code=404)
     with (
+        patch("views.issue_error.st.session_state", {"user": {"role": "admin"}}),
         patch("views.issue_error.st.error") as show_error,
         patch("views.issue_error.st.caption") as show_caption,
     ):
@@ -604,10 +605,14 @@ def test_public_client_view_retains_last_confirmed_tracking_result_on_temporary_
     assert app.session_state["authToken"] == "admin-token"
 
 
-def test_public_client_view_clears_previous_session_when_no_queues_are_available():
+def test_client_tracking_survives_an_empty_or_unavailable_catalog():
     class EmptyQueueClient:
         def list_queues(self):
-            return []
+            raise AssertionError("An active ticket must not depend on the catalog")
+
+        def track_ticket(self, reference):
+            return {"numero": 26, "fila": "Fila principal", "servico": "Atendimento geral",
+                    "status": "aguardando", "posicao": 1, "atualizado_at": "2026-10-29T12:00:00Z"}
 
     app = unified_app(
         app_view="Cliente",
@@ -619,11 +624,11 @@ def test_public_client_view_clears_previous_session_when_no_queues_are_available
     ).run()
 
     assert not app.exception
-    assert "Não há filas disponíveis" in str([item.value for item in app.info])
+    assert app.get("download_button")
     assert not any(button.label == "Emitir senha" for button in app.button)
-    assert "client_ticket_reference" not in app.session_state
-    assert "client_ticket_number" not in app.session_state
-    assert "client_tracking_result" not in app.session_state
+    assert app.session_state["client_ticket_reference"] == "old-reference"
+    assert app.session_state["client_ticket_number"] == 26
+    assert app.session_state["client_tracking_result"]["posicao"] == 1
 
 
 def test_analytics_view_uses_the_verified_portal_token_without_second_login():
@@ -681,6 +686,19 @@ def test_attendant_completes_remote_ticket_after_starting_a_new_session():
     assert not app.exception
     backend.complete_service.assert_called_once_with(57, 42, token="operation-token")
     assert not backend.tickets
+
+
+def test_attendant_recovers_when_previously_selected_queue_is_removed():
+    from unittest.mock import Mock
+    from backend_queue import QueueBackend
+    backend = QueueBackend()
+    backend.get_attendant_dashboard = Mock(return_value=[{
+        "id": 12, "nome": "Fila atual", "total_aguardando": 0, "em_atendimento": None,
+    }])
+    app = unified_app(app_view="Administração", backend=backend, attendant_queue_id=999,
+                      user={"id": 42, "user_id": 42, "name": "Atendente", "role": "attendant", "authToken": "token"}).run()
+    assert not app.exception
+    assert app.selectbox(key="attendant_queue_id").value == 12
 
 
 def test_admin_form_does_not_prefill_server_bootstrap_credentials():

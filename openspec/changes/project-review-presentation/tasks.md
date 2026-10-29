@@ -1,0 +1,6 @@
+- [x] Executar baseline: 163 testes aprovados e leitura das camadas principais.
+- [x] Corrigir problemas encontrados e adicionar regressões.
+- [x] Preparar catálogo e histórico de demonstração no Xano; feed TV corrigido e publicado.
+- [x] Conferir vínculos, nomes e contagens: quatro serviços/filas, 17 senhas, 16 atendimentos; repetição sem novas criações.
+- [x] Executar verificações finais: 177 testes, compileall e diff --check aprovados.
+- [ ] Publicar correções na branch de deploy e conferir o site.

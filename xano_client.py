@@ -245,6 +245,16 @@ class XanoClient:
         result = self._authorized_request("GET", self._queues_url)
         if not isinstance(result, list):
             raise XanoRequestError("Resposta inválida do serviço de filas.")
+        seen = set()
+        for row in result:
+            if (
+                not isinstance(row, dict) or type(row.get("fila_id")) is not int
+                or row["fila_id"] <= 0 or row["fila_id"] in seen
+                or any(not isinstance(row.get(key), str) or not row[key].strip()
+                       for key in ("fila_nome", "servico_nome"))
+            ):
+                raise XanoRequestError("Resposta inválida do serviço de filas.")
+            seen.add(row["fila_id"])
         return result
 
     def issue_ticket(self, queue_id: int) -> dict[str, Any]:
@@ -261,7 +271,13 @@ class XanoClient:
                     api_body=exc.api_body,
                 ) from None
             raise
-        if not isinstance(result, dict):
+        if (
+            not isinstance(result, dict) or type(result.get("numero")) is not int
+            or result["numero"] <= 0
+            or not isinstance(result.get("referencia_rastreamento"), str)
+            or not result["referencia_rastreamento"].strip()
+            or ("status" in result and result["status"] != "aguardando")
+        ):
             raise XanoRequestError("Resposta inválida do serviço de emissão.")
         return result
 
@@ -274,7 +290,17 @@ class XanoClient:
             if getattr(exc, "status_code", None) == 404:
                 raise TrackingUnavailableError from None
             raise
-        if not isinstance(result, dict):
+        if (
+            not isinstance(result, dict) or type(result.get("numero")) is not int
+            or result["numero"] <= 0
+            or any(not isinstance(result.get(key), str) or not result[key].strip()
+                   for key in ("fila", "servico", "status"))
+            or result["status"] not in {"aguardando", "chamado", "concluido", "cancelado"}
+            or "atualizado_at" not in result
+            or (result.get("posicao") is not None and (
+                type(result["posicao"]) is not int or result["posicao"] <= 0
+            ))
+        ):
             raise XanoRequestError("Resposta inválida do serviço de acompanhamento.")
         return result
 

@@ -174,7 +174,7 @@ def test_import_manifest_classifies_every_existing_xano_export():
         for path in (ROOT / "xano").rglob("*.xs")
     }
 
-    assert len(actual_exports) == 42
+    assert len(actual_exports) == 43
     assert listed_exports == actual_exports
     assert "stats_GET.xs" in manifest
     assert "Não disponibilize a versão pública/sem escopo" in manifest

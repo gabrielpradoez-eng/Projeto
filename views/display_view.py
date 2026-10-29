@@ -130,6 +130,8 @@ def render_display_view() -> None:
                     st.markdown(
                         f"### {current_call.get('destino') or 'Guichê não informado'}"
                     )
+                    if current_call.get("servico"):
+                        st.write(current_call["servico"])
                     st.caption(f"Chamada: {format_timestamp(current_call.get('chamado_at'))}")
 
         with history_column:
@@ -142,6 +144,8 @@ def render_display_view() -> None:
                     with st.container(border=True):
                         st.markdown(f"**Senha {call.get('numero', '—')}**")
                         st.write(call.get("destino") or "Guichê não informado")
+                        if call.get("servico"):
+                            st.caption(call["servico"])
                         st.caption(format_timestamp(call.get("chamado_at")))
 
         st.caption(f"Última atualização: {format_timestamp(snapshot['snapshot_at'])} · horário de São Paulo")

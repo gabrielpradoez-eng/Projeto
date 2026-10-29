@@ -141,6 +141,14 @@ def test_empty_snapshot_renders_empty_call_and_history():
     assert "Nenhuma chamada anterior" in str([item.value for item in app.caption])
 
 
+def test_tv_identifies_service_when_different_queues_share_ticket_numbers():
+    data = snapshot("event-service", 3)
+    data["current_call"]["servico"] = "Retirada de documentos"
+    app = display_app(FakeDisplayClient([data]))
+    assert not app.exception
+    assert "Retirada de documentos" in str([item.value for item in app.markdown])
+
+
 def test_presentation_mode_can_be_entered_and_left_without_repeating_call_alert():
     same = snapshot("event-1", 31)
     app = display_app(FakeDisplayClient([same, same, same]))

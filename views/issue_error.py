@@ -21,6 +21,20 @@ def render_ticket_issue_error(
             st.error(message)
         return
 
+    message = api_message or fallback_message or (
+        "A fila selecionada não está disponível para emissão."
+        if isinstance(error, QueueUnavailableError)
+        else "Não foi possível confirmar a emissão. Confira o atendimento antes de solicitar outra senha."
+    )
+    if isinstance(error, QueueUnavailableError):
+        st.warning(message)
+    else:
+        st.error(message)
+
+    user = st.session_state.get("user") or {}
+    if user.get("role") != "admin":
+        return
+
     prefix = (
         "Xano recusou a emissão"
         if isinstance(error, QueueUnavailableError)
@@ -31,10 +45,10 @@ def render_ticket_issue_error(
         details += f" · Código: {api_code}"
     if api_message:
         details += f": {api_message}"
-    st.error(details)
-
-    if api_body:
-        language = "json" if api_body.lstrip().startswith(("{", "[")) else "text"
-        st.code(api_body, language=language)
-    else:
-        st.caption("O Xano não forneceu detalhes adicionais no corpo da resposta.")
+    with st.expander("Detalhes técnicos para suporte", expanded=False):
+        st.error(details)
+        if api_body:
+            language = "json" if api_body.lstrip().startswith(("{", "[")) else "text"
+            st.code(api_body, language=language)
+        else:
+            st.caption("O Xano não forneceu detalhes adicionais no corpo da resposta.")

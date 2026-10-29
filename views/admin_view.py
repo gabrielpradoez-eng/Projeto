@@ -82,6 +82,8 @@ def _render_operation(backend: QueueBackend, user: dict) -> None:
         st.info("Nenhuma fila disponível para este atendente.")
         return
     queues = {row["id"]: row for row in rows}
+    if st.session_state.get("attendant_queue_id") not in queues:
+        st.session_state["attendant_queue_id"] = next(iter(queues))
     queue_id = st.selectbox(
         "Fila sob sua responsabilidade", options=list(queues),
         format_func=lambda value: queues[value]["nome"], key="attendant_queue_id",

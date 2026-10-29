@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from xano_client import QueueUnavailableError, TrackingUnavailableError, XanoClient
+from xano_client import QueueUnavailableError, TrackingUnavailableError, XanoClient, XanoRequestError
 
 
 class FakeResponse:
@@ -34,11 +34,38 @@ def make_client():
     )
 
 
+@pytest.mark.parametrize("payload", [{}, {"numero": True, "referencia_rastreamento": "ref"},
+                                      {"numero": 1, "referencia_rastreamento": " "},
+                                      {"numero": 1, "referencia_rastreamento": "ref", "status": "cancelado"}])
+def test_invalid_issue_confirmation_is_not_accepted(payload):
+    with patch("xano_client.urlopen", side_effect=[FakeResponse({"authToken": "token"}), FakeResponse(payload)]):
+        with pytest.raises(XanoRequestError, match="emissão"):
+            make_client().issue_ticket(1)
+
+
+@pytest.mark.parametrize("rows", [[{}], [{"fila_id": True, "fila_nome": "Fila", "servico_nome": "Geral"}],
+                                  [{"fila_id": 1, "fila_nome": "Fila", "servico_nome": "Geral"}] * 2])
+def test_invalid_or_duplicate_queue_is_rejected_before_rendering(rows):
+    with patch("xano_client.urlopen", side_effect=[FakeResponse({"authToken": "token"}), FakeResponse(rows)]):
+        with pytest.raises(XanoRequestError, match="filas"):
+            make_client().list_queues()
+
+
+@pytest.mark.parametrize("changes", [{"numero": True}, {"fila": ""}, {"posicao": True}, {"status": "unknown"}])
+def test_invalid_tracking_response_is_rejected_before_rendering(changes):
+    payload = {"numero": 1, "fila": "Fila principal", "servico": "Atendimento geral",
+               "status": "aguardando", "posicao": 1, "atualizado_at": 1793280000000}
+    payload.update(changes)
+    with patch("xano_client.urlopen", side_effect=[FakeResponse({"authToken": "token"}), FakeResponse(payload)]):
+        with pytest.raises(XanoRequestError, match="acompanhamento"):
+            make_client().track_ticket("private-reference")
+
+
 def test_login_is_cached_and_requests_use_bearer_token():
     requests = []
     responses = [
         {"authToken": "server-token"},
-        [{"fila_id": 7, "fila_nome": "Geral"}],
+        [{"fila_id": 7, "fila_nome": "Geral", "servico_nome": "Atendimento geral"}],
         {"numero": 12, "referencia_rastreamento": "opaque-reference"},
     ]
 
@@ -67,7 +94,7 @@ def test_tracking_reference_is_sent_in_post_body_not_url():
     requests = []
     responses = [
         {"authToken": "server-token"},
-        {"numero": 12, "status": "aguardando", "posicao": 2},
+        {"numero": 12, "status": "aguardando", "posicao": 2, "fila": "Geral", "servico": "Atendimento geral", "atualizado_at": 1793280000000},
     ]
 
     def fake_urlopen(request, timeout):

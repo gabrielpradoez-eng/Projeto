@@ -21,7 +21,9 @@ def test_display_feed_validates_hash_active_state_and_establishment_scope():
 def test_display_feed_orders_history_in_xano_and_limits_it_to_five():
     source = read_export("xano/api/queue_management/tv/feed_POST.xs")
 
-    assert 'sort = {id: "desc"}' in source
+    assert source.count('sort = {started_at: "desc", id: "desc"}') == 2
+    assert "servico   : $servico_atual.nome" in source
+    assert "servico   : $servico_historico.nome" in source
     assert "per_page: 5" in source
     assert "foreach ($chamadas_recentes.items)" in source
 
