@@ -8,4 +8,4 @@
 - [x] Examinar logs fornecidos em 29/10: inicialização registrada em 28/10, callbacks antigos e 94 erros de ticket_reference após limpeza; sem registro de novo pull em 29/10 nem causa explícita da ausência de atualização.
 - [x] Proteger fragmento contra sessão limpa, inativa ou encerrada; executar 129 testes, compileall e diff --check.
 - [x] Incluir versão 2026.10.29.2 no menu About para permitir verificação do código carregado.
-- [ ] Confirmar carregamento da nova versão e navegação/TV no aplicativo publicado.
+- [x] Confirmar reinício em 29/10 às 15:33 UTC nos logs, versão 2026.10.29.2 no About, TV recebendo snapshot do Xano e retorno ao Totem por callback sem exceção. Nenhuma nova senha emitida nesta verificação.
