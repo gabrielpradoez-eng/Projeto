@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from streamlit.testing.v1 import AppTest
 
 from xano_client import (
@@ -141,3 +143,41 @@ def test_new_totem_session_clears_previous_customer_data():
     assert "ticket_reference" not in app.session_state
     assert "ticket_number" not in app.session_state
     assert "tracking_result" not in app.session_state
+
+
+@pytest.mark.parametrize("transition", ["reset", "inactive", "ended"])
+def test_tracking_timer_after_session_ends_does_not_query_or_crash(transition):
+    fake_client = FakeXanoClient()
+    app = AppTest.from_string('''
+from unittest.mock import patch
+import streamlit as st
+from views import totem_view
+
+captured = []
+def capture_fragment(**kwargs):
+    def decorate(function):
+        captured.append(function)
+        return function
+    return decorate
+
+st.session_state.tracking_active = True
+st.session_state.ticket_reference = "previous-reference"
+with patch.object(st, "fragment", capture_fragment):
+    totem_view.render_tracking_view(centralized=True)
+
+if st.session_state.transition == "reset":
+    totem_view.start_new_session()
+elif st.session_state.transition == "inactive":
+    st.session_state.tracking_active = False
+else:
+    st.session_state.tracking_ended = True
+
+# Simulate an already scheduled fragment refresh after the session transition.
+captured[0]()
+''', default_timeout=10)
+    app.session_state["_xano_client_override"] = fake_client
+    app.session_state["transition"] = transition
+    app.run()
+
+    assert not app.exception
+    assert fake_client.tracked_references == ["previous-reference"]

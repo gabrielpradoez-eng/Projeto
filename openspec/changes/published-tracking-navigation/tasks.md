@@ -5,4 +5,7 @@
 - [x] Encerrar a senha 4 de teste no Xano com revogação de rastreamento.
 - [x] Repetir teste após reboot informado pelo proprietário: ainda houve erro antigo e TV indisponível.
 - [x] Confirmar branch com git fetch e enviar atualização de app.py pela API de conteúdo do GitHub (16fb49a).
-- [ ] Examinar logs do último deploy fornecidos pelo proprietário para identificar a falha de atualização.
+- [x] Examinar logs fornecidos em 29/10: inicialização registrada em 28/10, callbacks antigos e 94 erros de ticket_reference após limpeza; sem registro de novo pull em 29/10 nem causa explícita da ausência de atualização.
+- [x] Proteger fragmento contra sessão limpa, inativa ou encerrada; executar 129 testes, compileall e diff --check.
+- [x] Incluir versão 2026.10.29.2 no menu About para permitir verificação do código carregado.
+- [ ] Confirmar carregamento da nova versão e navegação/TV no aplicativo publicado.

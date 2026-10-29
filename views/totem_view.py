@@ -142,6 +142,10 @@ def render_tracking_view(*, centralized: bool = False) -> None:
 
     @st.fragment(run_every="15s")
     def render_tracking() -> None:
+        reference = st.session_state.get("ticket_reference")
+        if not st.session_state.get("tracking_active") or not reference:
+            return
+
         if st.session_state.get("tracking_ended"):
             st.info(
                 "Este acompanhamento foi encerrado ou a referência não está disponível."
@@ -152,7 +156,7 @@ def render_tracking_view(*, centralized: bool = False) -> None:
         try:
             with st.spinner("Atualizando o acompanhamento..."):
                 client = get_xano_client()
-                result = client.track_ticket(st.session_state.ticket_reference)
+                result = client.track_ticket(reference)
         except TrackingUnavailableError:
             st.session_state.tracking_ended = True
             st.session_state.tracking_active = False
