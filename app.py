@@ -1,3 +1,5 @@
+"""Ponto de entrada unificado do FilaSmart no Streamlit Community Cloud."""
+
 from __future__ import annotations
 
 import streamlit as st
