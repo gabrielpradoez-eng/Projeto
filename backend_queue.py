@@ -16,6 +16,10 @@ class AccessDeniedError(QueueSmartError):
     """Raised when a user does not have permission for a given action."""
 
 
+class SessionVerificationUnavailable(QueueSmartError):
+    """Raised when the identity service cannot currently verify a session."""
+
+
 class InvalidQueueStateError(QueueSmartError):
     """Raised when a queue or ticket is not in a valid state for the requested action."""
 
@@ -241,6 +245,39 @@ class QueueBackend:
 
         except (requests.exceptions.RequestException, ValueError):
             raise AccessDeniedError("Não foi possível autenticar no Xano.") from None
+
+    def verify_session(self, token: str, expected_user_id: int) -> Dict[str, Any]:
+        """Confirm identity and current role using the canonical Xano auth/me endpoint."""
+        if not isinstance(token, str) or not token.strip() or type(expected_user_id) is not int:
+            raise AccessDeniedError("Sessão inválida. Entre novamente.")
+        if not self.me_url:
+            raise SessionVerificationUnavailable("A verificação de sessão não está configurada.")
+        try:
+            response = requests.get(self.me_url, headers=self._get_headers(token), timeout=10)
+            if response.status_code in (401, 403, 404):
+                raise AccessDeniedError("Sessão expirada ou acesso revogado. Entre novamente.")
+            if response.status_code != 200:
+                raise SessionVerificationUnavailable("Não foi possível verificar sua sessão agora.")
+            profile = response.json()
+        except (requests.exceptions.RequestException, ValueError):
+            raise SessionVerificationUnavailable("Não foi possível verificar sua sessão agora.") from None
+        if not isinstance(profile, dict):
+            raise AccessDeniedError("Sessão inválida. Entre novamente.")
+        role = {"admin": "admin", "atendente": "attendant", "usuario": "user"}.get(
+            profile.get("role") if isinstance(profile.get("role"), str) else ""
+        )
+        if (
+            type(profile.get("id")) is not int or profile["id"] != expected_user_id
+            or profile["id"] <= 0 or role is None
+            or not isinstance(profile.get("name"), str) or not profile["name"].strip()
+            or not isinstance(profile.get("email"), str) or not profile["email"].strip()
+        ):
+            raise AccessDeniedError("Sessão inválida ou perfil sem acesso ao aplicativo.")
+        return {
+            "id": profile["id"], "user_id": profile["id"], "name": profile["name"],
+            "email": profile["email"], "role": role,
+            "establishment_id": profile.get("estabelecimento_id"), "authToken": token,
+        }
 
     def _operation_request(self, path: str, payload: dict, token: Optional[str]) -> dict:
         if not self.base_url:

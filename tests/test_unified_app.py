@@ -64,10 +64,22 @@ class FakeAnalyticsClient:
         return {"estabelecimentos": [], "filas": []}
 
 
-def unified_app(**session_values):
+def unified_app(*, authenticated=True, **session_values):
     app = AppTest.from_file(
         Path(__file__).resolve().parents[1] / "app.py", default_timeout=10
     )
+    if authenticated:
+        from backend_queue import QueueBackend
+        identity = session_values.get("user") or {
+            "id": session_values.get("user_id", 42), "user_id": session_values.get("user_id", 42),
+            "name": "Verified Admin", "email": "verified@example.invalid", "role": "admin",
+        }
+        token = session_values.get("authToken", identity.get("authToken", "verified-test-token"))
+        identity = dict(identity, authToken=token)
+        backend = session_values.get("backend") or QueueBackend()
+        backend.verify_session = lambda supplied_token, supplied_id: dict(identity)
+        session_values.update(backend=backend, user=identity, authToken=token)
+        session_values.setdefault("app_view", "Totem")
     for key, value in session_values.items():
         app.session_state[key] = value
     return app
@@ -93,6 +105,7 @@ def test_admin_login_does_not_display_local_sample_users(monkeypatch):
         unified_app_module, "_admin_login_defaults", lambda: ("", "")
     )
     app = unified_app(
+        authenticated=False,
         app_view="Administração",
         backend=LocalSamples(),
     ).run()
@@ -119,10 +132,15 @@ def test_admin_view_stores_authenticated_xano_identity(monkeypatch):
         "establishment_id": None,
         "authToken": "remote-auth-token",
     }
+    backend.verify_session = lambda token, user_id: {
+        "id": 987, "user_id": 987, "name": "Remote Admin", "email": "admin@example.com",
+        "role": "admin", "establishment_id": None, "authToken": token,
+    }
     monkeypatch.setattr(
         unified_app_module, "_admin_login_defaults", lambda: ("", "")
     )
     app = unified_app(
+        authenticated=False,
         app_view="Administração",
         backend=backend,
     ).run()
@@ -156,6 +174,7 @@ def test_admin_view_does_not_create_session_from_invalid_xano_identity(monkeypat
         unified_app_module, "_admin_login_defaults", lambda: ("", "")
     )
     app = unified_app(
+        authenticated=False,
         app_view="Administração",
         backend=backend,
     ).run()
@@ -171,7 +190,7 @@ def test_admin_view_does_not_create_session_from_invalid_xano_identity(monkeypat
     assert not app.exception
     assert app.session_state["user"] is None
     assert "authToken" not in app.session_state
-    assert "Resposta de autenticação inválida." in str(
+    assert "Não foi possível entrar" in str(
         [item.value for item in app.error]
     )
 
@@ -253,7 +272,7 @@ def test_totem_issue_posts_the_xano_contract_and_renders_confirmed_ticket():
 
     with patch("xano_client.urlopen", side_effect=fake_urlopen):
         app.run()
-        app.button[1].click().run()
+        next(button for button in app.button if button.label == "Emitir senha").click().run()
 
     assert not app.exception
     assert len(requests) == 4
@@ -314,7 +333,7 @@ def test_totem_shows_xano_status_and_message_when_ticket_issue_is_rejected():
     app = unified_app(_xano_client_override=client)
     with patch("xano_client.urlopen", side_effect=fake_urlopen):
         app.run()
-        app.button[1].click().run()
+        next(button for button in app.button if button.label == "Emitir senha").click().run()
 
     assert not app.exception
     issue_request = requests[-1]
@@ -607,7 +626,7 @@ def test_public_client_view_clears_previous_session_when_no_queues_are_available
     assert "client_tracking_result" not in app.session_state
 
 
-def test_analytics_view_preserves_separate_authentication_tokens():
+def test_analytics_view_uses_the_verified_portal_token_without_second_login():
     analytics_client = FakeAnalyticsClient()
     app = unified_app(
         app_view="Relatórios",
@@ -619,7 +638,7 @@ def test_analytics_view_preserves_separate_authentication_tokens():
     assert not app.exception
     assert analytics_client.options_requests == 1
     assert app.session_state["authToken"] == "operations-jwt"
-    assert app.session_state["analytics_auth_token"] == "analytics-jwt"
+    assert app.session_state["analytics_auth_token"] == "operations-jwt"
     assert "analytics_report" not in app.session_state
     assert "Nenhum estabelecimento está disponível" in str(
         [item.value for item in app.info]
@@ -665,7 +684,7 @@ def test_attendant_completes_remote_ticket_after_starting_a_new_session():
 
 
 def test_admin_form_does_not_prefill_server_bootstrap_credentials():
-    app = unified_app(app_view="Administração", backend=object())
+    app = unified_app(authenticated=False, app_view="Administração", backend=object())
     app.secrets["xano_seed"] = {
         "admin_email": "private-admin@example.invalid",
         "admin_password": "private-bootstrap-test-value",

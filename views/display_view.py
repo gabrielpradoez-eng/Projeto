@@ -9,6 +9,7 @@ from streamlit_xano import get_display_feed_client
 from tv_sound import notification_tone
 from xano_client import XanoClientError
 from views.presentation import format_timestamp
+from portal_session import fragment_access_allowed
 
 
 REFRESH_INTERVALS_SECONDS = (3, 5, 10, 15, 30, 60)
@@ -55,10 +56,14 @@ def render_display_view() -> None:
             unsafe_allow_html=True,
         )
 
+    managed_session = bool(st.session_state.get("_portal_managed"))
+
     @st.fragment(
         run_every=_refresh_interval(st.session_state["tv_refresh_interval_seconds"])
     )
     def render_call_feed() -> None:
+        if managed_session and not fragment_access_allowed("Painel TV"):
+            return
         st.session_state.setdefault("tv_last_event_key", None)
         st.session_state.setdefault("tv_has_initial_snapshot", False)
         st.session_state.setdefault("tv_last_snapshot", None)

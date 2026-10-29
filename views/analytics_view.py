@@ -218,7 +218,13 @@ def _render_report(report: dict[str, Any]) -> None:
         st.info("Não há linhas de detalhamento para este relatório.")
 
 
-def render_analytics_view() -> None:
+def render_analytics_view(*, centralized: bool = False) -> None:
+    if centralized:
+        user = st.session_state.get("user") or {}
+        if user.get("role") != "admin" or not st.session_state.get("authToken"):
+            st.error("Esta conta não tem permissão administrativa para consultar relatórios.")
+            return
+        st.session_state.analytics_auth_token = st.session_state["authToken"]
     if not st.session_state.get("analytics_auth_token"):
         _show_login()
         return
@@ -226,7 +232,7 @@ def render_analytics_view() -> None:
     st.title("Relatórios de atendimento")
     with st.container(horizontal=True, horizontal_alignment="right"):
         st.caption("Métricas calculadas pelo Xano")
-        if st.button("Sair", icon=":material/logout:"):
+        if not centralized and st.button("Sair", icon=":material/logout:"):
             st.session_state.pop("analytics_auth_token", None)
             st.session_state.pop("analytics_report", None)
             st.rerun()

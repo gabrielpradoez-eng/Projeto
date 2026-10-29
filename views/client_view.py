@@ -5,6 +5,7 @@ import streamlit as st
 from streamlit_xano import get_xano_client
 from views.issue_error import render_ticket_issue_error
 from views.presentation import format_timestamp, render_receipt, render_status_guidance
+from portal_session import fragment_access_allowed
 from xano_client import (
     QueueUnavailableError,
     TrackingUnavailableError,
@@ -29,8 +30,12 @@ def start_new_client_session() -> None:
 
 
 def _render_tracking(client) -> None:
+    managed_session = bool(st.session_state.get("_portal_managed"))
+
     @st.fragment(run_every="15s")
     def refresh_tracking() -> None:
+        if managed_session and not fragment_access_allowed("Cliente"):
+            return
         reference = st.session_state.get("client_ticket_reference")
         if not reference or st.session_state.get("client_tracking_ended"):
             st.info("Este acompanhamento foi encerrado ou não está disponível.")

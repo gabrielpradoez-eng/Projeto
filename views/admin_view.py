@@ -14,6 +14,7 @@ from backend_queue import (
 def render_admin_view(
     backend: QueueBackend,
     admin_login_defaults: Callable[[], tuple[str, str]],
+    *, centralized: bool = False,
 ) -> None:
     st.header("Núcleo operacional")
 
@@ -21,6 +22,17 @@ def render_admin_view(
         st.session_state.user = None
 
     user = st.session_state.user
+    if not centralized:
+        _render_authentication(backend, admin_login_defaults, user)
+
+    if user is None:
+        st.info("Faça login para acessar o núcleo da operação da fila.")
+        return
+
+    _render_operation(backend, user)
+
+
+def _render_authentication(backend, admin_login_defaults, user) -> None:
     with st.sidebar:
         st.header("Autenticação")
         if user is None:
@@ -46,10 +58,8 @@ def render_admin_view(
                 st.session_state.pop("user_id", None)
                 st.rerun()
 
-    if user is None:
-        st.info("Faça login para acessar o núcleo da operação da fila.")
-        return
 
+def _render_operation(backend: QueueBackend, user: dict) -> None:
     if user.get("role") not in {"admin", "attendant", "user"}:
         st.error("Perfil inválido.")
         return

@@ -1,0 +1,5 @@
+- [x] Implementar verificação remota de sessão e permissões por perfil.
+- [x] Criar login único e reorganizar navegação, logout e relatórios.
+- [x] Proteger atualizações automáticas após expiração/logout.
+- [x] Validar autenticação, isolamento e regressões: 163 testes, compileall e diff --check aprovados.
+- [ ] Publicar e conferir tela inicial protegida.

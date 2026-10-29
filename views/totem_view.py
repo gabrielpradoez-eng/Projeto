@@ -5,6 +5,7 @@ import streamlit as st
 from streamlit_xano import get_xano_client
 from views.issue_error import render_ticket_issue_error
 from views.presentation import format_timestamp, render_receipt, render_status_guidance
+from portal_session import fragment_access_allowed
 from xano_client import (
     QueueUnavailableError,
     TrackingUnavailableError,
@@ -173,8 +174,12 @@ def render_tracking_view(*, centralized: bool = False) -> None:
             st.warning("Informe a referência de acompanhamento.")
         return
 
+    managed_session = bool(st.session_state.get("_portal_managed"))
+
     @st.fragment(run_every="15s")
     def render_tracking() -> None:
+        if managed_session and not fragment_access_allowed("Acompanhar senha"):
+            return
         reference = st.session_state.get("ticket_reference")
         if not st.session_state.get("tracking_active") or not reference:
             return
