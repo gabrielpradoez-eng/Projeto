@@ -5,4 +5,7 @@
 - [x] Executar verificações finais: 177 testes, compileall e diff --check aprovados.
 - [x] Publicar correções na branch de deploy (cd05715), versão 2026.10.29.5.
 - [x] Confirmar que o site exige login antes das funcionalidades; tentativa real de entrada recusada, com contrato de e-mail/senha conferido no Xano.
-- [ ] Confirmar versão 2026.10.29.5 após reboot pelo proprietário; o site ainda mostrou 2026.10.29.4 após nova carga. Validar login positivo com conta do aplicativo.
+- [x] Confirmar versão 2026.10.29.5 no About após reboot pelo proprietário.
+- [x] Consultar auth/me no Xano e identificar cadastro administrativo com nome vazio.
+- [x] Completar nomes ausentes sem alterar senhas/perfis; publicar função e confirmar auth/me com nome Administrador.
+- [ ] Validar login positivo com credenciais de uma conta do aplicativo.

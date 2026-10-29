@@ -43,6 +43,34 @@ function prepare_presentation {
             db.edit usuarios { field_name = "id"
       field_value = 4
       data = {name: "Totem de autoatendimento"} } as $tech_renamed
+            db.get usuarios {
+              field_name = "id"
+              field_value = 1
+              output = ["id", "name", "role"]
+            } as $admin_profile
+            conditional {
+              if ($admin_profile.role == "admin" && ($admin_profile.name == null || $admin_profile.name == "")) {
+                db.edit usuarios {
+                  field_name = "id"
+                  field_value = 1
+                  data = {name: "Administrador"}
+                } as $admin_named
+              }
+            }
+            db.get usuarios {
+              field_name = "id"
+              field_value = 2
+              output = ["id", "name", "role"]
+            } as $attendant_profile
+            conditional {
+              if ($attendant_profile.role == "atendente" && ($attendant_profile.name == null || $attendant_profile.name == "")) {
+                db.edit usuarios {
+                  field_name = "id"
+                  field_value = 2
+                  data = {name: "Atendente de recepção"}
+                } as $attendant_named
+              }
+            }
             foreach ($services) {
               each as $item {
                 db.query servicos { where = $db.servicos.estabelecimento_id == 1 && $db.servicos.nome == $item.nome

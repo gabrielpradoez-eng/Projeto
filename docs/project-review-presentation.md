@@ -16,8 +16,12 @@ A rotina interna `prepare_presentation` foi salva e executada manualmente no con
 
 Resultado confirmado: quatro serviços, quatro filas, 17 senhas e 16 atendimentos. Uma segunda execução manteve as contagens e retornou lista de criação vazia. Não foram criadas contas, credenciais, referências ativas de rastreamento ou notificações externas. Não houve exclusão de registros.
 
-O feed TV foi atualizado e publicado no Xano. Dados sintéticos destinam-se à apresentação, não a indicadores de uma operação real.
+O feed TV foi atualizado e publicado no Xano. A consulta autenticada a `auth/me` identificou nome vazio no administrador; a rotina agora completa somente nomes vazios dos perfis esperados de administrador e atendente. A correção foi aplicada e publicada; uma nova consulta confirmou `Administrador`, com o mesmo ID e perfil. Senhas e permissões foram preservadas. Dados sintéticos destinam-se à apresentação, não a indicadores de uma operação real.
 
 ## Escopo da verificação
 
 Foram revisados os fluxos implementados de login/perfis, emissão, acompanhamento, atendimento, TV, relatórios e seus contratos. A suíte automatizada cobre regressões e validações. A revisão não substitui auditoria formal de segurança nem teste de carga. Login positivo no portal com credenciais reais e concorrência de emissão continuam dependendo de validação operacional específica.
+
+## Deploy verificado
+
+Após reinício pelo proprietário, o About do site confirmou a versão **2026.10.29.5**. A navegação anônima mostra somente login e informações dos perfis. A validação positiva com credenciais do aplicativo permanece pendente; a sessão do console Xano não equivale a esse teste.
