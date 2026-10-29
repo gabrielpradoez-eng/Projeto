@@ -20,8 +20,8 @@ O feed TV foi atualizado e publicado no Xano. A consulta autenticada a `auth/me`
 
 ## Escopo da verificação
 
-Foram revisados os fluxos implementados de login/perfis, emissão, acompanhamento, atendimento, TV, relatórios e seus contratos. A suíte automatizada cobre regressões e validações. A revisão não substitui auditoria formal de segurança nem teste de carga. Login positivo no portal com credenciais reais e concorrência de emissão continuam dependendo de validação operacional específica.
+Foram revisados os fluxos implementados de login/perfis, emissão, acompanhamento, atendimento, TV, relatórios e seus contratos. A suíte automatizada cobre regressões e validações. A revisão não substitui auditoria formal de segurança nem teste de carga. Login administrativo positivo, relatórios e TV foram verificados no site publicado. Concorrência real de emissão continua dependendo de validação operacional específica.
 
 ## Deploy verificado
 
-Após reinício pelo proprietário, o About do site confirmou a versão **2026.10.29.5**. A navegação anônima mostra somente login e informações dos perfis. A validação positiva com credenciais do aplicativo permanece pendente; a sessão do console Xano não equivale a esse teste.
+Após reinício pelo proprietário, o About do site confirmou a versão **2026.10.29.5**. A navegação anônima mostra somente login e informações dos perfis. O login administrativo com credenciais fornecidas pelo formulário seguro foi concluído no portal. Os relatórios reutilizaram a sessão e retornaram 17 senhas emitidas, 16 chamadas/conclusões, 94,1% de conclusão, espera média de 4,8 minutos e duração média de 8,6 minutos. O painel TV exibiu Guichê 01 e os serviços correspondentes nas chamadas recentes. O logout retornou ao formulário sem o menu protegido. Esses resultados são dos dados sintéticos de demonstração.

@@ -8,4 +8,5 @@
 - [x] Confirmar versão 2026.10.29.5 no About após reboot pelo proprietário.
 - [x] Consultar auth/me no Xano e identificar cadastro administrativo com nome vazio.
 - [x] Completar nomes ausentes sem alterar senhas/perfis; publicar função e confirmar auth/me com nome Administrador.
-- [ ] Validar login positivo com credenciais de uma conta do aplicativo.
+- [x] Validar login positivo com credenciais de administrador; relatórios com a mesma sessão e painel TV com serviços corretos.
+- [x] Encerrar sessão e confirmar retorno ao login sem menu de funcionalidades.
