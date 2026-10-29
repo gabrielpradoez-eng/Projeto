@@ -3,9 +3,9 @@ query "auth/signup" verb=POST {
   api_group = "Authentication"
 
   input {
-    text name?
-    email email? filters=trim|lower
-    text password?
+    text name filters=trim|min:2|max:100
+    email email filters=trim|lower
+    text password filters=min:10|max:128
   }
 
   stack {

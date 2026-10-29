@@ -33,7 +33,7 @@ def test_authorization_loads_role_from_database_instead_of_auth_context():
             assert source.index("db.get usuarios") < source.index("$actor.role")
             assert 'field_value = $auth.id' in source
             assert 'output = ["id", "role", "estabelecimento_id"]' in source
-    assert checked == 9
+    assert checked == 10
 
 
 def test_non_paginated_queries_are_iterated_as_arrays():

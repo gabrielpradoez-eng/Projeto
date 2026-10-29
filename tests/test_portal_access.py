@@ -63,7 +63,7 @@ def test_anonymous_session_cannot_render_any_feature_or_request_backend_data():
     assert not app.radio
     assert not app.metric
     assert not app.get("download_button")
-    assert [button.label for button in app.button] == ["Entrar"]
+    assert {button.label for button in app.button} == {"Entrar", "Criar conta"}
     assert source.calls == 0
     backend.verify_session.assert_not_called()
 

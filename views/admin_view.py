@@ -65,7 +65,9 @@ def _render_operation(backend: QueueBackend, user: dict) -> None:
         return
 
     if user.get("role") == "admin":
-        st.info("Consulte os indicadores na visão Relatórios. Os cadastros devem ser feitos no workspace Xano.")
+        st.info("Consulte os indicadores na visão Relatórios ou cadastre um atendente abaixo.")
+        from views.registration_view import render_attendant_registration
+        render_attendant_registration(backend, user)
         return
     if user.get("role") != "attendant":
         st.info("Utilize a visão Cliente para emitir e acompanhar sua senha.")

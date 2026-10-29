@@ -97,3 +97,7 @@ Os cinco arquivos seguintes são exemplos genéricos ou metadados e não são de
 - `xano/workspace/gabriels_workspace.xs` — preferências/metadata de workspace, não componente da API.
 
 O inventário base contém 41 exports: 36 componentes de aplicação na sequência principal e cinco exemplos/metadata excluídos. Com o endpoint de seed e a rotina manual de apresentação, o inventário atual contém 43 arquivos classificados.
+
+## Cadastro de clientes e atendentes
+
+Atualizar `xano/api/authentication/auth/signup_POST.xs` e importar `xano/api/queue_management/admin/attendants_POST.xs` após as tabelas usuarios, estabelecimentos e atendentes. O segundo endpoint exige autenticação de usuarios e administrador do estabelecimento.

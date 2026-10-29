@@ -4,7 +4,7 @@ import time
 
 import streamlit as st
 
-from backend_queue import AccessDeniedError, SessionVerificationUnavailable
+from backend_queue import AccessDeniedError, SessionVerificationUnavailable, InvalidQueueStateError
 
 
 ROLE_VIEWS = {
@@ -66,7 +66,7 @@ def submit_login() -> None:
         verified = backend.verify_session(claimed["authToken"], claimed["id"])
         if verified.get("role") not in ROLE_VIEWS:
             raise AccessDeniedError("Perfil sem acesso.")
-    except (AccessDeniedError, SessionVerificationUnavailable):
+    except (AccessDeniedError, SessionVerificationUnavailable, InvalidQueueStateError):
         st.session_state["portal_login_error"] = "Não foi possível entrar. Verifique suas credenciais e tente novamente."
         return
     # A new identity never inherits the previous customer's ticket or report.
@@ -80,6 +80,40 @@ def submit_login() -> None:
     st.session_state["_portal_just_logged_in"] = True
 
 
+def submit_customer_registration() -> None:
+    name = str(st.session_state.get("signup_name", ""))
+    email = str(st.session_state.get("signup_email", ""))
+    password = st.session_state.pop("signup_password", "")
+    confirmation = st.session_state.pop("signup_confirmation", "")
+    st.session_state.pop("signup_success", None)
+    if password != confirmation:
+        st.session_state["signup_error"] = "As senhas não coincidem."
+        return
+    try:
+        st.session_state.backend.register_customer(name, email, password)
+    except InvalidQueueStateError as exc:
+        st.session_state["signup_error"] = str(exc)
+        return
+    st.session_state.pop("signup_error", None)
+    st.session_state["signup_success"] = "Conta criada. Entre com seu e-mail e senha na aba Entrar."
+
+
+def render_customer_registration() -> None:
+    st.subheader("Crie sua conta")
+    st.caption("Clientes e futuros atendentes começam por aqui. O acesso de atendente é liberado pelo administrador.")
+    with st.form("customer_registration", clear_on_submit=True):
+        st.text_input("Nome completo", key="signup_name", max_chars=100, autocomplete="name")
+        st.text_input("E-mail de cadastro", key="signup_email", autocomplete="email")
+        st.text_input("Crie uma senha", type="password", key="signup_password", max_chars=128, autocomplete="new-password")
+        st.text_input("Confirme a senha", type="password", key="signup_confirmation", max_chars=128, autocomplete="new-password")
+        st.caption("Use entre 10 e 128 caracteres. Guarde sua senha para entrar no aplicativo.")
+        st.form_submit_button("Criar conta", type="primary", on_click=submit_customer_registration, use_container_width=True)
+    if st.session_state.get("signup_error"):
+        st.error(st.session_state["signup_error"])
+    if st.session_state.get("signup_success"):
+        st.success(st.session_state["signup_success"])
+
+
 def render_login() -> None:
     st.markdown(
         '<section class="fs-hero"><div><span class="fs-eyebrow">BEM-VINDO AO FILASMART</span>'
@@ -89,7 +123,10 @@ def render_login() -> None:
     )
     form_column, help_column = st.columns([1.25, 1], gap="large")
     with form_column:
-        with st.form("portal_login", clear_on_submit=True):
+        login_tab, signup_tab = st.tabs(["Entrar", "Criar conta"])
+        with signup_tab:
+            render_customer_registration()
+        with login_tab, st.form("portal_login", clear_on_submit=True):
             st.subheader("Entre para continuar")
             st.caption("Use o e-mail e a senha da sua conta cadastrada.")
             st.text_input("E-mail", key="portal_email", autocomplete="username")
@@ -102,4 +139,4 @@ def render_login() -> None:
         st.write("**Cliente** · Retire sua senha e acompanhe o atendimento.")
         st.write("**Atendente** · Organize a fila e conduza os atendimentos.")
         st.write("**Administrador** · Acesse a operação e os relatórios.")
-        st.caption("Seu acesso é definido pela conta cadastrada. Se precisar de cadastro ou recuperação de senha, procure o responsável pelo estabelecimento.")
+        st.caption("Seu acesso é definido pela conta cadastrada. Se precisar de cadastro ou recuperação de senha, use a aba Criar conta. Para recuperar o acesso ou habilitar um atendente, procure o administrador.")

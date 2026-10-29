@@ -1,0 +1,4 @@
+- [x] Definir fluxos e regras de autorização.
+- [ ] Implementar formulários, integração e contratos Xano.
+- [ ] Testar validações, isolamento de perfis e falhas.
+- [ ] Publicar endpoints e código; conferir site publicado.

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import requests
+import re
 import streamlit as st
 
 
@@ -152,6 +153,37 @@ class QueueBackend:
             "metadata": metadata or {},
             "created_at": self._now(),
         })
+
+    def register_customer(self, name: str, email: str, password: str) -> int:
+        name, email = name.strip(), email.strip().lower()
+        if not 2 <= len(name) <= 100 or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email):
+            raise InvalidQueueStateError("Informe nome e e-mail válidos.")
+        if not 10 <= len(password) <= 128:
+            raise InvalidQueueStateError("A senha deve ter entre 10 e 128 caracteres.")
+        if not self.login_url.endswith("/auth/login"):
+            raise InvalidQueueStateError("O cadastro está indisponível. Contate o responsável.")
+        try:
+            response = requests.post(self.login_url.removesuffix("/auth/login") + "/auth/signup",
+                                     json={"name": name, "email": email, "password": password}, timeout=10)
+            if response.status_code != 200:
+                raise InvalidQueueStateError("Não foi possível cadastrar. Se já possui conta, entre; caso contrário, confira os dados.")
+            data = response.json()
+            if not isinstance(data, dict) or type(data.get("user_id")) is not int or data["user_id"] <= 0:
+                raise InvalidQueueStateError("Não foi possível confirmar o cadastro. Tente entrar antes de repetir.")
+            return data["user_id"]
+        except (requests.RequestException, ValueError):
+            raise InvalidQueueStateError("Não foi possível confirmar o cadastro. Tente entrar antes de repetir.") from None
+
+    def register_attendant(self, email: str, establishment_id: int, destination: str, *, token: str) -> dict:
+        email, destination = email.strip().lower(), destination.strip()
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email) or type(establishment_id) is not int or establishment_id <= 0 or not 1 <= len(destination) <= 80:
+            raise InvalidQueueStateError("Informe e-mail, estabelecimento e guichê válidos.")
+        result = self._operation_request("admin/attendants", {
+            "email": email, "estabelecimento_id": establishment_id, "destino_label": destination,
+        }, token)
+        if type(result.get("id")) is not int or result["id"] <= 0 or result.get("role") != "atendente" or result.get("estabelecimento_id") != establishment_id:
+            raise InvalidQueueStateError("Não foi possível confirmar o vínculo. Confira antes de repetir.")
+        return result
 
     def authenticate(self, email: str, password: str) -> Dict[str, Any]:
         """Endpoint: POST /auth/login"""
