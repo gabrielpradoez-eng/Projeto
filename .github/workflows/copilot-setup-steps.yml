@@ -25,8 +25,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install OpenSpec CLI
-        run: npm install -g @fission-ai/openspec
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install pinned development tools
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify OpenSpec CLI
-        run: openspec --version
+        run: npx --no-install openspec --version

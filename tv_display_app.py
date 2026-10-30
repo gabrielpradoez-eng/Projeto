@@ -1,6 +1,7 @@
 import streamlit as st
 
 from views.display_view import render_display_view
+from views.presentation import apply_theme
 
 
 st.set_page_config(
@@ -10,4 +11,5 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+apply_theme()
 render_display_view()

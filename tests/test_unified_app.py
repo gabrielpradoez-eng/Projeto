@@ -64,10 +64,22 @@ class FakeAnalyticsClient:
         return {"estabelecimentos": [], "filas": []}
 
 
-def unified_app(**session_values):
+def unified_app(*, authenticated=True, **session_values):
     app = AppTest.from_file(
         Path(__file__).resolve().parents[1] / "app.py", default_timeout=10
     )
+    if authenticated:
+        from backend_queue import QueueBackend
+        identity = session_values.get("user") or {
+            "id": session_values.get("user_id", 42), "user_id": session_values.get("user_id", 42),
+            "name": "Verified Admin", "email": "verified@example.invalid", "role": "admin",
+        }
+        token = session_values.get("authToken", identity.get("authToken", "verified-test-token"))
+        identity = dict(identity, authToken=token)
+        backend = session_values.get("backend") or QueueBackend()
+        backend.verify_session = lambda supplied_token, supplied_id: dict(identity)
+        session_values.update(backend=backend, user=identity, authToken=token)
+        session_values.setdefault("app_view", "Totem")
     for key, value in session_values.items():
         app.session_state[key] = value
     return app
@@ -93,6 +105,7 @@ def test_admin_login_does_not_display_local_sample_users(monkeypatch):
         unified_app_module, "_admin_login_defaults", lambda: ("", "")
     )
     app = unified_app(
+        authenticated=False,
         app_view="Administração",
         backend=LocalSamples(),
     ).run()
@@ -119,10 +132,15 @@ def test_admin_view_stores_authenticated_xano_identity(monkeypatch):
         "establishment_id": None,
         "authToken": "remote-auth-token",
     }
+    backend.verify_session = lambda token, user_id: {
+        "id": 987, "user_id": 987, "name": "Remote Admin", "email": "admin@example.com",
+        "role": "admin", "establishment_id": None, "authToken": token,
+    }
     monkeypatch.setattr(
         unified_app_module, "_admin_login_defaults", lambda: ("", "")
     )
     app = unified_app(
+        authenticated=False,
         app_view="Administração",
         backend=backend,
     ).run()
@@ -156,6 +174,7 @@ def test_admin_view_does_not_create_session_from_invalid_xano_identity(monkeypat
         unified_app_module, "_admin_login_defaults", lambda: ("", "")
     )
     app = unified_app(
+        authenticated=False,
         app_view="Administração",
         backend=backend,
     ).run()
@@ -171,7 +190,7 @@ def test_admin_view_does_not_create_session_from_invalid_xano_identity(monkeypat
     assert not app.exception
     assert app.session_state["user"] is None
     assert "authToken" not in app.session_state
-    assert "Resposta de autenticação inválida." in str(
+    assert "Não foi possível entrar" in str(
         [item.value for item in app.error]
     )
 
@@ -253,7 +272,7 @@ def test_totem_issue_posts_the_xano_contract_and_renders_confirmed_ticket():
 
     with patch("xano_client.urlopen", side_effect=fake_urlopen):
         app.run()
-        app.button[1].click().run()
+        next(button for button in app.button if button.label == "Emitir senha").click().run()
 
     assert not app.exception
     assert len(requests) == 4
@@ -314,7 +333,7 @@ def test_totem_shows_xano_status_and_message_when_ticket_issue_is_rejected():
     app = unified_app(_xano_client_override=client)
     with patch("xano_client.urlopen", side_effect=fake_urlopen):
         app.run()
-        app.button[1].click().run()
+        next(button for button in app.button if button.label == "Emitir senha").click().run()
 
     assert not app.exception
     issue_request = requests[-1]
@@ -517,6 +536,7 @@ def test_public_client_view_reports_xano_issue_rejection_without_confirming_tick
 def test_ticket_issue_error_shows_clear_fallback_when_xano_body_is_empty():
     error = QueueUnavailableError(status_code=404)
     with (
+        patch("views.issue_error.st.session_state", {"user": {"role": "admin"}}),
         patch("views.issue_error.st.error") as show_error,
         patch("views.issue_error.st.caption") as show_caption,
     ):
@@ -585,10 +605,14 @@ def test_public_client_view_retains_last_confirmed_tracking_result_on_temporary_
     assert app.session_state["authToken"] == "admin-token"
 
 
-def test_public_client_view_clears_previous_session_when_no_queues_are_available():
+def test_client_tracking_survives_an_empty_or_unavailable_catalog():
     class EmptyQueueClient:
         def list_queues(self):
-            return []
+            raise AssertionError("An active ticket must not depend on the catalog")
+
+        def track_ticket(self, reference):
+            return {"numero": 26, "fila": "Fila principal", "servico": "Atendimento geral",
+                    "status": "aguardando", "posicao": 1, "atualizado_at": "2026-10-29T12:00:00Z"}
 
     app = unified_app(
         app_view="Cliente",
@@ -600,14 +624,14 @@ def test_public_client_view_clears_previous_session_when_no_queues_are_available
     ).run()
 
     assert not app.exception
-    assert "Não há filas disponíveis" in str([item.value for item in app.info])
+    assert app.get("download_button")
     assert not any(button.label == "Emitir senha" for button in app.button)
-    assert "client_ticket_reference" not in app.session_state
-    assert "client_ticket_number" not in app.session_state
-    assert "client_tracking_result" not in app.session_state
+    assert app.session_state["client_ticket_reference"] == "old-reference"
+    assert app.session_state["client_ticket_number"] == 26
+    assert app.session_state["client_tracking_result"]["posicao"] == 1
 
 
-def test_analytics_view_preserves_separate_authentication_tokens():
+def test_analytics_view_uses_the_verified_portal_token_without_second_login():
     analytics_client = FakeAnalyticsClient()
     app = unified_app(
         app_view="Relatórios",
@@ -619,7 +643,7 @@ def test_analytics_view_preserves_separate_authentication_tokens():
     assert not app.exception
     assert analytics_client.options_requests == 1
     assert app.session_state["authToken"] == "operations-jwt"
-    assert app.session_state["analytics_auth_token"] == "analytics-jwt"
+    assert app.session_state["analytics_auth_token"] == "operations-jwt"
     assert "analytics_report" not in app.session_state
     assert "Nenhum estabelecimento está disponível" in str(
         [item.value for item in app.info]
@@ -641,3 +665,94 @@ def test_analytics_view_reports_backend_permission_denial_without_metrics():
         [item.value for item in app.error]
     )
     assert not app.metric
+
+
+def test_attendant_completes_remote_ticket_after_starting_a_new_session():
+    from unittest.mock import Mock
+    from backend_queue import QueueBackend
+
+    backend = QueueBackend()
+    remote_rows = [{"id": 9, "nome": "Fila remota", "total_aguardando": 2,
+                    "em_atendimento": {"id": 57, "numero": 23}}]
+    backend.get_attendant_dashboard = Mock(side_effect=[remote_rows, remote_rows, []])
+    backend.complete_service = Mock(return_value={"id": 57, "number": 23, "status": "completed"})
+    app = unified_app(app_view="Administração", backend=backend, user={
+        "id": 42, "user_id": 42, "name": "Atendente", "role": "attendant", "authToken": "operation-token"
+    }).run()
+    assert not app.exception
+    assert any("23" in str(item.value) for item in app.markdown)
+    assert not next(button for button in app.button if button.label == "Finalizar atendimento atual").disabled
+    next(button for button in app.button if button.label == "Finalizar atendimento atual").click().run()
+    assert not app.exception
+    backend.complete_service.assert_called_once_with(57, 42, token="operation-token")
+    assert not backend.tickets
+
+
+def test_attendant_recovers_when_previously_selected_queue_is_removed():
+    from unittest.mock import Mock
+    from backend_queue import QueueBackend
+    backend = QueueBackend()
+    backend.get_attendant_dashboard = Mock(return_value=[{
+        "id": 12, "nome": "Fila atual", "total_aguardando": 0, "em_atendimento": None,
+    }])
+    app = unified_app(app_view="Administração", backend=backend, attendant_queue_id=999,
+                      user={"id": 42, "user_id": 42, "name": "Atendente", "role": "attendant", "authToken": "token"}).run()
+    assert not app.exception
+    assert app.selectbox(key="attendant_queue_id").value == 12
+
+
+def test_admin_form_does_not_prefill_server_bootstrap_credentials():
+    app = unified_app(authenticated=False, app_view="Administração", backend=object())
+    app.secrets["xano_seed"] = {
+        "admin_email": "private-admin@example.invalid",
+        "admin_password": "private-bootstrap-test-value",
+    }
+    app.run()
+    assert not app.exception
+    assert all(field.value == "" for field in app.text_input)
+    assert all("private-bootstrap-test-value" not in str(element.value) for element in app.markdown)
+
+
+class TrackingNavigationClient(FakeTotemClient):
+    def track_ticket(self, reference):
+        assert reference == "navigation-test-reference"
+        return {
+            "numero": 4, "fila": "Fila principal", "servico": "Atendimento geral",
+            "status": "aguardando", "posicao": 1, "tempo_estimado_min": 0,
+            "atualizado_at": "2026-10-28T18:00:00Z",
+        }
+
+
+def test_follow_ticket_button_changes_radio_before_widgets_are_created():
+    app = unified_app(
+        _xano_client_override=TrackingNavigationClient(), ticket_number=4,
+        ticket_reference="navigation-test-reference", tracking_active=True,
+    ).run()
+    next(button for button in app.button if button.label == "Acompanhar minha senha").click().run()
+    assert not app.exception
+    assert app.radio(key="app_view").value == "Acompanhar senha"
+    assert app.session_state["ticket_reference"] == "navigation-test-reference"
+    assert any(item.label == "Status" and item.value == "aguardando" for item in app.metric)
+
+
+def test_tracking_finish_returns_to_totem_and_clears_ticket_state():
+    app = unified_app(
+        app_view="Acompanhar senha", _xano_client_override=TrackingNavigationClient(),
+        ticket_number=4, ticket_reference="navigation-test-reference", tracking_active=True,
+    ).run()
+    next(button for button in app.button if button.label == "Encerrar e iniciar novo atendimento").click().run()
+    assert not app.exception
+    assert app.radio(key="app_view").value == "Totem"
+    assert "ticket_reference" not in app.session_state
+    assert "ticket_number" not in app.session_state
+
+
+def test_ended_tracking_can_start_new_totem_session():
+    app = unified_app(
+        app_view="Acompanhar senha", _xano_client_override=TrackingNavigationClient(),
+        ticket_number=4, ticket_reference="navigation-test-reference", tracking_ended=True,
+    ).run()
+    next(button for button in app.button if button.label == "Iniciar novo atendimento").click().run()
+    assert not app.exception
+    assert app.radio(key="app_view").value == "Totem"
+    assert "tracking_ended" not in app.session_state

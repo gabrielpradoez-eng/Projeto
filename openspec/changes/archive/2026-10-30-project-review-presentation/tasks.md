@@ -1,0 +1,12 @@
+- [x] Executar baseline: 163 testes aprovados e leitura das camadas principais.
+- [x] Corrigir problemas encontrados e adicionar regressões.
+- [x] Preparar catálogo e histórico de demonstração no Xano; feed TV corrigido e publicado.
+- [x] Conferir vínculos, nomes e contagens: quatro serviços/filas, 17 senhas, 16 atendimentos; repetição sem novas criações.
+- [x] Executar verificações finais: 177 testes, compileall e diff --check aprovados.
+- [x] Publicar correções na branch de deploy (cd05715), versão 2026.10.29.5.
+- [x] Confirmar que o site exige login antes das funcionalidades; tentativa real de entrada recusada, com contrato de e-mail/senha conferido no Xano.
+- [x] Confirmar versão 2026.10.29.5 no About após reboot pelo proprietário.
+- [x] Consultar auth/me no Xano e identificar cadastro administrativo com nome vazio.
+- [x] Completar nomes ausentes sem alterar senhas/perfis; publicar função e confirmar auth/me com nome Administrador.
+- [x] Validar login positivo com credenciais de administrador; relatórios com a mesma sessão e painel TV com serviços corretos.
+- [x] Encerrar sessão e confirmar retorno ao login sem menu de funcionalidades.

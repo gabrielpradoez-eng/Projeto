@@ -10,9 +10,25 @@ query "tv/register" verb=POST {
   }
 
   stack {
-    precondition ($auth.role == "admin") {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
+    precondition ($actor.role == "admin") {
       error_type = "accessdenied"
       error = "Apenas administradores podem provisionar displays."
+    }
+
+    precondition (($actor.estabelecimento_id == null) || ($actor.estabelecimento_id == 0) || ($actor.estabelecimento_id == $input.estabelecimento_id)) {
+      error_type = "accessdenied"
+      error = "Você não tem acesso a este estabelecimento."
     }
 
     db.get estabelecimentos {

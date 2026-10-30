@@ -3,9 +3,9 @@ query "auth/signup" verb=POST {
   api_group = "Authentication"
 
   input {
-    text name?
-    email email? filters=trim|lower
-    text password?
+    text name filters=trim|min:2|max:100
+    email email filters=trim|lower
+    text password filters=min:10|max:128
   }
 
   stack {
@@ -42,7 +42,7 @@ query "auth/signup" verb=POST {
   
     // Create an event log for signup
     function.run "Quick Start/log_event" {
-      input = {user_id: $user.id, action: "signup", metadata: $user}
+      input = {user_id: $user.id, action: "signup", metadata: {usuario_id: $user.id}}
     } as $event_log
   }
 

@@ -1,0 +1,34 @@
+name: OpenSpec validation
+
+on:
+  push:
+    paths:
+      - 'openspec/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/openspec-validation.yml'
+  pull_request:
+    paths:
+      - 'openspec/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/openspec-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      OPENSPEC_TELEMETRY: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run spec:validate

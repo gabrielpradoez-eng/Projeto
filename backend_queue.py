@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import requests
+import re
 import streamlit as st
 
 
@@ -14,6 +15,10 @@ class QueueSmartError(Exception):
 
 class AccessDeniedError(QueueSmartError):
     """Raised when a user does not have permission for a given action."""
+
+
+class SessionVerificationUnavailable(QueueSmartError):
+    """Raised when the identity service cannot currently verify a session."""
 
 
 class InvalidQueueStateError(QueueSmartError):
@@ -113,31 +118,20 @@ class QueueBackend:
 
     def __init__(self) -> None:
         try:
-            self.base_url = st.secrets["xano"]["base_url"].rstrip("/")
+            settings = st.secrets["xano"]
         except (KeyError, FileNotFoundError):
-            self.base_url = "https://x8ki-letl-twmt.n7.xano.io/api:-8IXPb-r"
+            settings = {}
+        self.base_url = settings.get("base_url", "").rstrip("/")
+        self.login_url = settings.get("login_url", "")
+        self.me_url = settings.get("me_url", "")
+        if not self.me_url and self.login_url.endswith("/auth/login"):
+            self.me_url = self.login_url.removesuffix("/auth/login") + "/auth/me"
 
-        # Armazenamento em memória para dados de cadastro local/múltipla leitura
-        self.users: Dict[int, UserRecord] = {
-            1: UserRecord(1, "Admin FilaSmart", "admin@filasmart.com", "senha123", "admin", 1),
-            2: UserRecord(2, "Atendente Geral", "atendente@filasmart.com", "atendente123", "attendant", 1),
-            3: UserRecord(3, "Cliente Teste", "cliente@filasmart.com", "cliente123", "user"),
-        }
-
-        self.establishments: Dict[int, EstablishmentRecord] = {
-            1: EstablishmentRecord(1, "Filial Centro"),
-            2: EstablishmentRecord(2, "Filial Norte"),
-        }
-
-        self.services: Dict[int, ServiceRecord] = {
-            1: ServiceRecord(1, 1, "Atendimento Geral", 10),
-            2: ServiceRecord(2, 1, "Financeiro", 15),
-        }
-
-        self.queues: Dict[int, QueueRecord] = {
-            1: QueueRecord(1, 1, "Fila Geral", "open"),
-            2: QueueRecord(2, 2, "Fila Financeiro", "open"),
-        }
+        # Estruturas locais legadas não são fontes de dados da interface operacional.
+        self.users: Dict[int, UserRecord] = {}
+        self.establishments: Dict[int, EstablishmentRecord] = {}
+        self.services: Dict[int, ServiceRecord] = {}
+        self.queues: Dict[int, QueueRecord] = {}
 
         self.tickets: Dict[int, TicketRecord] = {}
         self.logs: List[Dict[str, Any]] = []
@@ -160,10 +154,43 @@ class QueueBackend:
             "created_at": self._now(),
         })
 
+    def register_customer(self, name: str, email: str, password: str) -> int:
+        name, email = name.strip(), email.strip().lower()
+        if not 2 <= len(name) <= 100 or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email):
+            raise InvalidQueueStateError("Informe nome e e-mail válidos.")
+        if not 10 <= len(password) <= 128:
+            raise InvalidQueueStateError("A senha deve ter entre 10 e 128 caracteres.")
+        if not self.login_url.endswith("/auth/login"):
+            raise InvalidQueueStateError("O cadastro está indisponível. Contate o responsável.")
+        try:
+            response = requests.post(self.login_url.removesuffix("/auth/login") + "/auth/signup",
+                                     json={"name": name, "email": email, "password": password}, timeout=10)
+            if response.status_code != 200:
+                raise InvalidQueueStateError("Não foi possível cadastrar. Se já possui conta, entre; caso contrário, confira os dados.")
+            data = response.json()
+            if not isinstance(data, dict) or type(data.get("user_id")) is not int or data["user_id"] <= 0:
+                raise InvalidQueueStateError("Não foi possível confirmar o cadastro. Tente entrar antes de repetir.")
+            return data["user_id"]
+        except (requests.RequestException, ValueError):
+            raise InvalidQueueStateError("Não foi possível confirmar o cadastro. Tente entrar antes de repetir.") from None
+
+    def register_attendant(self, email: str, establishment_id: int, destination: str, *, token: str) -> dict:
+        email, destination = email.strip().lower(), destination.strip()
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email) or type(establishment_id) is not int or establishment_id <= 0 or not 1 <= len(destination) <= 80:
+            raise InvalidQueueStateError("Informe e-mail, estabelecimento e guichê válidos.")
+        result = self._operation_request("admin/attendants", {
+            "email": email, "estabelecimento_id": establishment_id, "destino_label": destination,
+        }, token)
+        if type(result.get("id")) is not int or result["id"] <= 0 or result.get("role") != "atendente" or result.get("estabelecimento_id") != establishment_id:
+            raise InvalidQueueStateError("Não foi possível confirmar o vínculo. Confira antes de repetir.")
+        return result
+
     def authenticate(self, email: str, password: str) -> Dict[str, Any]:
         """Endpoint: POST /auth/login"""
-        url = f"{self.base_url}/auth/login"
+        url = self.login_url
         payload = {"email": email, "password": password}
+        if not self.login_url:
+            raise AccessDeniedError("Configure [xano].login_url para autenticação.")
 
         try:
             response = requests.post(url, json=payload, timeout=10)
@@ -175,6 +202,25 @@ class QueueBackend:
 
                 auth_token = data.get("authToken")
                 remote_user = data.get("user")
+                if (
+                    remote_user is None
+                    and isinstance(auth_token, str)
+                    and auth_token.strip()
+                    and type(data.get("user_id")) is int
+                    and data["user_id"] > 0
+                ):
+                    if not self.me_url:
+                        raise AccessDeniedError("Configure login_url e me_url do Xano.")
+                    identity_response = requests.get(
+                        self.me_url,
+                        headers=self._get_headers(auth_token.strip()),
+                        timeout=10,
+                    )
+                    if identity_response.status_code != 200:
+                        raise AccessDeniedError("Não foi possível confirmar o usuário no Xano.")
+                    remote_user = identity_response.json()
+                    if not isinstance(remote_user, dict) or remote_user.get("id") != data["user_id"]:
+                        raise AccessDeniedError("Resposta de autenticação inválida.")
                 if (
                     not isinstance(auth_token, str)
                     or not auth_token.strip()
@@ -227,125 +273,135 @@ class QueueBackend:
             elif response.status_code in (400, 401, 403, 404):
                 raise AccessDeniedError("Credenciais inválidas ou usuário não cadastrado.")
             else:
-                raise AccessDeniedError(f"Erro na autenticação ({response.status_code}): {response.text}")
+                raise AccessDeniedError(f"Falha na autenticação do Xano (HTTP {response.status_code}).")
 
-        except requests.exceptions.RequestException as exc:
-            raise AccessDeniedError(f"Erro de conexão com o Xano: {str(exc)}")
+        except (requests.exceptions.RequestException, ValueError):
+            raise AccessDeniedError("Não foi possível autenticar no Xano.") from None
+
+    def verify_session(self, token: str, expected_user_id: int) -> Dict[str, Any]:
+        """Confirm identity and current role using the canonical Xano auth/me endpoint."""
+        if not isinstance(token, str) or not token.strip() or type(expected_user_id) is not int:
+            raise AccessDeniedError("Sessão inválida. Entre novamente.")
+        if not self.me_url:
+            raise SessionVerificationUnavailable("A verificação de sessão não está configurada.")
+        try:
+            response = requests.get(self.me_url, headers=self._get_headers(token), timeout=10)
+            if response.status_code in (401, 403, 404):
+                raise AccessDeniedError("Sessão expirada ou acesso revogado. Entre novamente.")
+            if response.status_code != 200:
+                raise SessionVerificationUnavailable("Não foi possível verificar sua sessão agora.")
+            profile = response.json()
+        except (requests.exceptions.RequestException, ValueError):
+            raise SessionVerificationUnavailable("Não foi possível verificar sua sessão agora.") from None
+        if not isinstance(profile, dict):
+            raise AccessDeniedError("Sessão inválida. Entre novamente.")
+        role = {"admin": "admin", "atendente": "attendant", "usuario": "user"}.get(
+            profile.get("role") if isinstance(profile.get("role"), str) else ""
+        )
+        if (
+            type(profile.get("id")) is not int or profile["id"] != expected_user_id
+            or profile["id"] <= 0 or role is None
+            or not isinstance(profile.get("name"), str) or not profile["name"].strip()
+            or not isinstance(profile.get("email"), str) or not profile["email"].strip()
+        ):
+            raise AccessDeniedError("Sessão inválida ou perfil sem acesso ao aplicativo.")
+        return {
+            "id": profile["id"], "user_id": profile["id"], "name": profile["name"],
+            "email": profile["email"], "role": role,
+            "establishment_id": profile.get("estabelecimento_id"), "authToken": token,
+        }
+
+    def _operation_request(self, path: str, payload: dict, token: Optional[str]) -> dict:
+        if not self.base_url:
+            raise InvalidQueueStateError("Configure [xano].base_url para o grupo Queue Management.")
+        if not token:
+            raise AccessDeniedError("Entre novamente para realizar esta operação.")
+        try:
+            response = requests.post(
+                f"{self.base_url}/{path}", json=payload,
+                headers=self._get_headers(token), timeout=10,
+            )
+            if response.status_code in (401, 403):
+                raise AccessDeniedError("O Xano não autorizou esta operação. Entre novamente ou confira suas permissões.")
+            if response.status_code != 200:
+                raise InvalidQueueStateError(f"O Xano recusou a operação (HTTP {response.status_code}). Atualize o painel antes de tentar novamente.")
+            data = response.json()
+            if not isinstance(data, dict):
+                raise InvalidQueueStateError("Resposta inválida da operação no Xano.")
+            return data
+        except (requests.RequestException, ValueError):
+            raise InvalidQueueStateError("Não foi possível confirmar a operação. Atualize o painel antes de tentar novamente.") from None
+
+    def _confirmed_ticket(self, data: dict, expected_status: str, *, queue_id: int | None = None, ticket_id: int | None = None) -> TicketRecord:
+        statuses = {"aguardando": "waiting", "chamado": "called", "concluido": "completed"}
+        if not isinstance(data, dict):
+            raise InvalidQueueStateError("Resposta inválida de senha no Xano.")
+        expected_id, expected_queue = ticket_id, queue_id
+        ticket_id = data.get("id")
+        number = data.get("numero", data.get("number"))
+        queue_id = data.get("fila_id", data.get("queue_id"))
+        user_id = data.get("usuario_id", data.get("user_id"))
+        raw_status = data.get("status")
+        status = statuses.get(raw_status, raw_status) if isinstance(raw_status, str) else None
+        if (
+            any(type(value) is not int or value <= 0 for value in (ticket_id, number, queue_id, user_id))
+            or status != expected_status
+            or (expected_id is not None and ticket_id != expected_id)
+            or (expected_queue is not None and queue_id != expected_queue)
+        ):
+            raise InvalidQueueStateError("Resposta inválida de senha no Xano. Atualize o painel para confirmar o estado.")
+        ticket = TicketRecord(
+            id=ticket_id, number=number, queue_id=queue_id, user_id=user_id,
+            status=status, created_at=data.get("created_at"),
+            called_at=data.get("chamado_at"), completed_at=data.get("concluido_at"),
+        )
+        self.tickets[ticket.id] = ticket
+        return ticket
 
     def emit_ticket(self, queue_id: int, user_id: int, token: Optional[str] = None) -> Dict[str, Any]:
-        """Endpoint: POST /join -> {"fila_id": int}"""
-        url = f"{self.base_url}/join"
-        payload = {"fila_id": int(queue_id)}
-
-        try:
-            response = requests.post(
-                url,
-                json=payload,
-                headers=self._get_headers(token),
-                timeout=10
-            )
-
-            if response.status_code == 200:
-                res_data = response.json()
-                ticket_id = res_data.get("id", self._next_ticket_id)
-                self._next_ticket_id += 1
-
-                ticket = TicketRecord(
-                    id=ticket_id,
-                    queue_id=queue_id,
-                    user_id=user_id,
-                    number=res_data.get("number", ticket_id),
-                    status=res_data.get("status", "waiting"),
-                    created_at=self._now(),
-                )
-                self.tickets[ticket_id] = ticket
-                self._record_log(user_id, "join_queue", {"ticket_id": ticket_id, "queue_id": queue_id})
-                return ticket.to_dict()
-            else:
-                raise InvalidQueueStateError(f"Erro ao emitir senha ({response.status_code}): {response.text}")
-
-        except requests.exceptions.RequestException as exc:
-            raise InvalidQueueStateError(f"Erro de conexão ao emitir senha: {str(exc)}")
+        data = self._operation_request("join", {"fila_id": int(queue_id)}, token)
+        return self._confirmed_ticket(data, "waiting", queue_id=queue_id).to_dict()
 
     def call_next_token(self, queue_id: int, attendant_id: int, token: Optional[str] = None) -> Dict[str, Any]:
-        """Endpoint: POST /call_next -> {"fila_id": int}"""
-        url = f"{self.base_url}/call_next"
-        payload = {"fila_id": int(queue_id)}
-
-        try:
-            response = requests.post(
-                url,
-                json=payload,
-                headers=self._get_headers(token),
-                timeout=10
-            )
-
-            if response.status_code == 200:
-                res_data = response.json()
-                senha_info = res_data.get("senha", {})
-
-                ticket_id = senha_info.get("id", 1) if isinstance(senha_info, dict) else 1
-                ticket = TicketRecord(
-                    id=ticket_id,
-                    queue_id=queue_id,
-                    user_id=attendant_id,
-                    number=senha_info.get("number", 1) if isinstance(senha_info, dict) else 1,
-                    status="called",
-                    called_at=self._now(),
-                )
-                self.tickets[ticket_id] = ticket
-                self._record_log(attendant_id, "call_next", {"queue_id": queue_id, "response": res_data})
-                return ticket.to_dict()
-            elif response.status_code in (400, 404):
-                raise InvalidQueueStateError("Não há senhas aguardando ou fila inválida.")
-            elif response.status_code in (401, 403):
-                raise AccessDeniedError("O atendente não tem autorização para chamar esta fila.")
-            else:
-                raise InvalidQueueStateError(f"Erro ao chamar senha ({response.status_code}): {response.text}")
-
-        except requests.exceptions.RequestException as exc:
-            raise InvalidQueueStateError(f"Erro de conexão ao chamar próxima senha: {str(exc)}")
+        data = self._operation_request("call_next", {"fila_id": int(queue_id)}, token)
+        return self._confirmed_ticket(data.get("senha"), "called", queue_id=queue_id).to_dict()
 
     def complete_service(self, ticket_id: int, attendant_id: int, token: Optional[str] = None) -> Dict[str, Any]:
-        """Endpoint: POST /complete -> {"senha_id": int}"""
-        ticket = self.tickets.get(ticket_id)
-        if ticket is not None and ticket.status != "called":
-            raise InvalidQueueStateError("A senha não está em atendimento.")
+        # O estado atual e a autorização são validados pelo Xano, inclusive após troca de sessão.
+        data = self._operation_request("complete", {"senha_id": int(ticket_id)}, token)
+        return self._confirmed_ticket(data.get("senha"), "completed", ticket_id=ticket_id).to_dict()
 
-        url = f"{self.base_url}/complete"
-        payload = {"senha_id": int(ticket_id)}
-
+    def get_attendant_dashboard(self, token: Optional[str] = None) -> list[dict]:
+        """Leia o estado compartilhado da operação no Xano a cada atualização."""
+        if not self.base_url:
+            raise InvalidQueueStateError("Configure [xano].base_url para o grupo Queue Management.")
         try:
-            response = requests.post(
-                url,
-                json=payload,
-                headers=self._get_headers(token),
-                timeout=10
+            response = requests.get(
+                f"{self.base_url}/attendant/dashboard",
+                headers=self._get_headers(token), timeout=10,
             )
-
-            if response.status_code == 200:
-                res_data = response.json()
-                if ticket_id in self.tickets:
-                    self.tickets[ticket_id].status = "completed"
-                    self.tickets[ticket_id].completed_at = self._now()
-                self._record_log(attendant_id, "complete_service", {"ticket_id": ticket_id})
-                return {"id": ticket_id, "number": ticket_id, "status": "completed"}
-            else:
-                raise InvalidQueueStateError(f"Erro ao finalizar atendimento ({response.status_code}): {response.text}")
-
-        except requests.exceptions.RequestException as exc:
-            raise InvalidQueueStateError(f"Erro de conexão ao finalizar atendimento: {str(exc)}")
-
-    def get_attendant_dashboard(self, token: Optional[str] = None) -> Dict[str, Any]:
-        """Endpoint: GET /attendant/dashboard"""
-        url = f"{self.base_url}/attendant/dashboard"
-        try:
-            response = requests.get(url, headers=self._get_headers(token), timeout=10)
-            if response.status_code == 200:
-                return response.json()
-            return {}
-        except Exception:
-            return {}
+            if response.status_code in (401, 403):
+                raise AccessDeniedError("O Xano não autorizou o acesso às filas deste atendente.")
+            if response.status_code != 200:
+                raise InvalidQueueStateError(f"Não foi possível consultar as filas (HTTP {response.status_code}).")
+            rows = response.json()
+            if not isinstance(rows, list) or any(
+                not isinstance(row, dict) or type(row.get("id")) is not int or row["id"] <= 0
+                or not isinstance(row.get("nome"), str)
+                or type(row.get("total_aguardando")) is not int or row["total_aguardando"] < 0
+                or (row.get("em_atendimento") is not None and (
+                    not isinstance(row["em_atendimento"], dict)
+                    or type(row["em_atendimento"].get("id")) is not int
+                    or row["em_atendimento"]["id"] <= 0
+                    or type(row["em_atendimento"].get("numero")) is not int
+                    or row["em_atendimento"]["numero"] <= 0
+                ))
+                for row in rows
+            ):
+                raise InvalidQueueStateError("Resposta inválida do painel de atendimento.")
+            return rows
+        except (requests.RequestException, ValueError):
+            raise InvalidQueueStateError("Não foi possível consultar o painel do Xano.") from None
 
     def register_establishment(self, name: str) -> Dict[str, Any]:
         if not name or not name.strip():

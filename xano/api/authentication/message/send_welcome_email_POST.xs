@@ -9,13 +9,24 @@ query "message/send_welcome_email" verb=POST {
   }
 
   stack {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
     // Retrieve the user record for the given user ID.
     db.get usuarios {
       field_name = "id"
       field_value = $input.user_id
     } as $user_record
 
-    precondition (($auth.role == "admin") || ($auth.id == $input.user_id)) {
+    precondition (($actor.role == "admin") || ($auth.id == $input.user_id)) {
       error_type = "accessdenied"
       error = "Você não tem permissão para enviar esta mensagem."
     }

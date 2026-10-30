@@ -8,6 +8,8 @@ import streamlit as st
 from streamlit_xano import get_display_feed_client
 from tv_sound import notification_tone
 from xano_client import XanoClientError
+from views.presentation import format_timestamp
+from portal_session import fragment_access_allowed
 
 
 REFRESH_INTERVALS_SECONDS = (3, 5, 10, 15, 30, 60)
@@ -34,7 +36,7 @@ def render_display_view() -> None:
     st.session_state.setdefault("tv_refresh_interval_seconds", 5)
     if st.session_state["tv_refresh_interval_seconds"] not in REFRESH_INTERVALS_SECONDS:
         st.session_state["tv_refresh_interval_seconds"] = 5
-    settings_column, sound_column = st.columns([1, 1])
+    settings_column, sound_column, presentation_column = st.columns([1, 1, 1])
     with settings_column:
         st.selectbox(
             "Atualizar a cada",
@@ -44,11 +46,24 @@ def render_display_view() -> None:
         )
     with sound_column:
         st.toggle("Ativar som", key="tv_sound_enabled")
+    with presentation_column:
+        st.toggle("Modo apresentação", key="tv_presentation_mode")
+    if st.session_state.get("tv_presentation_mode"):
+        st.markdown(
+            '<style>[data-testid="stSidebar"] {display:none;}'
+            '[data-testid="stMainBlockContainer"] {max-width:100%;}'
+            '.st-key-tv_current [data-testid="stMetricValue"] {font-size:clamp(7rem,16vw,14rem);}</style>',
+            unsafe_allow_html=True,
+        )
+
+    managed_session = bool(st.session_state.get("_portal_managed"))
 
     @st.fragment(
         run_every=_refresh_interval(st.session_state["tv_refresh_interval_seconds"])
     )
     def render_call_feed() -> None:
+        if managed_session and not fragment_access_allowed("Painel TV"):
+            return
         st.session_state.setdefault("tv_last_event_key", None)
         st.session_state.setdefault("tv_has_initial_snapshot", False)
         st.session_state.setdefault("tv_last_snapshot", None)
@@ -66,7 +81,7 @@ def render_display_view() -> None:
             snapshot_is_stale = True
             st.warning(
                 "Conexão indisponível. Exibindo snapshot desatualizado de "
-                f"{snapshot['snapshot_at']}."
+                f"{format_timestamp(snapshot['snapshot_at'])}."
             )
 
         is_stale = snapshot_is_stale
@@ -91,7 +106,7 @@ def render_display_view() -> None:
             and event_key
             and event_key == st.session_state.get("tv_last_event_key")
             and previous_snapshot is not None
-            and previous_snapshot.get("current_call", {}).get("event_key") != event_key
+            and (previous_snapshot.get("current_call") or {}).get("event_key") != event_key
         )
 
         if should_signal:
@@ -106,7 +121,7 @@ def render_display_view() -> None:
 
         current_column, history_column = st.columns([2.4, 1], gap="large")
         with current_column:
-            with st.container(border=True):
+            with st.container(border=True, key="tv_current"):
                 st.subheader("Senha chamada")
                 if current_call is None:
                     st.info("Aguardando a próxima chamada")
@@ -115,7 +130,9 @@ def render_display_view() -> None:
                     st.markdown(
                         f"### {current_call.get('destino') or 'Guichê não informado'}"
                     )
-                    st.caption(f"Chamada: {current_call.get('chamado_at', '—')}")
+                    if current_call.get("servico"):
+                        st.write(current_call["servico"])
+                    st.caption(f"Chamada: {format_timestamp(current_call.get('chamado_at'))}")
 
         with history_column:
             st.subheader("Chamadas recentes")
@@ -127,8 +144,10 @@ def render_display_view() -> None:
                     with st.container(border=True):
                         st.markdown(f"**Senha {call.get('numero', '—')}**")
                         st.write(call.get("destino") or "Guichê não informado")
-                        st.caption(call.get("chamado_at", "—"))
+                        if call.get("servico"):
+                            st.caption(call["servico"])
+                        st.caption(format_timestamp(call.get("chamado_at")))
 
-        st.caption(f"Atualização do Xano: {snapshot['snapshot_at']}")
+        st.caption(f"Última atualização: {format_timestamp(snapshot['snapshot_at'])} · horário de São Paulo")
 
     render_call_feed()

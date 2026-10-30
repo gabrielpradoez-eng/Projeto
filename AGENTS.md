@@ -16,3 +16,12 @@
 ## 4. Desenvolvimento Incremental
 - Qualquer mudança ou implementação deve ser guiada por workflows do OpenSpec.
 - Não modifique arquivos ou escopos que não façam parte da change atual sem autorização ou justificativa explícita.
+
+## 5. Estrutura OpenSpec
+
+- Contratos vigentes: `openspec/specs/<capacidade>/spec.md`.
+- Trabalho em acompanhamento: `openspec/changes/<mudanca>/`, com proposta, design, tarefas e deltas.
+- Histórico: `openspec/changes/archive/<AAAA-MM-DD>-<mudanca>/`, criado após sincronização e verificação.
+- Ferramenta fixa: `npm ci --ignore-scripts`; validação: `npm run spec:validate`.
+- Instruções e índice: `docs/openspec-workflow.md`.
+- Não arquive pendências operacionais como concluídas. Não migre os entrypoints do Streamlit apenas para imitar uma arquitetura que o OpenSpec não exige.

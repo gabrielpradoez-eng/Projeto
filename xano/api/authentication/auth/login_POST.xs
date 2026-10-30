@@ -43,7 +43,7 @@ query "auth/login" verb=POST {
   
     // Create an event log for login
     function.run "Quick Start/log_event" {
-      input = {user_id: $user.id, action: "login", metadata: $user}
+      input = {user_id: $user.id, action: "login", metadata: {usuario_id: $user.id}}
     } as $event_log
   }
 

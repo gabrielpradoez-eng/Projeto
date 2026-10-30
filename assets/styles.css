@@ -1,0 +1,51 @@
+:root { --fs-ink: #15243b; --fs-muted: #61718b; --fs-blue: #2563eb; }
+.stApp { background: #f4f7fc; }
+[data-testid="stMainBlockContainer"] { max-width: 1260px; padding-top: 2.2rem; padding-bottom: 3rem; }
+[data-testid="stSidebar"] { background: #0f203b; border-right: 1px solid #213450; }
+[data-testid="stSidebar"] h2, [data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label, [data-testid="stSidebar"] [data-testid="stCaptionContainer"] { color: #e3ebfa; }
+[data-testid="stSidebar"] [role="radiogroup"] { gap: .45rem; }
+[data-testid="stSidebar"] [role="radiogroup"] label { border-radius: 10px; padding: .6rem .7rem; transition: background .15s; }
+[data-testid="stSidebar"] [role="radiogroup"] label:hover { background: #203858; }
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) { background: #254b80; border-left: 3px solid #6ee7c1; }
+[data-testid="stSidebar"] input { color: #15243b; }
+[data-testid="stSidebar"] button p { color: #15243b; }
+[data-testid="stSidebar"] summary { color: #e3ebfa; }
+.fs-brand { display: flex; gap: 12px; align-items: center; padding: 4px 0 28px; color: #fff; }
+.fs-brand strong { font-size: 1.5rem; letter-spacing: -.6px; }
+.fs-brand small { display: block; color: #a5b8d5; font-size: .58rem; letter-spacing: 1.6px; margin-top: 1px; }
+.fs-mark { width: 42px; height: 44px; display: grid; place-items: center; border-radius: 13px; background: #67e2ba; color: #10243d; font-size: 1.8rem; font-weight: 900; }
+.fs-hero { position: relative; overflow: hidden; background: linear-gradient(115deg, #122c50, #1d4f91); border-radius: 22px; padding: 36px 40px; color: white; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 22px; box-shadow: 0 14px 35px #17335b12; }
+.fs-hero h1 { color: white; font-size: clamp(1.8rem, 3.2vw, 2.7rem); letter-spacing: -1.2px; line-height: 1.15; padding: 12px 0; max-width: 700px; }
+.fs-hero p { color: #d6e5fc; max-width: 640px; margin: 0; line-height: 1.65; font-size: .98rem; }
+.fs-eyebrow { color: #83ebca; font-size: .7rem; font-weight: 700; letter-spacing: 2px; }
+.fs-hero-art { display: flex; flex-direction: column; gap: 10px; transform: rotate(-9deg); padding-right: 18px; }
+.fs-hero-art span { padding: 8px 32px; border-radius: 9px; color: #fff; border: 1px solid #ffffff30; background: #ffffff0c; font-size: 1.25rem; font-weight: 700; }
+.fs-hero-art span:last-child { background: #70e3bd; color: #123352; }
+h2, h3 { color: #15243b; letter-spacing: -.5px; }
+[data-testid="stVerticalBlockBorderWrapper"] > div { border-color: #dce5f1 !important; border-radius: 16px !important; background: white; }
+[data-testid="stMetric"] { background: white; border: 1px solid #e0e7f1; padding: 18px 20px; border-radius: 14px; }
+[data-testid="stMetricLabel"] { color: #61718b; font-size: .85rem; }
+[data-testid="stMetricValue"] { font-weight: 750; color: #183b6a; }
+[data-testid="stButton"] button, [data-testid="stDownloadButton"] button { border-radius: 10px; min-height: 44px; font-weight: 600; }
+[data-testid="stTextInput"] input { min-height: 44px; }
+[data-testid="stCaptionContainer"] { color: #61718b; }
+.fs-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 0 0 28px; }
+.fs-step { background: white; border: 1px solid #dfe7f2; border-radius: 14px; padding: 18px 20px; }
+.fs-step b { display: inline-grid; place-items: center; width: 27px; height: 27px; background: #edf4ff; color: #2563eb; border-radius: 8px; margin-right: 8px; font-size: .8rem; }
+.fs-step strong { font-size: .9rem; color: #183b6a; }
+.fs-step p { color: #61718b; font-size: .8rem; line-height: 1.5; margin: 9px 0 0; }
+.st-key-tv_current [data-testid="stMetricValue"] { font-size: clamp(5rem, 10vw, 9rem); line-height: 1.1; }
+.st-key-tv_current [data-testid="stMetric"] { border: 0; background: transparent; padding: 10px 0 22px; }
+.st-key-tv_current h3 { font-size: 1.8rem; }
+.st-key-tv_current { border-top: 5px solid #2563eb; border-radius: 16px; }
+button:focus-visible, input:focus-visible { outline: 3px solid #3b82f6 !important; outline-offset: 3px; }
+@media (max-width: 700px) {
+ [data-testid="stMainBlockContainer"] { padding: 1.1rem 1rem 2rem; }
+ .fs-hero { padding: 26px 23px; border-radius: 17px; }
+ .fs-hero-art { display: none; }
+ .fs-steps { grid-template-columns: 1fr; gap: 8px; }
+ .fs-step { padding: 12px 15px; }
+ .fs-step p { margin-top: 5px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

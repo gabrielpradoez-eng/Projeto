@@ -10,6 +10,22 @@ query call_next verb=POST {
   }
 
   stack {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
+    precondition ($actor.role == "atendente") {
+      error_type = "accessdenied"
+      error = "Acesso restrito a atendentes."
+    }
+
     // 1. Validar se o usuário é um atendente ativo
     db.get atendentes {
       field_name = "usuario_id"
@@ -27,12 +43,17 @@ query call_next verb=POST {
       field_value = $input.fila_id
     } as $fila
   
+    precondition (($fila != null) && ($fila.status == "aberta")) {
+      error_type = "notfound"
+      error = "Fila inexistente ou fechada."
+    }
+
     db.get servicos {
       field_name = "id"
       field_value = $fila.servico_id
     } as $servico
   
-    precondition ($servico.estabelecimento_id == $atendente.estabelecimento_id) {
+    precondition (($servico != null) && ($servico.estabelecimento_id == $atendente.estabelecimento_id)) {
       error_type = "accessdenied"
       error = "Você não tem permissão para atender nesta fila."
     }

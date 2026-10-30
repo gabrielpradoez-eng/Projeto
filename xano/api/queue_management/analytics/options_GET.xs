@@ -7,13 +7,24 @@ query "analytics/options" verb=GET {
   }
 
   stack {
-    precondition ($auth.role == "admin") {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
+    precondition ($actor.role == "admin") {
       error_type = "accessdenied"
       error = "Acesso restrito a administradores."
     }
 
     db.query estabelecimentos {
-      where = ($auth.estabelecimento_id == null) || ($db.estabelecimentos.id == $auth.estabelecimento_id)
+      where = (($actor.estabelecimento_id == null) || ($actor.estabelecimento_id == 0)) || ($db.estabelecimentos.id == $actor.estabelecimento_id)
       sort = {nome: "asc"}
       return = {type: "list"}
     } as $estabelecimentos
@@ -26,7 +37,7 @@ query "analytics/options" verb=GET {
       value = []
     }
 
-    foreach ($estabelecimentos.items) {
+    foreach ($estabelecimentos) {
       each as $estabelecimento {
         array.push $estabelecimentos_options {
           value = {
@@ -41,7 +52,7 @@ query "analytics/options" verb=GET {
           return = {type: "list"}
         } as $servicos
 
-        foreach ($servicos.items) {
+        foreach ($servicos) {
           each as $servico {
             db.query filas {
               where = $db.filas.servico_id == $servico.id
@@ -49,7 +60,7 @@ query "analytics/options" verb=GET {
               return = {type: "list"}
             } as $filas
 
-            foreach ($filas.items) {
+            foreach ($filas) {
               each as $fila {
                 array.push $filas_options {
                   value = {

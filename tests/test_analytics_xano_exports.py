@@ -12,9 +12,9 @@ def test_analytics_options_require_admin_and_limit_establishment_scope():
     source = read_export("xano/api/queue_management/analytics/options_GET.xs")
 
     assert 'auth = "usuarios"' in source
-    assert '$auth.role == "admin"' in source
-    assert "$auth.estabelecimento_id == null" in source
-    assert "$db.estabelecimentos.id == $auth.estabelecimento_id" in source
+    assert '$actor.role == "admin"' in source
+    assert "$actor.estabelecimento_id == null" in source
+    assert "$db.estabelecimentos.id == $actor.estabelecimento_id" in source
     assert "$db.servicos.estabelecimento_id == $estabelecimento.id" in source
     assert "$db.filas.servico_id == $servico.id" in source
 
@@ -34,11 +34,11 @@ def test_analytics_report_validates_admin_scope_and_utc_range():
     source = read_export("xano/api/queue_management/analytics/report_POST.xs")
 
     assert 'auth = "usuarios"' in source
-    assert '$auth.role == "admin"' in source
-    assert "$auth.estabelecimento_id == $input.estabelecimento_id" in source
+    assert '$actor.role == "admin"' in source
+    assert "$actor.estabelecimento_id == $input.estabelecimento_id" in source
     assert "$input.period_start < $input.period_end" in source
     assert "$period_ms <= 2678400000" in source
-    assert "$db.servicos.estabelecimento_id == $input.estabelecimento_id" in source
+    assert "$db.servico.estabelecimento_id == $input.estabelecimento_id" in source
     assert "$input.servico_id == null" in source
     assert "$input.fila_id == null" in source
     assert "$filas.items|count <= 100" in source

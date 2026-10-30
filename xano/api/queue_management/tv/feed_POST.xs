@@ -23,7 +23,7 @@ query "tv/feed" verb=POST {
 
     db.query atendimentos {
       where = $db.atendimentos.estabelecimento_id == $display.estabelecimento_id
-      sort = {id: "desc"}
+      sort = {started_at: "desc", id: "desc"}
       return = {type: "single"}
     } as $chamada_atual
 
@@ -33,20 +33,52 @@ query "tv/feed" verb=POST {
 
     conditional {
       if ($chamada_atual != null) {
+        db.get senhas {
+          field_name = "id"
+          field_value = $chamada_atual.senha_id
+        } as $senha_atual
+
+        db.get filas {
+          field_name = "id"
+          field_value = $senha_atual.fila_id
+        } as $fila_atual
+
+        db.get servicos {
+          field_name = "id"
+          field_value = $fila_atual.servico_id
+        } as $servico_atual
+
         db.query atendimentos {
           where = $db.atendimentos.estabelecimento_id == $display.estabelecimento_id && $db.atendimentos.id != $chamada_atual.id
-          sort = {id: "desc"}
+          sort = {started_at: "desc", id: "desc"}
           return = {type: "list", paging: {page: 1, per_page: 5}}
         } as $chamadas_recentes
 
         foreach ($chamadas_recentes.items) {
           each as $chamada {
+            db.get senhas {
+              field_name = "id"
+              field_value = $chamada.senha_id
+            } as $senha_historico
+
+            db.get filas {
+              field_name = "id"
+              field_value = $senha_historico.fila_id
+            } as $fila_historico
+
+            db.get servicos {
+              field_name = "id"
+              field_value = $fila_historico.servico_id
+            } as $servico_historico
+
             array.push $historico {
               value = {
                 event_key : $chamada.display_event_key
                 numero    : $chamada.numero_senha
                 destino   : $chamada.destino_label
                 chamado_at: $chamada.started_at
+                servico   : $servico_historico.nome
+                fila      : $fila_historico.nome
               }
             }
           }
@@ -61,6 +93,8 @@ query "tv/feed" verb=POST {
       numero    : $chamada_atual.numero_senha
       destino   : $chamada_atual.destino_label
       chamado_at: $chamada_atual.started_at
+      servico   : $servico_atual.nome
+      fila      : $fila_atual.nome
     } : null
     history    : $historico
     snapshot_at: now

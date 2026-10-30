@@ -1,0 +1,11 @@
+- [x] Reproduzir falha no site publicado após emitir senha de teste.
+- [x] Corrigir callbacks, normalizar horários da TV e executar 126 testes.
+- [x] Atualizar a branch publicada com a correção (commit 541081d).
+- [x] Confirmar no site que a branch é a correta e que a instância ainda executa a versão anterior.
+- [x] Encerrar a senha 4 de teste no Xano com revogação de rastreamento.
+- [x] Repetir teste após reboot informado pelo proprietário: ainda houve erro antigo e TV indisponível.
+- [x] Confirmar branch com git fetch e enviar atualização de app.py pela API de conteúdo do GitHub (16fb49a).
+- [x] Examinar logs fornecidos em 29/10: inicialização registrada em 28/10, callbacks antigos e 94 erros de ticket_reference após limpeza; sem registro de novo pull em 29/10 nem causa explícita da ausência de atualização.
+- [x] Proteger fragmento contra sessão limpa, inativa ou encerrada; executar 129 testes, compileall e diff --check.
+- [x] Incluir versão 2026.10.29.2 no menu About para permitir verificação do código carregado.
+- [x] Confirmar reinício em 29/10 às 15:33 UTC nos logs, versão 2026.10.29.2 no About, TV recebendo snapshot do Xano e retorno ao Totem por callback sem exceção. Nenhuma nova senha emitida nesta verificação.

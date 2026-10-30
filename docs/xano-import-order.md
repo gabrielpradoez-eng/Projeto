@@ -1,6 +1,6 @@
 # Ordem de importação do Xano
 
-Os exports Xano estão em `xano/` (não em `openspec/`). O repositório tinha 41 arquivos `.xs` antes desta change; esta lista agora inclui também o novo endpoint de seed, totalizando 42 arquivos classificados. Importe somente em um workspace descartável/não produtivo depois de corrigir as referências indicadas abaixo.
+Os exports Xano estão em `xano/` (não em `openspec/`). O inventário inclui os componentes da aplicação, o endpoint de seed e a rotina interna de apresentação, totalizando 43 arquivos classificados. Importe somente em um workspace descartável/não produtivo depois de corrigir as referências indicadas abaixo.
 
 ## Pré-requisitos antes do primeiro import
 
@@ -72,6 +72,10 @@ Importe as tabelas referenciadas por chaves estrangeiras antes das tabelas depen
 
 Importe `xano/api/queue_management/setup/seed_POST.xs` somente depois dos grupos, tabelas, funções e endpoints de que depende, e somente em workspace de teste com a proteção de seed habilitada.
 
+### 8. Rotina manual de apresentação
+
+`xano/function/prepare_presentation.xs` é uma função interna, sem endpoint público, para o cenário de demonstração identificado no próprio código. Não é uma dependência da aplicação. O padrão `apply=false` apenas consulta; `apply=true` prepara os dados em transação, sem criar credenciais ou excluir registros. Confira os IDs e as precondições antes de reutilizar em outro workspace. Chaves determinísticas de evento impedem duplicar o histórico ao repetir a execução.
+
 ## Correções necessárias nos exports
 
 - As referências vazias a tabelas nos exports de autenticação devem apontar para `usuarios`; o endpoint pessoal de logs usa `event_log`. Os exports de `generate_magic_link` e `log_event` também precisam usar as tabelas nomeadas correspondentes.
@@ -92,4 +96,8 @@ Os cinco arquivos seguintes são exemplos genéricos ou metadados e não são de
 - `xano/function/quick_start/enforce_role.xs` — exemplo de hierarquia de papéis incompatível com o enum atual.
 - `xano/workspace/gabriels_workspace.xs` — preferências/metadata de workspace, não componente da API.
 
-O inventário base contém 41 exports: 36 componentes de aplicação na sequência principal, incluindo `stats_GET` após o reparo de autorização, e cinco exemplos/metadata excluídos. Com o endpoint de seed listado na seção 7, o inventário atual contém 42 arquivos classificados.
+O inventário base contém 41 exports: 36 componentes de aplicação na sequência principal e cinco exemplos/metadata excluídos. Com o endpoint de seed e a rotina manual de apresentação, o inventário atual contém 43 arquivos classificados.
+
+## Cadastro de clientes e atendentes
+
+Atualizar `xano/api/authentication/auth/signup_POST.xs` e importar `xano/api/queue_management/admin/attendants_POST.xs` após as tabelas usuarios, estabelecimentos e atendentes. O segundo endpoint exige autenticação de usuarios e administrador do estabelecimento.

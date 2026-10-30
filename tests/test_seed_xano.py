@@ -174,7 +174,7 @@ def test_import_manifest_classifies_every_existing_xano_export():
         for path in (ROOT / "xano").rglob("*.xs")
     }
 
-    assert len(actual_exports) == 42
+    assert len(actual_exports) == 44
     assert listed_exports == actual_exports
     assert "stats_GET.xs" in manifest
     assert "Não disponibilize a versão pública/sem escopo" in manifest
@@ -212,8 +212,8 @@ def test_signup_role_matches_user_schema_enum_and_stats_require_scope():
     assert 'role      : "usuario"' in signup
     assert 'values = ["admin", "atendente", "usuario", "totem"]' in users_table
     assert 'auth = "usuarios"' in stats
-    assert '$auth.role == "admin"' in stats
-    assert '$auth.role == "atendente"' in stats
+    assert '$actor.role == "admin"' in stats
+    assert '$actor.role == "atendente"' in stats
     assert "$atendente.estabelecimento_id == $servico.estabelecimento_id" in stats
 
 

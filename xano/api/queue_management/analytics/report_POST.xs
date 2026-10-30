@@ -18,12 +18,23 @@ query "analytics/report" verb=POST {
   }
 
   stack {
-    precondition ($auth.role == "admin") {
+    db.get usuarios {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "role", "estabelecimento_id"]
+    } as $actor
+
+    precondition ($actor != null) {
+      error_type = "accessdenied"
+      error = "Usuário autenticado não encontrado."
+    }
+
+    precondition ($actor.role == "admin") {
       error_type = "accessdenied"
       error = "Acesso restrito a administradores."
     }
 
-    precondition (($auth.estabelecimento_id == null) || ($auth.estabelecimento_id == $input.estabelecimento_id)) {
+    precondition (($actor.estabelecimento_id == null) || ($actor.estabelecimento_id == $input.estabelecimento_id)) {
       error_type = "accessdenied"
       error = "Você não tem acesso a este estabelecimento."
     }
@@ -56,12 +67,13 @@ query "analytics/report" verb=POST {
       join = {
         servico: {
           table: "servicos"
-          where: ($db.filas.servico_id == $db.servicos.id)
+          where: ($db.filas.servico_id == $db.servico.id)
         }
       }
-      where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id))
+      where = ($db.servico.estabelecimento_id == $input.estabelecimento_id && (($input.servico_id == null || $input.servico_id == 0) || $db.filas.servico_id == $input.servico_id) && (($input.fila_id == null || $input.fila_id == 0) || $db.filas.id == $input.fila_id))
       sort = {nome: "asc"}
       return = {type: "list", paging: {page: 1, per_page: 101}}
+      eval = {servico_nome: $db.servico.nome}
     } as $filas
 
     precondition ($filas.items|count > 0) {
@@ -139,10 +151,10 @@ query "analytics/report" verb=POST {
           join = {
             senha: {
               table: "senhas"
-              where: ($db.atendimentos.senha_id == $db.senhas.id)
+              where: ($db.atendimentos.senha_id == $db.senha.id)
             }
           }
-          where = ($db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senhas.fila_id == $fila.id)
+          where = ($db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senha.fila_id == $fila.id)
           return = {type: "count"}
         } as $service_sample_count
 
@@ -155,10 +167,10 @@ query "analytics/report" verb=POST {
           join = {
             senha: {
               table: "senhas"
-              where: ($db.atendimentos.senha_id == $db.senhas.id)
+              where: ($db.atendimentos.senha_id == $db.senha.id)
             }
           }
-          where = ($db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senhas.fila_id == $fila.id)
+          where = ($db.atendimentos.estabelecimento_id == $input.estabelecimento_id && $db.atendimentos.ended_at >= $input.period_start && $db.atendimentos.ended_at < $input.period_end && $db.atendimentos.started_at != null && $db.senha.fila_id == $fila.id)
           sort = {ended_at: "asc"}
           return = {type: "list", paging: {page: 1, per_page: 1000}}
         } as $service_samples
@@ -177,7 +189,7 @@ query "analytics/report" verb=POST {
 
         array.push $queue_metrics {
           value = {
-            servico_nome          : $fila.servico.nome
+            servico_nome          : $fila.servico_nome
             fila_nome             : $fila.nome
             emitidas              : $issued_count
             chamadas              : $called_count
@@ -225,14 +237,14 @@ query "analytics/report" verb=POST {
               join = {
                 fila: {
                   table: "filas"
-                  where: ($db.senhas.fila_id == $db.filas.id)
+                  where: ($db.senhas.fila_id == $db.fila.id)
                 }
                 servico: {
                   table: "servicos"
-                  where: ($db.filas.servico_id == $db.servicos.id)
+                  where: ($db.fila.servico_id == $db.servico.id)
                 }
               }
-              where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.created_at >= $bucket_start && $db.senhas.created_at < $bucket_end)
+              where = ($db.servico.estabelecimento_id == $input.estabelecimento_id && (($input.servico_id == null || $input.servico_id == 0) || $db.fila.servico_id == $input.servico_id) && (($input.fila_id == null || $input.fila_id == 0) || $db.fila.id == $input.fila_id) && $db.senhas.created_at >= $bucket_start && $db.senhas.created_at < $bucket_end)
               return = {type: "count"}
             } as $daily_issued
 
@@ -240,14 +252,14 @@ query "analytics/report" verb=POST {
               join = {
                 fila: {
                   table: "filas"
-                  where: ($db.senhas.fila_id == $db.filas.id)
+                  where: ($db.senhas.fila_id == $db.fila.id)
                 }
                 servico: {
                   table: "servicos"
-                  where: ($db.filas.servico_id == $db.servicos.id)
+                  where: ($db.fila.servico_id == $db.servico.id)
                 }
               }
-              where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.chamado_at >= $bucket_start && $db.senhas.chamado_at < $bucket_end)
+              where = ($db.servico.estabelecimento_id == $input.estabelecimento_id && (($input.servico_id == null || $input.servico_id == 0) || $db.fila.servico_id == $input.servico_id) && (($input.fila_id == null || $input.fila_id == 0) || $db.fila.id == $input.fila_id) && $db.senhas.chamado_at >= $bucket_start && $db.senhas.chamado_at < $bucket_end)
               return = {type: "count"}
             } as $daily_called
 
@@ -255,14 +267,14 @@ query "analytics/report" verb=POST {
               join = {
                 fila: {
                   table: "filas"
-                  where: ($db.senhas.fila_id == $db.filas.id)
+                  where: ($db.senhas.fila_id == $db.fila.id)
                 }
                 servico: {
                   table: "servicos"
-                  where: ($db.filas.servico_id == $db.servicos.id)
+                  where: ($db.fila.servico_id == $db.servico.id)
                 }
               }
-              where = ($db.servicos.estabelecimento_id == $input.estabelecimento_id && ($input.servico_id == null || $db.filas.servico_id == $input.servico_id) && ($input.fila_id == null || $db.filas.id == $input.fila_id) && $db.senhas.concluido_at >= $bucket_start && $db.senhas.concluido_at < $bucket_end)
+              where = ($db.servico.estabelecimento_id == $input.estabelecimento_id && (($input.servico_id == null || $input.servico_id == 0) || $db.fila.servico_id == $input.servico_id) && (($input.fila_id == null || $input.fila_id == 0) || $db.fila.id == $input.fila_id) && $db.senhas.concluido_at >= $bucket_start && $db.senhas.concluido_at < $bucket_end)
               return = {type: "count"}
             } as $daily_completed
 
@@ -348,7 +360,7 @@ query "analytics/report" verb=POST {
     queues      : $filas.items|map:{
       estabelecimento_id: $input.estabelecimento_id
       servico_id        : $$.servico_id
-      servico_nome      : $$.servico.nome
+      servico_nome      : $$.servico_nome
       fila_id           : $$.id
       fila_nome         : $$.nome
     }

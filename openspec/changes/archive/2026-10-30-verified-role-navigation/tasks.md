@@ -1,0 +1,6 @@
+- [x] Implementar verificação remota de sessão e permissões por perfil.
+- [x] Criar login único e reorganizar navegação, logout e relatórios.
+- [x] Proteger atualizações automáticas após expiração/logout.
+- [x] Validar autenticação, isolamento e regressões: 163 testes, compileall e diff --check aprovados.
+- [x] Publicar versão 2026.10.29.4 na branch de deploy (b032564).
+- [x] Conferir tela inicial protegida: revisão posterior confirmou login administrativo e logout na versão 2026.10.29.5; nova inspeção anônima em 30/10/2026 confirmou somente login/cadastro na versão 2026.10.29.6. Evidências em docs/project-review-presentation.md e docs/project-audit.md.

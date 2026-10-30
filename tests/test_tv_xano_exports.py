@@ -21,7 +21,9 @@ def test_display_feed_validates_hash_active_state_and_establishment_scope():
 def test_display_feed_orders_history_in_xano_and_limits_it_to_five():
     source = read_export("xano/api/queue_management/tv/feed_POST.xs")
 
-    assert 'sort = {id: "desc"}' in source
+    assert source.count('sort = {started_at: "desc", id: "desc"}') == 2
+    assert "servico   : $servico_atual.nome" in source
+    assert "servico   : $servico_historico.nome" in source
     assert "per_page: 5" in source
     assert "foreach ($chamadas_recentes.items)" in source
 
@@ -29,7 +31,7 @@ def test_display_feed_orders_history_in_xano_and_limits_it_to_five():
 def test_admin_provisioning_returns_raw_credential_but_stores_only_hash():
     source = read_export("xano/api/queue_management/tv/register_POST.xs")
 
-    assert '$auth.role == "admin"' in source
+    assert '$actor.role == "admin"' in source
     assert "$credential|sha256" in source
     assert "credential: $credential" in source
     assert "credential_hash: $credential" not in source
@@ -44,3 +46,11 @@ def test_call_operation_persists_public_snapshot_without_client_identity():
     assert "destino_label:" in attendance_data
     assert "display_event_key: $display_event_key" in attendance_data
     assert "usuario_id:" not in attendance_data
+
+def test_display_provisioning_checks_admin_establishment_before_creating_credentials():
+    source = read_export("xano/api/queue_management/tv/register_POST.xs")
+    guards = source.split("security.create_uuid", 1)[0]
+    assert "$actor.estabelecimento_id == $input.estabelecimento_id" in guards
+    assert "$actor.estabelecimento_id == null" in guards
+    assert "$actor.estabelecimento_id == 0" in guards
+    assert "accessdenied" in guards
