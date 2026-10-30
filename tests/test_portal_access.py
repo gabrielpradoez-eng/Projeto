@@ -163,6 +163,7 @@ def test_tv_scheduled_refresh_stops_before_fetch_when_session_is_revoked():
     backend = IdentityBackend("admin")
     feed = NoContentClient()
     app = AppTest.from_string('''
+import time
 import streamlit as st
 from unittest.mock import patch
 from views.display_view import render_display_view
@@ -180,7 +181,7 @@ feed = st.session_state._display_feed_client_override
 backend = st.session_state.backend
 with patch.object(st, "fragment", capture_fragment):
     render_display_view()
-st.session_state._portal_verified_at = 0
+st.session_state._portal_verified_at = time.monotonic() - 61
 backend.verify_session.side_effect = AccessDeniedError("revoked")
 with patch("portal_session.st.rerun", side_effect=StopRefresh):
     try:

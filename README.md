@@ -124,4 +124,4 @@ Integração e versão publicada confirmadas. Os testes concorrentes de fila pas
 
 ## Interface empresarial e acesso pelo celular
 
-A versão 2026.10.30.2 traz tema empresarial, cabeçalhos compactos e formulários consistentes. Até 900px, o seletor Navegar para e a saída ficam no conteúdo. Até 640px, colunas e métricas empilham e botões usam a largura disponível. Filtros de relatórios ficam no conteúdo do portal. A navegação permanece restrita ao perfil verificado. Evidências de publicação e limites de verificação são acompanhados na [mudança OpenSpec](openspec/changes/corporate-responsive-interface/tasks.md).
+A versão 2026.10.30.2 traz tema empresarial, cabeçalhos compactos e formulários consistentes. Até 900px, o seletor Navegar para e a saída ficam no conteúdo. Até 640px, colunas e métricas empilham e botões usam a largura disponível. Filtros de relatórios ficam no conteúdo do portal. A navegação permanece restrita ao perfil verificado. A ativação visual no Streamlit ainda depende da verificação do deploy. Veja as [evidências e limites](docs/corporate-responsive-interface.md) e a [mudança OpenSpec](openspec/changes/corporate-responsive-interface/tasks.md).
