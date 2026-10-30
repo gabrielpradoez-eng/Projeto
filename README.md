@@ -82,7 +82,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de 30/10/2026 foi verificada com **220 testes aprovados**, **21 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga.
+A revisão de 30/10/2026 foi verificada com **220 testes aprovados**, **22 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga.
 
 ## Trabalhar com OpenSpec
 
@@ -114,6 +114,10 @@ O workflow [OpenSpec validation](.github/workflows/openspec-validation.yml) exec
 - [Importação dos exports Xano](docs/xano-import-order.md) e [deploy no Streamlit](docs/streamlit-deploy.md).
 - [Revisão e dados de apresentação](docs/project-review-presentation.md).
 
-**Situação do cadastro:** código e endpoints publicados. Em 30/10/2026, o site confirmou 2026.10.29.6, apresentou Criar conta e rejeitou cadastro vazio. Cadastro positivo e vínculo administrativo continuam pendentes no [checklist](openspec/changes/account-registration/tasks.md). A revisão analítica 2026.10.30.1 deve ser conferida no About após atualização do deploy.
+**Situação do cadastro:** código e endpoints publicados. Em 30/10/2026, o site confirmou 2026.10.29.6, apresentou Criar conta e rejeitou cadastro vazio. Cadastro positivo e vínculo administrativo continuam pendentes no [checklist](openspec/changes/account-registration/tasks.md). A versão 2026.10.30.1 foi confirmada no About.
 
-**GitHub:** as atualizações estão na branch `codex/streamlit-deployment-preparation`, no [PR #1](https://github.com/gabrielpradoez-eng/Projeto/pull/1), ainda em rascunho. A `main` permanece na base anterior enquanto não houver merge. O CI inclui [testes Python](.github/workflows/python-tests.yml) e validação OpenSpec; resultados e limites da verificação estão no relatório de auditoria.
+**GitHub:** o [PR #1](https://github.com/gabrielpradoez-eng/Projeto/pull/1) foi integrado à `main` pelo merge `e12a1ee`. A main e a branch do deploy são mantidas com o mesmo conteúdo no fechamento. O CI inclui [testes Python](.github/workflows/python-tests.yml) e validação OpenSpec; resultados e limites da verificação estão no relatório de auditoria.
+
+## Fechamento
+
+Integração e versão publicada confirmadas. Cadastro positivo e testes de concorrência dependem de restabelecer as sessões autenticadas. Consulte o [registro de fechamento](docs/release-readiness.md) e o [checklist](openspec/changes/release-readiness/tasks.md).

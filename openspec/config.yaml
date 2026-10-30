@@ -11,7 +11,7 @@ context: |
   Tech stack:
     - Backend & Banco de Dados: Xano (APIs REST e logica de negocio; atualizacao por polling no Streamlit)
     - Frontend / Interfaces: Streamlit (Python); Reflex nao utilizado no deploy atual
-    - Comunicação / Integração: Consumo das APIs REST e WebSockets do Xano via Python
+    - Comunicação / Integração: Consumo das APIs REST do Xano via Python; atualizacao periodica por fragmentos Streamlit
 
   Architecture: O Xano atua como o backend centralizador das regras de negócio, persistência de dados e controle de chamadas. As interfaces em Streamlit atuam como as aplicações cliente (Totem de atendimento, Painel de Chamadas público, Painel do Atendente e Dashboard Administrativo), consumindo os serviços do Xano.
 

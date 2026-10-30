@@ -1,6 +1,6 @@
 # Preparação para deploy do FilaSmart
 
-> Estado atualizado em 30/10/2026: deploy público ativo; About confirmou 2026.10.29.6 e o formulário Criar conta rejeitou envio vazio. Login administrativo, relatórios e TV foram validados em 29/10. As anotações abaixo preservam a sequência histórica e alguns bloqueios já foram superados. A revisão analítica 2026.10.30.1 está na branch; conferir sua ativação no About. Cadastro positivo e concorrência permanecem pendentes. Veja [auditoria atual](project-audit.md).
+> Estado atualizado em 30/10/2026: deploy público ativo; About confirmou 2026.10.29.6 e o formulário Criar conta rejeitou envio vazio. Login administrativo, relatórios e TV foram validados em 29/10. As anotações abaixo preservam a sequência histórica e alguns bloqueios já foram superados. O fechamento posterior confirmou 2026.10.30.1 no About e integração à main pelo PR #1. Cadastro positivo e concorrência permanecem pendentes. Veja [auditoria atual](project-audit.md).
 
 
 O ponto de entrada da aplicação unificada é `app.py`. As dependências de execução estão em `requirements.txt`.

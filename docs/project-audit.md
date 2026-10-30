@@ -1,5 +1,8 @@
 # Revisão de consistência — 30/10/2026
 
+> Fechamento posterior: PR #1 integrado à main pelo merge e12a1ee; versão 2026.10.30.1 confirmada no About. As referências abaixo a main anterior e runtime não confirmado preservam a evidência da auditoria antes do fechamento. Consulte [situação atual](release-readiness.md).
+
+
 ## Resultado
 
 A revisão partiu do commit `2ea5e099b28cbfd17940f90ba123f0fce5c4148e`, na branch `codex/streamlit-deployment-preparation`. A árvore local estava idêntica ao GitHub antes das correções. A `main` continua em `885fe723663baebe76bdf93b6ffd0fdb2d3e9a73`; o PR #1 permanece aberto e em rascunho, sem merge. Código publicado na branch não significa atualização da main nem publicação dos exports no Xano.

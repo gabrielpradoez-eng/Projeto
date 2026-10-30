@@ -55,19 +55,20 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
-| [account-registration](../openspec/changes/account-registration/tasks.md) | 2 tarefa(s) pendente(s); consultar evidências no checklist. |
-| [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Revisão atual; evidências em project-audit.md. |
-| [published-tracking-navigation](../openspec/changes/published-tracking-navigation/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | 1 tarefa(s) pendente(s); consultar evidências no checklist. |
-| [reorganize-openspec-structure](../openspec/changes/reorganize-openspec-structure/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [streamlit-deployment-preparation](../openspec/changes/streamlit-deployment-preparation/tasks.md) | 2 tarefa(s) pendente(s); consultar evidências no checklist. |
-| [totem-tv-runtime-validation](../openspec/changes/totem-tv-runtime-validation/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [xano-operations-integration](../openspec/changes/xano-operations-integration/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [xano-runtime-identity](../openspec/changes/xano-runtime-identity/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [xano-test-provisioning](../openspec/changes/xano-test-provisioning/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [xano-ticket-issue-diagnostics](../openspec/changes/xano-ticket-issue-diagnostics/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
+| [account-registration](../openspec/changes/account-registration/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
+| [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [published-tracking-navigation](../openspec/changes/published-tracking-navigation/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | 1 tarefa(s) pendente(s); consultar checklist. |
+| [release-readiness](../openspec/changes/release-readiness/tasks.md) | 4 tarefa(s) pendente(s); consultar checklist. |
+| [reorganize-openspec-structure](../openspec/changes/reorganize-openspec-structure/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [streamlit-deployment-preparation](../openspec/changes/streamlit-deployment-preparation/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
+| [totem-tv-runtime-validation](../openspec/changes/totem-tv-runtime-validation/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [xano-operations-integration](../openspec/changes/xano-operations-integration/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [xano-runtime-identity](../openspec/changes/xano-runtime-identity/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [xano-test-provisioning](../openspec/changes/xano-test-provisioning/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [xano-ticket-issue-diagnostics](../openspec/changes/xano-ticket-issue-diagnostics/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 
 ## Arquivamentos desta reorganização
 
