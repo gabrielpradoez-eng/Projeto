@@ -6,5 +6,5 @@
 - [x] Publicar código na branch de deploy, versão 2026.10.29.6, commit 98fa0fa.
 - [x] Confirmar ativação da versão 2026.10.29.6 no About em 30/10/2026; reinício deixou de ser um bloqueio observado.
 - [x] Conferir formulário público Criar conta e rejeição de envio vazio no site publicado.
-- [ ] Validar o formulário administrativo de cadastro de atendentes em sessão autenticada.
+- [x] Validar formulário administrativo em sessão autenticada: estabelecimento e guichê presentes; confirmação obrigatória bloqueia envio vazio.
 - [ ] Concluir cadastro positivo com senha definida pelo próprio titular e liberação de atendente pelo administrador.

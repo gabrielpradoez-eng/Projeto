@@ -7,7 +7,7 @@
 - O site confirmou FilaSmart versão 2026.10.30.1 no About.
 - Antes da integração, os 220 testes e os três checks GitHub estavam aprovados.
 
-## Dependências de acesso
+## Histórico de acesso anterior
 
 A solicitação segura de login administrativo não retornou um resultado confirmado antes do timeout. Na recuperação, a aba original não estava disponível e uma nova aba no domínio do aplicativo mostrou login. O console Xano redirecionou para app.xano.com/login. Não há evidência de autenticação positiva nesta etapa.
 
@@ -24,3 +24,9 @@ Os testes reais devem usar filas e contas identificadas para validação, compar
 ## Continuação
 
 Restabelecer a sessão administrativa do aplicativo pelo acesso protegido, verificar o formulário e depois restabelecer a sessão Xano. A senha nova de cadastro é digitada pelo próprio titular. Os itens ficam abertos no checklist release-readiness até a confirmação visível dos resultados.
+
+## Continuação: sessão administrativa restabelecida
+
+O novo formulário seguro de login foi concluído e a página confirmou Administrador. O cadastro de atendentes carregou estabelecimento e guichê; envio sem confirmação mostrou bloqueio de liberação. O relatório foi gerado com a mesma sessão: 17 emitidas, 16 chamadas/conclusões, 94,1% de conclusão, espera média de 4,8 minutos e duração média de 8,6 minutos, referentes aos dados de demonstração.
+
+O item de formulário administrativo autenticado está verificado. Não houve criação ou promoção de conta. Permanecem pendentes cadastro positivo com senha definida pelo titular, liberação de atendente confirmada pelo administrador e concorrência real no Xano, cujo console ainda apresenta login.
