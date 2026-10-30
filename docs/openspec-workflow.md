@@ -56,6 +56,7 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
 | [account-registration](../openspec/changes/account-registration/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
+| [corporate-responsive-interface](../openspec/changes/corporate-responsive-interface/tasks.md) | Implementação e testes aprovados; inspeção visual e publicação em acompanhamento. |
 | [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |

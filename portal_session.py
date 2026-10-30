@@ -116,9 +116,11 @@ def render_customer_registration() -> None:
 
 def render_login() -> None:
     st.markdown(
-        '<section class="fs-hero"><div><span class="fs-eyebrow">BEM-VINDO AO FILASMART</span>'
-        '<h1>Seu atendimento, em um só lugar.</h1>'
-        '<p>Entre para acessar sua área e acompanhar o que importa.</p></div></section>',
+        '<section class="fs-login-heading"><div class="fs-public-brand">'
+        '<span class="fs-mark">F</span><strong>FilaSmart</strong></div>'
+        '<span class="fs-eyebrow">PLATAFORMA DE ATENDIMENTO</span>'
+        '<h1>Organização para sua operação.<br>Clareza para cada atendimento.</h1>'
+        '<p>Acesse sua conta para gerenciar filas ou acompanhar sua senha.</p></section>',
         unsafe_allow_html=True,
     )
     form_column, help_column = st.columns([1.25, 1], gap="large")
@@ -135,8 +137,16 @@ def render_login() -> None:
         if st.session_state.get("portal_login_error"):
             st.error(st.session_state["portal_login_error"])
     with help_column:
-        st.subheader("Um espaço para cada perfil")
-        st.write("**Cliente** · Retire sua senha e acompanhe o atendimento.")
-        st.write("**Atendente** · Organize a fila e conduza os atendimentos.")
-        st.write("**Administrador** · Acesse a operação e os relatórios.")
-        st.caption("Seu acesso é definido pela conta cadastrada. Para se cadastrar, use a aba Criar conta. Para recuperar o acesso ou habilitar um atendente, procure o administrador.")
+        st.markdown(
+            '<aside class="fs-access-guide"><span class="fs-eyebrow">UMA PLATAFORMA, TRÊS ÁREAS</span>'
+            '<h2>O acesso certo para cada pessoa.</h2>'
+            '<div class="fs-profile-row"><span aria-hidden="true">01</span><div><h3>Cliente</h3>'
+            '<p>Retire sua senha e acompanhe a posição na fila.</p></div></div>'
+            '<div class="fs-profile-row"><span aria-hidden="true">02</span><div><h3>Atendente</h3>'
+            '<p>Organize as chamadas e conduza cada atendimento.</p></div></div>'
+            '<div class="fs-profile-row"><span aria-hidden="true">03</span><div><h3>Administrador</h3>'
+            '<p>Gerencie a equipe e acompanhe os indicadores.</p></div></div>'
+            '<p class="fs-guide-note">Primeiro acesso? Use Criar conta. Para habilitar um atendente '
+            'ou recuperar seu acesso, procure o administrador.</p></aside>',
+            unsafe_allow_html=True,
+        )

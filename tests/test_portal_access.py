@@ -237,3 +237,41 @@ def test_canonical_verification_rejects_mismatched_or_unsupported_identity(monke
     monkeypatch.setattr("backend_queue.requests.get", Mock(return_value=response))
     with pytest.raises(AccessDeniedError):
         backend.verify_session("token", 31)
+
+
+@pytest.mark.parametrize("role", ["user", "attendant", "admin"])
+def test_mobile_navigation_uses_verified_profile_and_switches_both_menus(monkeypatch, role):
+    source = NoContentClient()
+    monkeypatch.setattr("views.client_view.get_xano_client", lambda: source)
+    app = portal(IdentityBackend(role), signed_in=True,
+                 _display_feed_client_override=source).run()
+    assert not app.exception
+    assert app.selectbox(key="mobile_view").options == list(ROLE_VIEWS[role])
+    app.selectbox(key="mobile_view").select("Painel TV").run()
+    assert not app.exception
+    assert app.radio(key="app_view").value == "Painel TV"
+    assert source.calls >= 1
+    first_view = ROLE_VIEWS[role][0]
+    app.radio(key="app_view").set_value(first_view).run()
+    assert not app.exception
+    assert app.selectbox(key="mobile_view").value == first_view
+
+
+def test_mobile_logout_clears_session_and_removes_navigation(monkeypatch):
+    monkeypatch.setattr("views.client_view.get_xano_client", lambda: NoContentClient())
+    app = portal(IdentityBackend(), signed_in=True).run()
+    app.button(key="mobile_logout").click().run()
+    assert not app.exception
+    assert "authToken" not in app.session_state
+    assert not app.radio
+    assert not any(widget.key == "mobile_view" for widget in app.selectbox)
+
+
+def test_mobile_selection_cannot_survive_profile_downgrade(monkeypatch):
+    backend = IdentityBackend("admin")
+    backend.profile = identity("user")
+    monkeypatch.setattr("views.client_view.get_xano_client", lambda: NoContentClient())
+    app = portal(backend, signed_in=True, app_view="Relatórios", mobile_view="Relatórios").run()
+    assert not app.exception
+    assert app.selectbox(key="mobile_view").value == "Cliente"
+    assert "Relatórios" not in app.selectbox(key="mobile_view").options

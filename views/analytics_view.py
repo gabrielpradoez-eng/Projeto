@@ -39,7 +39,7 @@ def _show_login() -> None:
         )
 
 
-def _report_form(options: dict[str, Any]) -> tuple[bool, dict[str, Any] | None]:
+def _report_form(options: dict[str, Any], *, centralized: bool = False) -> tuple[bool, dict[str, Any] | None]:
     establishments = options["estabelecimentos"]
     queue_options = options["filas"]
     if not establishments:
@@ -55,21 +55,23 @@ def _report_form(options: dict[str, Any]) -> tuple[bool, dict[str, Any] | None]:
     if st.session_state.get("analytics_establishment_id") not in establishment_by_id:
         st.session_state["analytics_establishment_id"] = next(iter(establishment_by_id))
         st.session_state.pop("analytics_report", None)
-    with st.sidebar:
-        st.header("Filtros")
+    filter_area = st.expander("Filtros do relatório", expanded=True) if centralized else st.sidebar
+    with filter_area:
+        st.caption("Defina o período e o escopo da consulta.")
         with st.form("analytics_filters"):
-            establishment_id = st.selectbox(
+            scope_column, period_column = st.columns(2, gap="medium")
+            establishment_id = scope_column.selectbox(
                 "Estabelecimento",
                 options=list(establishment_by_id),
                 format_func=lambda item_id: establishment_by_id[item_id]["nome"],
                 key="analytics_establishment_id",
             )
-            period_start = st.date_input(
+            period_start = period_column.date_input(
                 "Data inicial (UTC)",
                 value=default_start,
                 key="analytics_period_start",
             )
-            period_end = st.date_input(
+            period_end = period_column.date_input(
                 "Data final exclusiva (UTC)",
                 value=default_end,
                 key="analytics_period_end",
@@ -86,7 +88,7 @@ def _report_form(options: dict[str, Any]) -> tuple[bool, dict[str, Any] | None]:
             if st.session_state.get("analytics_service_id") not in service_choices:
                 st.session_state["analytics_service_id"] = None
                 st.session_state.pop("analytics_report", None)
-            service_id = st.selectbox(
+            service_id = scope_column.selectbox(
                 "Serviço",
                 options=service_choices,
                 format_func=lambda item_id: (
@@ -107,7 +109,7 @@ def _report_form(options: dict[str, Any]) -> tuple[bool, dict[str, Any] | None]:
             if st.session_state.get("analytics_queue_id") not in queue_choices:
                 st.session_state["analytics_queue_id"] = None
             queue_by_id = {item["fila_id"]: item for item in service_queues}
-            queue_id = st.selectbox(
+            queue_id = scope_column.selectbox(
                 "Fila",
                 options=queue_choices,
                 format_func=lambda item_id: (
@@ -270,7 +272,7 @@ def render_analytics_view(*, centralized: bool = False) -> None:
     if st.session_state.get("analytics_options_signature") != signature:
         st.session_state.pop("analytics_report", None)
     st.session_state["analytics_options_signature"] = signature
-    submitted, filters = _report_form(analytics_options)
+    submitted, filters = _report_form(analytics_options, centralized=centralized)
     if submitted:
         st.session_state.pop("analytics_report", None)
         if filters is not None:

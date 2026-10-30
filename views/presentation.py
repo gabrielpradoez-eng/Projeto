@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from collections.abc import Callable
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -21,22 +22,39 @@ def render_brand() -> None:
 
 
 _VIEW_COPY = {
-    "Totem": ("AUTOATENDIMENTO", "Seu atendimento começa aqui.", "Escolha o serviço, retire sua senha e acompanhe cada etapa."),
-    "Cliente": ("ÁREA DO CLIENTE", "Mais tranquilidade para esperar.", "Retire sua senha e consulte o andamento sem sair desta tela."),
-    "Acompanhar senha": ("MINHA SENHA", "Saiba quando é a sua vez.", "Consulte a posição e o status da sua senha com atualização automática."),
-    "Painel TV": ("PAINEL DE CHAMADAS", "Fique de olho na sua vez.", "Confira a última senha chamada e dirija-se ao guichê indicado."),
-    "Administração": ("CENTRAL DE OPERAÇÕES", "Um atendimento mais organizado.", "Acesse sua conta para consultar filas e conduzir os atendimentos."),
-    "Relatórios": ("INTELIGÊNCIA DA OPERAÇÃO", "Transforme dados em decisões.", "Explore volume, espera e conclusão dos atendimentos por período."),
+    "Totem": ("AUTOATENDIMENTO", "Retire sua senha", "Selecione um serviço e acompanhe o atendimento com seu comprovante."),
+    "Cliente": ("ÁREA DO CLIENTE", "Meu atendimento", "Emita sua senha e acompanhe a posição na fila em um único lugar."),
+    "Acompanhar senha": ("ACOMPANHAMENTO", "Acompanhe sua senha", "Consulte o status e a posição na fila. As informações são atualizadas automaticamente."),
+    "Painel TV": ("OPERAÇÃO", "Painel de chamadas", "Confira a senha chamada e o guichê de atendimento."),
+    "Administração": ("GESTÃO", "Central de operações", "Gerencie os acessos da equipe e consulte os indicadores da operação em Relatórios."),
+    "Relatórios": ("ANÁLISE", "Indicadores de atendimento", "Consulte volume, tempo de espera e conclusão por período, serviço ou fila."),
 }
 
 
-def render_intro(view: str) -> None:
+def _select_mobile_view() -> None:
+    st.session_state["app_view"] = st.session_state["mobile_view"]
+
+
+def render_mobile_navigation(allowed_views: tuple[str, ...], *, on_logout: Callable[[], None]) -> None:
+    # Both widgets are built after identity verification. Synchronize before creating
+    # the mobile widget, so sidebar changes and role downgrades cannot leave it stale.
+    st.session_state["mobile_view"] = st.session_state["app_view"]
+    with st.container(key="mobile_navigation"):
+        st.selectbox("Navegar para", options=allowed_views, key="mobile_view",
+                     on_change=_select_mobile_view)
+        st.button("Encerrar sessão", on_click=on_logout, icon=":material/logout:",
+                  use_container_width=True, key="mobile_logout")
+
+
+def render_intro(view: str, *, role: str = "") -> None:
     eyebrow, title, description = _VIEW_COPY[view]
+    if view == "Administração" and role == "attendant":
+        eyebrow, title, description = ("OPERAÇÃO", "Central de atendimento",
+            "Selecione sua fila, chame a próxima senha e acompanhe o atendimento atual.")
     st.markdown(
-        f'<section class="fs-hero"><div><span class="fs-eyebrow">{eyebrow}</span>'
+        f'<section class="fs-hero"><div><span class="fs-eyebrow">FILASMART / {eyebrow}</span>'
         f'<h1>{title}</h1><p>{description}</p></div>'
-        '<div class="fs-hero-art" aria-hidden="true"><span>01</span><span>02</span>'
-        '<span>✓</span></div></section>',
+        '<span class="fs-workspace-label">GESTÃO DE ATENDIMENTO</span></section>',
         unsafe_allow_html=True,
     )
 

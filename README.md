@@ -82,7 +82,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de 30/10/2026 foi verificada com **224 testes aprovados**, **23 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga. A emissão, chamada e conclusão simultâneas foram [verificadas no Xano](docs/queue-concurrency-validation.md), com encerramento das senhas criadas para o teste.
+A revisão de 30/10/2026 foi verificada com **229 testes aprovados**, **24 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga. A emissão, chamada e conclusão simultâneas foram [verificadas no Xano](docs/queue-concurrency-validation.md), com encerramento das senhas criadas para o teste.
 
 ## Trabalhar com OpenSpec
 
@@ -121,3 +121,7 @@ O workflow [OpenSpec validation](.github/workflows/openspec-validation.yml) exec
 ## Fechamento
 
 Integração e versão publicada confirmadas. Os testes concorrentes de fila passaram no Xano. Cadastro positivo e liberação de atendente dependem da ação do titular/administrador. Consulte o [registro de fechamento](docs/release-readiness.md) e o [checklist](openspec/changes/release-readiness/tasks.md).
+
+## Interface empresarial e acesso pelo celular
+
+A versão 2026.10.30.2 traz tema empresarial, cabeçalhos compactos e formulários consistentes. Até 900px, o seletor Navegar para e a saída ficam no conteúdo. Até 640px, colunas e métricas empilham e botões usam a largura disponível. Filtros de relatórios ficam no conteúdo do portal. A navegação permanece restrita ao perfil verificado. Evidências de publicação e limites de verificação são acompanhados na [mudança OpenSpec](openspec/changes/corporate-responsive-interface/tasks.md).

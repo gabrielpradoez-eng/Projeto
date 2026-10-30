@@ -11,7 +11,7 @@ from views.analytics_view import render_analytics_view
 from views.client_view import render_client_view
 from views.display_view import render_display_view
 from views.totem_view import render_tracking_view, render_totem_view
-from views.presentation import apply_theme, render_brand, render_intro
+from views.presentation import apply_theme, render_brand, render_intro, render_mobile_navigation
 
 
 APPLICATION_VIEWS = (
@@ -40,8 +40,8 @@ def main() -> None:
         page_title="FilaSmart",
         page_icon="⏱️",
         layout="wide",
-        initial_sidebar_state="expanded",
-        menu_items={"About": "FilaSmart · versão 2026.10.30.1"},
+        initial_sidebar_state="auto",
+        menu_items={"About": "FilaSmart · versão 2026.10.30.2"},
     )
     _initialize_session()
     apply_theme()
@@ -90,7 +90,8 @@ def main() -> None:
         st.caption("FilaSmart · Atendimento com mais clareza")
 
     if not (selected_view == "Painel TV" and st.session_state.get("tv_presentation_mode")):
-        render_intro(selected_view)
+        render_mobile_navigation(allowed_views, on_logout=logout)
+        render_intro(selected_view, role=user["role"])
 
     if selected_view == "Totem":
         render_totem_view(centralized=True)

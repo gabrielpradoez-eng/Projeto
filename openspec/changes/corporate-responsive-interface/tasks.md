@@ -1,0 +1,5 @@
+- [x] Revisar componentes e registrar proposta, decisões e deltas.
+- [x] Implementar identidade empresarial, navegação móvel e filtros acessíveis.
+- [x] Verificar navegação por perfil, testes e OpenSpec.
+- [ ] Publicar nas branches principal e de deploy e inspecionar o site.
+- [ ] Registrar evidências e limites da validação responsiva.
