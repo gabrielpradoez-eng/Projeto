@@ -26,7 +26,7 @@ A implementação não alterou endpoints, perfis, senhas nem dados do Xano. Vers
 - `openspec doctor`: raiz saudável, sem referências quebradas.
 - Compilação Python e `git diff --check` aprovados; links relativos da documentação conferidos.
 - Nenhum arquivo real `secrets.toml`, `.env`, chave privada ou token GitHub identificado pelos padrões examinados entre os arquivos versionados. Essa checagem não equivale a auditoria exaustiva de segredos ou segurança.
-- No commit inicial `2ea5e09`, o conector GitHub confirmou sucesso de `OpenSpec validation` (run 41004282733) e `Copilot Setup Steps` (run 41004282734). Os resultados do novo workflow devem ser consultados no commit desta revisão; evidência local não é apresentada como execução remota.
+- No commit de correção `4995dfe2a2f06270a162cca891a918d457575c77`, o conector GitHub confirmou sucesso de `Python tests` (run 41005774006), `OpenSpec validation` (run 41005773999) e `Copilot Setup Steps` (run 41005773977). O job remoto confirmou instalação e execução do pytest com sucesso. A árvore integral local/remota desse commit foi comparada e é idêntica (`a4509892d45f5f715ddb8abc813fe3efbeaf3c07`).
 
 ## Site publicado
 

@@ -6,4 +6,11 @@
 
 ## 2. Verificação e publicação
 - [x] 2.1 Executar testes, OpenSpec estrito/doctor, compileall, checagem de links e diff.
-- [ ] 2.2 Publicar commit, verificar identidade da árvore local/remota e consultar o CI.
+- [x] 2.2 Publicar commit, verificar identidade da árvore local/remota e consultar o CI.
+
+## Evidências
+
+- 220 testes aprovados; OpenSpec estrito: 21 itens válidos; doctor saudável.
+- Commit de correção 4995dfe publicado e árvore integral comparada com GitHub.
+- Python tests, OpenSpec validation e Copilot Setup Steps concluíram com sucesso nesse commit.
+- Relatório atualizado em docs/project-audit.md; main e PR permanecem sem merge.
