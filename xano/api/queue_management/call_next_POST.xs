@@ -31,18 +31,18 @@ query call_next verb=POST {
       field_name = "usuario_id"
       field_value = $auth.id
     } as $atendente
-  
+
     precondition (($atendente != null) && ($atendente.ativo)) {
       error_type = "accessdenied"
       error = "Apenas atendentes ativos podem chamar senhas."
     }
-  
+
     // 2. Verificar se a fila pertence ao estabelecimento do atendente
     db.get filas {
       field_name = "id"
       field_value = $input.fila_id
     } as $fila
-  
+
     precondition (($fila != null) && ($fila.status == "aberta")) {
       error_type = "notfound"
       error = "Fila inexistente ou fechada."
@@ -52,36 +52,61 @@ query call_next verb=POST {
       field_name = "id"
       field_value = $fila.servico_id
     } as $servico
-  
+
     precondition (($servico != null) && ($servico.estabelecimento_id == $atendente.estabelecimento_id)) {
       error_type = "accessdenied"
       error = "Você não tem permissão para atender nesta fila."
     }
-  
-    // 3. Buscar a próxima senha aguardando (menor número)
-    db.query senhas {
-      where = $db.senhas.fila_id == $input.fila_id && $db.senhas.status == "aguardando"
-      sort = {numero: "asc"}
-      return = {type: "single"}
-    } as $proxima_senha
-  
-    precondition ($proxima_senha != null) {
-      error_type = "notfound"
-      error = "Não há senhas aguardando nesta fila."
-    }
 
     security.create_uuid as $display_event_key
-  
+
     // 4. Iniciar atendimento atômicamente
     db.transaction {
       stack {
+        db.get filas {
+          field_name = "id"
+          field_value = $input.fila_id
+          lock = true
+        } as $locked_queue
+        precondition ($locked_queue != null && $locked_queue.status == "aberta" && $locked_queue.servico_id == $fila.servico_id) {
+          error_type = "inputerror"
+          error = "A fila nao esta disponivel."
+        }
+        db.get servicos {
+          field_name = "id"
+          field_value = $locked_queue.servico_id
+        } as $locked_service
+        precondition ($locked_service != null && $locked_service.estabelecimento_id == $atendente.estabelecimento_id) {
+          error_type = "accessdenied"
+          error = "Fila fora do escopo autorizado."
+        }
+        db.query senhas {
+          where = $db.senhas.fila_id == $input.fila_id && $db.senhas.status == "chamado"
+          return = {type: "single"}
+        } as $active_ticket
+        precondition ($active_ticket == null) {
+          error_type = "inputerror"
+          error = "Finalize o atendimento atual antes de chamar a proxima senha."
+        }
+        // 3. Buscar a próxima senha aguardando (menor número)
+        db.query senhas {
+          where = $db.senhas.fila_id == $input.fila_id && $db.senhas.status == "aguardando"
+          sort = {numero: "asc"}
+          return = {type: "single"}
+        } as $proxima_senha
+
+        precondition ($proxima_senha != null) {
+          error_type = "notfound"
+          error = "Não há senhas aguardando nesta fila."
+        }
+
         // Atualizar status da senha
         db.edit senhas {
           field_name = "id"
           field_value = $proxima_senha.id
           data = {status: "chamado", chamado_at: "now"}
         } as $senha_atualizada
-      
+
         // Criar registro de atendimento
         db.add atendimentos {
           data = {
@@ -96,7 +121,7 @@ query call_next verb=POST {
         } as $atendimento
       }
     }
-  
+
     // 5. Registrar log de evento
     function.run "Quick Start/log_event" {
       input = {

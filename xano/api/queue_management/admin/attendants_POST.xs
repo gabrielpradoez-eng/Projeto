@@ -36,6 +36,7 @@ query "admin/attendants" verb=POST {
         db.get usuarios {
           field_name = "email"
           field_value = $input.email
+          lock = true
           output = ["id", "name", "role", "estabelecimento_id"]
         } as $candidate
         precondition ($candidate != null && $candidate.role == "usuario") {

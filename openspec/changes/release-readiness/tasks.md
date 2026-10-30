@@ -4,7 +4,7 @@
 - [x] Examinar documentação oficial sobre transações e bloqueio de registros.
 - [x] Validar formulário administrativo em sessão autenticada: login admin confirmado, estabelecimento/guichê carregados e envio sem confirmação bloqueado.
 - [ ] Concluir cadastro positivo com senha definida pelo titular e liberação pelo administrador.
-- [ ] Executar concorrência real em ambiente Xano acessível; console redirecionou para login.
+- [x] Executar concorrência real de emissão, chamada e conclusão no Xano; evidência em docs/queue-concurrency-validation.md.
 - [ ] Finalizar verificações dependentes de autenticação e atualizar evidências.
 
 ## Histórico do bloqueio de acesso anterior
@@ -14,3 +14,7 @@ O formulário seguro de autenticação administrativa expirou no transporte sem 
 ## Continuação autenticada
 
 O formulário seguro foi concluído e o portal confirmou perfil Administrador. A tela Cadastrar atendente carregou Central de Atendimento — Demonstração e bloqueou envio sem confirmação de liberação. Relatórios usaram a mesma sessão e retornaram 17 emissões, 16 chamadas e 16 conclusões. Nenhuma conta foi criada ou promovida. O acesso ao console Xano permanece pendente de login.
+
+## Continuação no Xano
+
+Sessão restabelecida, correções publicadas e cenários concorrentes de fila aprovados. Cadastro positivo e concessão de acesso continuam pendentes da intervenção do titular/administrador.

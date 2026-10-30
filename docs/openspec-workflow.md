@@ -60,8 +60,9 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 | [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [published-tracking-navigation](../openspec/changes/published-tracking-navigation/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | 1 tarefa(s) pendente(s); consultar checklist. |
-| [release-readiness](../openspec/changes/release-readiness/tasks.md) | 4 tarefa(s) pendente(s); consultar checklist. |
+| [queue-concurrency](../openspec/changes/queue-concurrency/tasks.md) | 1 tarefa pendente: vínculo positivo após confirmação administrativa. |
+| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [release-readiness](../openspec/changes/release-readiness/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
 | [reorganize-openspec-structure](../openspec/changes/reorganize-openspec-structure/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [streamlit-deployment-preparation](../openspec/changes/streamlit-deployment-preparation/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
 | [totem-tv-runtime-validation](../openspec/changes/totem-tv-runtime-validation/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |

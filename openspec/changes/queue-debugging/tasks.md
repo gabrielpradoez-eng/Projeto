@@ -2,4 +2,4 @@
 - [x] Corrigir escopo e auditoria dos exports Xano.
 - [x] Testar regressões de contrato e interface: 112 testes passaram, sintaxe Python e diff verificados, servidor Streamlit respondeu HTTP 200.
 - [x] Aplicar e validar exports no runtime Xano; evidência posterior em docs/streamlit-deploy.md e na mudança xano-runtime-identity.
-- [ ] Validar concorrência e deploy no ambiente final.
+- [x] Validar concorrência de filas e deploy no ambiente final; evidências em docs/queue-concurrency-validation.md e docs/release-readiness.md.

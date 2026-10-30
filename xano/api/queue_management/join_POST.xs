@@ -29,6 +29,16 @@ query join verb=POST {
     // Gerar o próximo número de forma atômica
     db.transaction {
       stack {
+        // Bloqueio comum por fila; releitura antes de alocar o numero.
+        db.get filas {
+          field_name = "id"
+          field_value = $input.fila_id
+          lock = true
+        } as $locked_queue
+        precondition ($locked_queue != null && $locked_queue.status == "aberta" && $locked_queue.servico_id == $fila.servico_id) {
+          error_type = "inputerror"
+          error = "A fila nao esta disponivel."
+        }
         db.query senhas {
           where = $db.senhas.fila_id == $input.fila_id
           sort = {numero: "desc"}

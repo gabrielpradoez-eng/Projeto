@@ -46,6 +46,24 @@ query "totem/issue" verb=POST {
 
     db.transaction {
       stack {
+        // Bloqueio comum por fila; releitura antes de alocar o numero.
+        db.get filas {
+          field_name = "id"
+          field_value = $input.fila_id
+          lock = true
+        } as $locked_queue
+        precondition ($locked_queue != null && $locked_queue.status == "aberta" && $locked_queue.servico_id == $fila.servico_id) {
+          error_type = "inputerror"
+          error = "A fila nao esta disponivel."
+        }
+        db.get servicos {
+          field_name = "id"
+          field_value = $locked_queue.servico_id
+        } as $locked_service
+        precondition ($locked_service != null && $locked_service.estabelecimento_id == $actor.estabelecimento_id) {
+          error_type = "accessdenied"
+          error = "Fila fora do escopo autorizado."
+        }
         db.query senhas {
           where = $db.senhas.fila_id == $input.fila_id
           sort = {numero: "desc"}

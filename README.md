@@ -82,7 +82,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de 30/10/2026 foi verificada com **220 testes aprovados**, **22 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga.
+A revisão de 30/10/2026 foi verificada com **224 testes aprovados**, **23 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga. A emissão, chamada e conclusão simultâneas foram [verificadas no Xano](docs/queue-concurrency-validation.md), com encerramento das senhas criadas para o teste.
 
 ## Trabalhar com OpenSpec
 
@@ -120,4 +120,4 @@ O workflow [OpenSpec validation](.github/workflows/openspec-validation.yml) exec
 
 ## Fechamento
 
-Integração e versão publicada confirmadas. Cadastro positivo e testes de concorrência dependem de restabelecer as sessões autenticadas. Consulte o [registro de fechamento](docs/release-readiness.md) e o [checklist](openspec/changes/release-readiness/tasks.md).
+Integração e versão publicada confirmadas. Os testes concorrentes de fila passaram no Xano. Cadastro positivo e liberação de atendente dependem da ação do titular/administrador. Consulte o [registro de fechamento](docs/release-readiness.md) e o [checklist](openspec/changes/release-readiness/tasks.md).

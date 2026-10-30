@@ -1,0 +1,7 @@
+- [x] Reproduzir emissão concorrente no runtime: uma emissão válida e uma falha por unicidade.
+- [x] Confirmar sintaxe de locking no Xano e corrigir exports.
+- [x] Testar contratos e validar OpenSpec.
+- [x] Aplicar e publicar correções no workspace.
+- [x] Repetir emissões e chamadas paralelas; verificar estado e encerrar dados do teste.
+- [x] Publicar código e evidências no GitHub.
+- [ ] Validar vínculo positivo e concorrente após confirmação administrativa da conta e do acesso a conceder.

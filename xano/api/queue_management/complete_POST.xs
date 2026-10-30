@@ -54,7 +54,7 @@ query complete verb=POST {
       return = {type: "single"}
     } as $atendimento
   
-    precondition (($atendimento != null) && ($atendimento.atendente_id == $atendente.id) && ($atendimento.estabelecimento_id == $atendente.estabelecimento_id) && ($atendimento.ended_at == null)) {
+    precondition (($atendimento != null) && ($atendimento.atendente_id == $atendente.id) && ($atendimento.estabelecimento_id == $atendente.estabelecimento_id) && (($atendimento.ended_at == null) || ($atendimento.ended_at == 0))) {
       error_type = "accessdenied"
       error = "Você não pode finalizar este atendimento."
     }
@@ -62,6 +62,28 @@ query complete verb=POST {
     // 3. Finalizar atômicamente
     db.transaction {
       stack {
+        db.get filas {
+          field_name = "id"
+          field_value = $senha.fila_id
+          lock = true
+        } as $locked_queue
+        db.get senhas {
+          field_name = "id"
+          field_value = $input.senha_id
+        } as $current_senha
+        precondition ($locked_queue != null && $current_senha != null && $current_senha.fila_id == $locked_queue.id && $current_senha.status == "chamado") {
+          error_type = "inputerror"
+          error = "Esta senha ja nao esta em atendimento."
+        }
+        db.query atendimentos {
+          where = $db.atendimentos.senha_id == $input.senha_id
+          sort = {id: "desc"}
+          return = {type: "single"}
+        } as $current_atendimento
+        precondition ($current_atendimento != null && $current_atendimento.atendente_id == $atendente.id && $current_atendimento.estabelecimento_id == $atendente.estabelecimento_id && ($current_atendimento.ended_at == null || $current_atendimento.ended_at == 0)) {
+          error_type = "accessdenied"
+          error = "Este atendimento ja foi encerrado ou esta fora do escopo."
+        }
         // Atualizar status da senha
         db.edit senhas {
           field_name = "id"
@@ -72,7 +94,7 @@ query complete verb=POST {
         // Atualizar fim do atendimento
         db.edit atendimentos {
           field_name = "id"
-          field_value = $atendimento.id
+          field_value = $current_atendimento.id
           data = {ended_at: "now"}
         } as $atendimento_finalizado
 

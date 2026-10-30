@@ -30,3 +30,7 @@ Restabelecer a sessão administrativa do aplicativo pelo acesso protegido, verif
 O novo formulário seguro de login foi concluído e a página confirmou Administrador. O cadastro de atendentes carregou estabelecimento e guichê; envio sem confirmação mostrou bloqueio de liberação. O relatório foi gerado com a mesma sessão: 17 emitidas, 16 chamadas/conclusões, 94,1% de conclusão, espera média de 4,8 minutos e duração média de 8,6 minutos, referentes aos dados de demonstração.
 
 O item de formulário administrativo autenticado está verificado. Não houve criação ou promoção de conta. Permanecem pendentes cadastro positivo com senha definida pelo titular, liberação de atendente confirmada pelo administrador e concorrência real no Xano, cujo console ainda apresenta login.
+
+## Continuação: Xano e concorrência verificados
+
+A sessão Xano foi restabelecida. Uma falha de emissão simultânea foi reproduzida e corrigida com bloqueio de fila dentro da transação. Emissão, chamada e conclusão simultâneas passaram no runtime; as três senhas criadas foram concluídas e o dashboard confirmou a fila de testes vazia, preservando a espera original. Os detalhes e os limites estão no [relatório de concorrência](queue-concurrency-validation.md). O código foi verificado com 224 testes e 23 itens OpenSpec. Cadastro positivo e liberação de conta continuam dependentes do titular/administrador.
