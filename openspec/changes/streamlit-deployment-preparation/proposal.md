@@ -10,3 +10,7 @@ O deploy do FilaSmart precisa instalar as dependências da aplicação e orienta
 ## Impact
 
 Não altera regras de negócio nem publica a aplicação ou o Xano. A integração completa depende de um workspace Xano configurado e de validação em ambiente de teste.
+
+## Capabilities
+
+Sem mudança de comportamento funcional: dependências e documentação de implantação. `skip_specs: true`.

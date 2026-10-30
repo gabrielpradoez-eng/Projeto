@@ -6,3 +6,8 @@ Validar catálogo Totem, emissão, posição, chamada, feed de TV, encerramento 
 
 ## Impact
 Export de finalização, testes de regressão e registros de validação. As credenciais de teste permanecem fora do código e da documentação pública.
+
+## Capabilities
+
+### Modified Capabilities
+- `totem-customer-tracking`: revogação após atendimento concluído.

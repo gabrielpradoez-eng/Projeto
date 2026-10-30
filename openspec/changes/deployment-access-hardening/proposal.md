@@ -6,3 +6,8 @@ Manter o formulário de login vazio mesmo com Secrets de seed; limitar provision
 
 ## Impact
 Streamlit, exports Xano, testes de regressão e validação autenticada sem novas credenciais nesta etapa.
+
+## Capabilities
+
+### Modified Capabilities
+- `core-queue-ops`: proteção de bootstrap e escopo de display.

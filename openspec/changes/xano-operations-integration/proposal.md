@@ -9,3 +9,8 @@ A operação usa cadastros fictícios em memória, mistura os grupos de autentic
 
 ## Impact
 Frontend operacional, cliente HTTP, testes de contrato. Nenhuma alteração automática nos dados ou permissões do Xano.
+
+## Capabilities
+
+### Modified Capabilities
+- `core-queue-ops`: identidade e operação remotas.

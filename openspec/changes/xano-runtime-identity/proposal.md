@@ -10,3 +10,8 @@ Exports Xano, testes estáticos e validação real no workspace. Nenhuma amplia�
 Teste autenticado de finalização também reproduziu acesso inválido a rastreamentos.items: consultas sem paginação retornam arrays. Corrigir iterações em complete, attendant/dashboard, totem/queues e analytics/options; preservar items nas consultas paginadas.
 
 Os testes reais também reproduziram joins inválidos: as referências devem usar os aliases declarados, e campos relacionados exigem eval explícito. Corrigir analytics/report, totem/queues e totem/issue. No painel, carregar serviços por estabelecimento antes de consultar suas filas. Tratar valores opcionais vazios como zero nas consultas SQL do catálogo administrativo e dos filtros de relatório, preservando as guardas de perfil.
+
+## Capabilities
+
+### Modified Capabilities
+- `core-queue-ops`: autorização com identidade persistida.

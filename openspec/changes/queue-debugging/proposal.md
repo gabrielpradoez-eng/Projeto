@@ -9,3 +9,8 @@ A revisão identificou respostas HTTP não validadas, estados de senha inventado
 
 ## Impact
 Cliente operacional, exports Xano, testes de contrato e interface. Exports precisam de validação no runtime Xano antes de publicação; testes estáticos não executam XanoScript. Concorrência de emissão/chamada precisa de teste real separado.
+
+## Capabilities
+
+### Modified Capabilities
+- `core-queue-ops`: contratos de operações e auditoria.

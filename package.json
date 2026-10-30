@@ -1,0 +1,17 @@
+{
+  "name": "filasmart-dev",
+  "private": true,
+  "description": "Ferramentas de especificacao do FilaSmart; runtime Python em requirements.txt",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "spec:list": "openspec list",
+    "spec:validate": "openspec validate --all --strict",
+    "spec:validate:json": "openspec validate --all --strict --json",
+    "spec:status": "openspec status"
+  },
+  "devDependencies": {
+    "@fission-ai/openspec": "1.15.0"
+  }
+}
