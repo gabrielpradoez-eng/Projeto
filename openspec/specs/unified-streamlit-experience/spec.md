@@ -7,15 +7,15 @@ Esta capability reúne as interfaces do FilaSmart em uma experiência Streamlit 
 ## Requirements
 
 ### Requirement: Central navigation exposes the available application views
-O sistema SHALL oferecer uma navegação central para as visões operacionais, públicas e administrativas disponíveis, incluindo uma visão pública de Cliente acessível sem login administrativo, e SHALL exibir opções administrativas somente conforme o perfil autenticado ou configuração autorizada da interface.
+O portal unificado SHALL exigir identidade verificada antes de oferecer as visões operacionais e de cliente. O menu SHALL conter somente visões autorizadas pelo perfil remoto; criar conta permanece disponível sem sessão.
 
 #### Scenario: Usuário navega entre visões permitidas
 - **WHEN** o usuário seleciona Totem, Cliente, acompanhamento, Painel TV ou uma visão administrativa disponível
 - **THEN** o sistema SHALL apresentar a visão selecionada dentro da aplicação central sem exigir que o usuário abra uma aplicação Streamlit distinta.
 
 #### Scenario: Cliente acessa visão pública sem login administrativo
-- **WHEN** um cliente não autenticado administrativamente seleciona a visão Cliente
-- **THEN** o sistema SHALL permitir o fluxo público de emissão e acompanhamento usando os clientes server-side autorizados, sem expor credenciais Xano.
+- **WHEN** um cliente com identidade verificada seleciona a visão Cliente
+- **THEN** o sistema SHALL permitir emissão e acompanhamento pela sessão de cliente usando os clientes server-side autorizados, sem expor credenciais Xano.
 
 #### Scenario: Visão administrativa exige autenticação e autorização
 - **WHEN** um usuário não autenticado ou sem papel administrativo tenta abrir uma visão administrativa
@@ -25,8 +25,12 @@ O sistema SHALL oferecer uma navegação central para as visões operacionais, p
 - **WHEN** uma visão depende de configuração de integração ausente ou inválida
 - **THEN** o sistema SHALL informar que a visão está indisponível e SHALL manter as demais visões configuradas acessíveis.
 
+#### Scenario: Visitante sem sessão
+- **WHEN** uma pessoa sem sessão abre o portal unificado
+- **THEN** a interface SHALL apresentar somente login, cadastro e orientações, sem menu operacional.
+
 ### Requirement: Navigation preserves shared session state without mixing credentials
-O sistema SHALL preservar durante a navegação o estado autenticado, o estabelecimento selecionado e as seleções de fila pertinentes, mantendo separados tokens e credenciais que pertençam a integrações ou escopos distintos.
+O sistema SHALL preservar a identidade e seleções ainda autorizadas durante a navegação, reutilizando a sessão verificada nos relatórios administrativos e mantendo separadas as credenciais técnicas de Totem e display.
 
 #### Scenario: Alternar entre visões durante uma sessão
 - **WHEN** um usuário autenticado navega para outra visão e retorna
@@ -34,7 +38,7 @@ O sistema SHALL preservar durante a navegação o estado autenticado, o estabele
 
 #### Scenario: Visões usam credenciais de escopos diferentes
 - **WHEN** as visões de administração, Totem e display utilizam credenciais ou tokens distintos
-- **THEN** o sistema SHALL enviar cada credencial somente à integração correspondente e SHALL NOT reutilizar um token de uma visão como autorização de outra.
+- **THEN** o sistema SHALL enviar cada credencial somente à integração correspondente e SHALL NOT usar credencial técnica como sessão administrativa; relatórios SHALL reutilizar o token administrativo verificado.
 
 #### Scenario: Inicia nova sessão compartilhada do Totem
 - **WHEN** uma nova sessão de emissão é iniciada no Totem

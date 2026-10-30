@@ -8,7 +8,7 @@ O aplicativo unificado publicado abre na tela de login. Use uma conta do sistema
 | `atendente` | Administração (operação de atendimento) e Painel TV |
 | `admin` | Administração, Relatórios, Totem, Cliente, Acompanhar senha e Painel TV |
 
-O perfil é obtido pelo servidor em `auth/me`; não existe escolha de perfil no formulário. Contas técnicas do Totem não são contas de acesso ao portal. Cadastro e recuperação de senha são feitos pelo responsável pelo estabelecimento. Esta mudança não cria contas nem altera permissões de registros existentes.
+O perfil é obtido pelo servidor em `auth/me`; não existe escolha de perfil no formulário. Contas técnicas do Totem não são contas de acesso ao portal. O cliente cria sua conta na aba Criar conta. O administrador habilita uma conta cliente existente como atendente, definindo estabelecimento e guichê. Recuperação de acesso exige contato com o responsável; a aba Criar conta não recupera senhas. Veja docs/account-registration.md.
 
 Após login, os relatórios utilizam o token administrativo da mesma sessão. O núcleo de atendimento usa o token do atendente, e o Xano continua validando o vínculo e o estado de cada operação. A emissão de senhas mantém o serviço de Totem configurado no servidor; esta mudança não migra a titularidade histórica das senhas para a conta do portal.
 
@@ -18,4 +18,4 @@ O botão Sair limpa os tokens e os dados locais de atendimento, relatórios e TV
 
 Os scripts independentes de demonstração, como `kiosk_app.py`, não são rotas do deploy unificado `app.py`. O controle de acesso descrito aqui refere-se ao aplicativo publicado com esse entrypoint.
 
-Validação da implementação: 163 testes automatizados, incluindo navegação por perfil, logout, verificação canônica, expiração e fragmentos após revogação. O teste positivo com credenciais reais depende de uma conta de aplicativo existente.
+Validação: os testes automatizados cobrem navegação por perfil, logout, verificação canônica, expiração e fragmentos após revogação. O login administrativo positivo e o logout foram confirmados no site em 29/10/2026. A revisão de 30/10/2026 confirmou a tela anônima e o formulário público de cadastro; validação de criação positiva de conta e vínculo de atendente permanece pendente. Consulte project-audit.md para o resultado mais recente.

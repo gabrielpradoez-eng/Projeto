@@ -34,7 +34,8 @@ Projeto/
 │   │   ├── service-experience/spec.md
 │   │   ├── totem-customer-tracking/spec.md
 │   │   ├── tv-display-panel/spec.md
-│   │   └── unified-streamlit-experience/spec.md
+│   │   ├── unified-streamlit-experience/spec.md
+│   │   └── verified-role-navigation/spec.md
 │   └── changes/
 │       ├── account-registration/    # Exemplo de mudança em acompanhamento
 │       │   ├── .openspec.yaml
@@ -81,7 +82,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A reorganização foi verificada com **190 testes aprovados**, **20 itens OpenSpec válidos em modo estrito** e links locais conferidos. Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga.
+A revisão de 30/10/2026 foi verificada com **220 testes aprovados**, **21 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga.
 
 ## Trabalhar com OpenSpec
 
@@ -113,4 +114,6 @@ O workflow [OpenSpec validation](.github/workflows/openspec-validation.yml) exec
 - [Importação dos exports Xano](docs/xano-import-order.md) e [deploy no Streamlit](docs/streamlit-deploy.md).
 - [Revisão e dados de apresentação](docs/project-review-presentation.md).
 
-**Situação do cadastro:** código e endpoints publicados; a última verificação do site ainda registrava a versão 2026.10.29.5. A confirmação da versão 2026.10.29.6 e do cadastro positivo permanece registrada em [tasks.md](openspec/changes/account-registration/tasks.md). A reorganização de pastas não conclui essas verificações operacionais.
+**Situação do cadastro:** código e endpoints publicados. Em 30/10/2026, o site confirmou 2026.10.29.6, apresentou Criar conta e rejeitou cadastro vazio. Cadastro positivo e vínculo administrativo continuam pendentes no [checklist](openspec/changes/account-registration/tasks.md). A revisão analítica 2026.10.30.1 deve ser conferida no About após atualização do deploy.
+
+**GitHub:** as atualizações estão na branch `codex/streamlit-deployment-preparation`, no [PR #1](https://github.com/gabrielpradoez-eng/Projeto/pull/1), ainda em rascunho. A `main` permanece na base anterior enquanto não houver merge. O CI inclui [testes Python](.github/workflows/python-tests.yml) e validação OpenSpec; resultados e limites da verificação estão no relatório de auditoria.

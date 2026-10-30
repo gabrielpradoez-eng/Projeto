@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import date, datetime, time, timedelta, timezone
 from typing import Any
 
@@ -51,6 +52,9 @@ def _report_form(options: dict[str, Any]) -> tuple[bool, dict[str, Any] | None]:
     default_start = utc_today - timedelta(days=6)
     default_end = utc_today + timedelta(days=1)
 
+    if st.session_state.get("analytics_establishment_id") not in establishment_by_id:
+        st.session_state["analytics_establishment_id"] = next(iter(establishment_by_id))
+        st.session_state.pop("analytics_report", None)
     with st.sidebar:
         st.header("Filtros")
         with st.form("analytics_filters"):
@@ -79,6 +83,9 @@ def _report_form(options: dict[str, Any]) -> tuple[bool, dict[str, Any] | None]:
                     eligible_queues.append(item)
 
             service_choices: list[int | None] = [None, *services_by_id]
+            if st.session_state.get("analytics_service_id") not in service_choices:
+                st.session_state["analytics_service_id"] = None
+                st.session_state.pop("analytics_report", None)
             service_id = st.selectbox(
                 "Serviço",
                 options=service_choices,
@@ -242,9 +249,11 @@ def render_analytics_view(*, centralized: bool = False) -> None:
         with st.spinner("Carregando filtros autorizados..."):
             analytics_options = analytics_client.list_options()
     except XanoConfigurationError as exc:
+        st.session_state.pop("analytics_report", None)
         st.error(str(exc))
         return
     except XanoClientError as exc:
+        st.session_state.pop("analytics_report", None)
         if getattr(exc, "status_code", None) == 403:
             st.error(
                 "Esta conta não tem permissão administrativa para consultar relatórios."
@@ -253,6 +262,14 @@ def render_analytics_view(*, centralized: bool = False) -> None:
             st.error("Não foi possível carregar as opções analíticas do Xano.")
         return
 
+    # Ignore ordering, but discard reports when labels, identities or allowed scope change.
+    signature = tuple(
+        (key, tuple(sorted(json.dumps(row, sort_keys=True) for row in analytics_options[key])))
+        for key in ("estabelecimentos", "filas")
+    )
+    if st.session_state.get("analytics_options_signature") != signature:
+        st.session_state.pop("analytics_report", None)
+    st.session_state["analytics_options_signature"] = signature
     submitted, filters = _report_form(analytics_options)
     if submitted:
         st.session_state.pop("analytics_report", None)

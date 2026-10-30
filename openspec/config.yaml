@@ -9,11 +9,11 @@ context: |
   Domain: Sistema para emissão de senhas, controle de filas em tempo real, chamadas em painéis públicos, gestão de atendimento por guichê e métricas de desempenho.
 
   Tech stack:
-    - Backend & Banco de Dados: Xano (APIs REST / WebSockets / Lógica de Negócio)
-    - Frontend / Interfaces: Streamlit e Reflex (Python)
+    - Backend & Banco de Dados: Xano (APIs REST e logica de negocio; atualizacao por polling no Streamlit)
+    - Frontend / Interfaces: Streamlit (Python); Reflex nao utilizado no deploy atual
     - Comunicação / Integração: Consumo das APIs REST e WebSockets do Xano via Python
 
-  Architecture: O Xano atua como o backend centralizador das regras de negócio, persistência de dados e controle de chamadas. As interfaces em Streamlit e Reflex atuarão como as aplicações cliente (Totem de atendimento, Painel de Chamadas público, Painel do Atendente e Dashboard Administrativo), consumindo os serviços do Xano.
+  Architecture: O Xano atua como o backend centralizador das regras de negócio, persistência de dados e controle de chamadas. As interfaces em Streamlit atuam como as aplicações cliente (Totem de atendimento, Painel de Chamadas público, Painel do Atendente e Dashboard Administrativo), consumindo os serviços do Xano.
 
   Development: Implementar mudanças de forma incremental utilizando a metodologia OpenSpec.
 

@@ -33,6 +33,12 @@ Filas presenciais desorganizadas geram insatisfação dos clientes, falta de pre
 - Avaliação de satisfação ao término do atendimento.
 
 ## 7. Arquitetura e Princípios de Desenvolvimento
-- **Comunicação em Tempo Real:** Atualizações instantâneas no Painel de Chamadas e no App Mobile (via WebSockets/Server-Sent Events/Push).
+- **Atualização periódica:** A interface Streamlit consulta o Xano por fragmentos agendados (TV com intervalo configurável e acompanhamento a cada 15 segundos). WebSockets, Server-Sent Events e Push são possibilidades de evolução; não descrevem a implementação publicada atual.
 - **Separação de Camadas:** Regras de transição de status da senha e controle de filas centralizados no Backend.
 - **Idioma:** Documentação e artefatos em português brasileiro (pt-BR).
+
+## 8. Situação da implementação
+
+O portal atual usa Streamlit e APIs REST do Xano. Login e menus dependem da identidade remota; dados locais legados do adaptador não são fonte da operação. Reflex não é utilizado pelo aplicativo publicado. Cadastro público cria clientes; administrador libera atendentes por estabelecimento e guichê.
+
+Notificações externas e avaliação de satisfação fazem parte dos objetivos; sua presença no escopo inicial não comprova um fluxo completo disponível no portal. Consultar os checklists OpenSpec e os guias de operação para evidências e pendências.

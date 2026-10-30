@@ -139,4 +139,4 @@ def render_login() -> None:
         st.write("**Cliente** · Retire sua senha e acompanhe o atendimento.")
         st.write("**Atendente** · Organize a fila e conduza os atendimentos.")
         st.write("**Administrador** · Acesse a operação e os relatórios.")
-        st.caption("Seu acesso é definido pela conta cadastrada. Se precisar de cadastro ou recuperação de senha, use a aba Criar conta. Para recuperar o acesso ou habilitar um atendente, procure o administrador.")
+        st.caption("Seu acesso é definido pela conta cadastrada. Para se cadastrar, use a aba Criar conta. Para recuperar o acesso ou habilitar um atendente, procure o administrador.")

@@ -305,3 +305,53 @@ def test_login_page_is_rendered_without_session_token():
     assert "Relatórios de atendimento" in str([item.value for item in app.title])
     assert len(app.text_input) == 2
     assert not app.metric
+
+def test_removed_establishment_resets_all_selections_and_discards_old_report():
+    fake = FakeAnalyticsClient()
+    app = analytics_app(fake)
+    app.selectbox(key="analytics_service_id").select(7)
+    app.selectbox(key="analytics_queue_id").select(13)
+    app.button[1].click().run()
+    assert app.metric
+    fake.options = {"estabelecimentos": [{"id": 99, "nome": "Nova unidade"}], "filas": []}
+    app.run()
+    assert not app.exception
+    assert app.selectbox(key="analytics_establishment_id").value == 99
+    assert app.selectbox(key="analytics_service_id").value is None
+    assert app.selectbox(key="analytics_queue_id").value is None
+    assert not app.metric
+    assert len(fake.requested_filters) == 1
+
+
+def test_removed_service_discards_selection_and_old_metrics():
+    fake = FakeAnalyticsClient()
+    app = analytics_app(fake)
+    app.selectbox(key="analytics_service_id").select(7)
+    app.button[1].click().run()
+    fake.options["filas"] = [fake.options["filas"][1]]
+    app.run()
+    assert not app.exception
+    assert app.selectbox(key="analytics_service_id").value is None
+    assert not app.metric
+
+
+def test_reordering_authorized_options_keeps_confirmed_report():
+    fake = FakeAnalyticsClient()
+    app = analytics_app(fake)
+    app.button[1].click().run()
+    fake.options["filas"].reverse()
+    app.run()
+    assert not app.exception
+    assert app.metric
+    assert len(fake.requested_filters) == 1
+
+
+def test_failed_options_refresh_clears_cached_report():
+    fake = FakeAnalyticsClient()
+    app = analytics_app(fake)
+    app.button[1].click().run()
+    fake.options_error = XanoRequestError("unavailable")
+    app.run()
+    assert not app.exception
+    assert "analytics_report" not in app.session_state
+    assert not app.metric

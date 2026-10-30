@@ -15,3 +15,8 @@ O Xano exige administrador e verifica o escopo do estabelecimento antes de grava
 Atualizar o endpoint público `auth/signup` e publicar `POST admin/attendants` no grupo Queue Management, com autenticação da tabela usuarios. A configuração existente de login_url e base_url é reutilizada. Não há novos secrets. Versão do portal: 2026.10.29.6.
 
 Verificações locais: 190 testes, incluindo validação de campos, senhas divergentes, limpeza de senhas após envio, normalização de e-mail, ausência de perfil no cadastro público e regras de autorização do endpoint de atendentes. O fluxo de criação de uma credencial nova deve ser concluído pelo próprio titular.
+
+
+## Verificação pública em 30/10/2026
+
+O About confirmou a versão 2026.10.29.6. A aba Criar conta e os quatro campos foram conferidos; envio sem dados foi rejeitado com orientação de nome/e-mail. Não foi criada uma credencial nova nesta revisão. O cadastro positivo e o formulário administrativo autenticado continuam pendentes no checklist OpenSpec.

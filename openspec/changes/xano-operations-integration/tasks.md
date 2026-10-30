@@ -1,4 +1,4 @@
 - [x] Separar configuração de autenticação e filas e validar login legado com auth/me.
 - [x] Exibir filas e atendimento retornados pelo Xano sem depender de senhas locais.
 - [x] Verificar contratos e erros de autorização com testes: 96 testes passaram.
-- [ ] Validar com dados e credenciais da aplicação no Xano e publicar no Streamlit.
+- [x] Validar com dados e credenciais da aplicação no Xano e publicar no Streamlit; evidências posteriores em docs/streamlit-deploy.md (runtime de 28/10 e deploy de 29/10).

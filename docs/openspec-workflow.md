@@ -55,16 +55,16 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
-| [account-registration](../openspec/changes/account-registration/tasks.md) | 3 tarefa(s) pendente(s); consultar evidências e limitações no checklist. |
+| [account-registration](../openspec/changes/account-registration/tasks.md) | 2 tarefa(s) pendente(s); consultar evidências no checklist. |
 | [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
 | [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
+| [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Revisão atual; evidências em project-audit.md. |
 | [published-tracking-navigation](../openspec/changes/published-tracking-navigation/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | 2 tarefa(s) pendente(s); consultar evidências e limitações no checklist. |
-| [reorganize-openspec-structure](../openspec/changes/reorganize-openspec-structure/tasks.md) | Organização e documentação; publicação dos commits nesta entrega. |
-| [streamlit-deployment-preparation](../openspec/changes/streamlit-deployment-preparation/tasks.md) | 3 tarefa(s) pendente(s); consultar evidências e limitações no checklist. |
+| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | 1 tarefa(s) pendente(s); consultar evidências no checklist. |
+| [reorganize-openspec-structure](../openspec/changes/reorganize-openspec-structure/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
+| [streamlit-deployment-preparation](../openspec/changes/streamlit-deployment-preparation/tasks.md) | 2 tarefa(s) pendente(s); consultar evidências no checklist. |
 | [totem-tv-runtime-validation](../openspec/changes/totem-tv-runtime-validation/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
-| [verified-role-navigation](../openspec/changes/verified-role-navigation/tasks.md) | 1 tarefa(s) pendente(s); consultar evidências e limitações no checklist. |
-| [xano-operations-integration](../openspec/changes/xano-operations-integration/tasks.md) | 1 tarefa(s) pendente(s); consultar evidências e limitações no checklist. |
+| [xano-operations-integration](../openspec/changes/xano-operations-integration/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
 | [xano-runtime-identity](../openspec/changes/xano-runtime-identity/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
 | [xano-test-provisioning](../openspec/changes/xano-test-provisioning/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
 | [xano-ticket-issue-diagnostics](../openspec/changes/xano-ticket-issue-diagnostics/tasks.md) | Implementação registrada como concluída; sincronização histórica ainda deve ser revisada. |
@@ -76,7 +76,7 @@ Foram arquivadas pela CLI, com sincronização de nove requisitos nas specs vige
 - [service-experience-refresh](../openspec/changes/archive/2026-10-30-service-experience-refresh/proposal.md): experiência visual, comprovante e apresentação da TV.
 - [project-review-presentation](../openspec/changes/archive/2026-10-30-project-review-presentation/proposal.md): contratos, preservação de estado e dados de demonstração.
 
-Os seis diretórios de histórico anteriores foram preservados. Cadastro, testes de concorrência e pendências de deploy não foram marcados como concluídos por esta reorganização.
+Nesta revisão, [verified-role-navigation](../openspec/changes/archive/2026-10-30-verified-role-navigation/proposal.md) também foi sincronizada e arquivada após confirmação de login e logout já registrada. As specs de navegação e Cliente foram alinhadas ao login obrigatório do portal. Os seis diretórios de histórico anteriores à reorganização foram preservados. Cadastro, testes de concorrência e pendências de deploy não foram marcados como concluídos por esta reorganização.
 
 ## Validação reproduzível
 
