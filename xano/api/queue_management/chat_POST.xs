@@ -5,10 +5,14 @@ query chat verb=POST {
 
   input {
     int senha_id?=0
-    text mensagem?="" filters=trim|max:500
+    bool enviar?=false
+    text mensagem? filters=trim|max:500
   }
 
   stack {
+    var $ticket_id {
+      value = $input.senha_id ?? 0
+    }
     db.get usuarios {
       field_name = "id"
       field_value = $auth.id
@@ -18,17 +22,13 @@ query chat verb=POST {
       error_type = "accessdenied"
       error = "Conversa indisponível para esta conta."
     }
-    precondition ($input.senha_id > 0 || ($input.senha_id == 0 && $actor.role == "usuario" && $input.mensagem == "")) {
-      error_type = "inputerror"
-      error = "Selecione um atendimento ativo."
-    }
     db.query senhas {
-      where = $db.senhas.status == "chamado" && (($input.senha_id > 0 && $db.senhas.id == $input.senha_id) || ($input.senha_id == 0 && $db.senhas.usuario_id == $auth.id)) && ($actor.role == "atendente" || $db.senhas.usuario_id == $auth.id)
+      where = $db.senhas.status == "chamado" && (($ticket_id > 0 && $db.senhas.id == $ticket_id) || ($ticket_id == 0 && $db.senhas.usuario_id == $auth.id)) && ($actor.role == "atendente" || $db.senhas.usuario_id == $auth.id)
       sort = {chamado_at: "desc", id: "desc"}
       return = {type: "single"}
     } as $senha
 
-    precondition ($senha != null || $input.senha_id == 0) {
+    precondition ($senha != null || $input.enviar != true) {
       error_type = "notfound"
       error = "Conversa indisponível."
     }
@@ -79,7 +79,15 @@ query chat verb=POST {
             }
 
             conditional {
-              if ($input.mensagem != "") {
+              if ($input.enviar == true) {
+                precondition ($ticket_id > 0) {
+                  error_type = "inputerror"
+                  error = "Selecione um atendimento ativo."
+                }
+                precondition ($input.mensagem != null && $input.mensagem != "") {
+                  error_type = "inputerror"
+                  error = "Informe o texto da mensagem."
+                }
                 db.add mensagens_atendimento {
                   data = {
                     atendimento_id: $atendimento.id

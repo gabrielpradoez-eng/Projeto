@@ -366,7 +366,7 @@ class QueueBackend:
         return self._operation_request("customer/issue", {"fila_id": queue_id}, token)
 
     def _service_chat_request(self, ticket_id: int, message: str, token: str) -> dict:
-        data = self._operation_request("chat", {"senha_id": ticket_id, "mensagem": message}, token)
+        data = self._operation_request("chat", {"senha_id": ticket_id, "mensagem": message, "enviar": bool(message)}, token)
         active, rows = data.get("atendimento"), data.get("mensagens")
         if (
             "atendimento" not in data or not isinstance(rows, list) or len(rows) > 50
