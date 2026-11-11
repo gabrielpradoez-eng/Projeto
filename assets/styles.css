@@ -86,7 +86,7 @@ h3 { font-size: 1.12rem; }
 button:focus-visible, input:focus-visible, [role="combobox"]:focus-visible,
 [role="tab"]:focus-visible, summary:focus-visible { outline: 3px solid #3b82f6 !important; outline-offset: 3px; }
 @media (max-width: 900px) {
-  [data-testid="stMainBlockContainer"] { padding: 1.25rem 1.25rem 3rem; }
+  [data-testid="stMainBlockContainer"] { padding: 4.5rem 1.25rem 3rem; }
   .st-key-mobile_navigation { display: block; padding: 15px; border: 1px solid var(--fs-line); background: white; border-radius: 9px; margin: 8px 0 4px; }
   .fs-workspace-label { display: none; }
   .fs-hero { padding: 20px 0; margin-bottom: 16px; }
@@ -94,7 +94,7 @@ button:focus-visible, input:focus-visible, [role="combobox"]:focus-visible,
   [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { min-width: min(100%, 260px); flex: 1 1 260px; }
 }
 @media (max-width: 640px) {
-  [data-testid="stMainBlockContainer"] { padding: 1rem 1rem calc(2rem + env(safe-area-inset-bottom)); }
+  [data-testid="stMainBlockContainer"] { padding: 4.5rem 1rem calc(2rem + env(safe-area-inset-bottom)); }
   [data-testid="stHorizontalBlock"] { flex-direction: column; gap: 1rem; align-items: stretch; }
   [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { width: 100% !important; min-width: 0 !important; flex: 1 1 auto !important; }
   [data-testid="stHorizontalBlock"] > [data-testid="stMetric"],

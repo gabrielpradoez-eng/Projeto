@@ -41,7 +41,7 @@ def main() -> None:
         page_icon="⏱️",
         layout="wide",
         initial_sidebar_state="auto",
-        menu_items={"About": "FilaSmart · versão 2026.10.30.2"},
+        menu_items={"About": "FilaSmart · versão 2026.11.11.1"},
     )
     _initialize_session()
     apply_theme()

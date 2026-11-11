@@ -17,6 +17,6 @@ No portal, os filtros de relatórios ficam em um painel no conteúdo, com campos
 
 ## Publicação e limites
 
-A inspeção do site após a atualização do GitHub ainda apresentou o cabeçalho anterior. Uma sessão nova também mostrou a versão antiga. O botão source confirmou a branch codex/streamlit-deployment-preparation. O gerenciamento do Community Cloud requer login do titular para verificar/reiniciar a publicação. Não foi confirmada a ativação visual da versão 2026.10.30.2.
+O aplicativo foi reiniciado no Community Cloud e a versão 2026.10.30.2 foi confirmada em About. As abas Entrar e Criar conta foram inspecionadas no site publicado. Em uma área de 390px no Chromium, o conteúdo empilhou em uma coluna, sem rolagem horizontal, e os campos exibiram texto de 16px. Essa inspeção encontrou sobreposição da barra fixa do Streamlit sobre a marca.
 
-A ferramenta de navegador disponível não oferece configuração de viewport móvel. Os testes de estado e a revisão dos breakpoints não equivalem a inspeção em um aparelho real. A inspeção visual do layout estreito permanece aberta; não se declara homologação de dispositivos ou conformidade completa com WCAG.
+A versão 2026.11.11.1 reserva espaço acima do conteúdo em telas de até 900px para corrigir a sobreposição. A inspeção em largura reduzida no Chromium não substitui um teste em aparelho físico. A navegação por perfil foi verificada pelos testes de estado.
