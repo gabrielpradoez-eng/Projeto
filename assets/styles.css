@@ -116,3 +116,5 @@ button:focus-visible, input:focus-visible, [role="combobox"]:focus-visible,
   [data-testid="stMarkdownContainer"] p, [data-testid="stCaptionContainer"] { overflow-wrap: anywhere; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+[data-testid="stChatMessage"] [data-testid="stText"] { white-space: pre-wrap; overflow-wrap: anywhere; }

@@ -101,3 +101,6 @@ O inventário base contém 41 exports: 36 componentes de aplicação na sequênc
 ## Cadastro de clientes e atendentes
 
 Atualizar `xano/api/authentication/auth/signup_POST.xs` e importar `xano/api/queue_management/admin/attendants_POST.xs` após as tabelas usuarios, estabelecimentos e atendentes. O segundo endpoint exige autenticação de usuarios e administrador do estabelecimento.
+
+### Chat de atendimento
+Importe a tabela `xano/table/mensagens_atendimento.xs` após as tabelas de usuários e atendimentos. Não gere rotas CRUD para ela. Publique `xano/api/queue_management/customer/issue_POST.xs` e `xano/api/queue_management/chat_POST.xs` no grupo Queue Management, com autenticação de usuários. Veja [ativação e validação](service-chat.md).

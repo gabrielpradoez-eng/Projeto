@@ -1,0 +1,5 @@
+- [x] Especificar ciclo, identidade e privacidade.
+- [x] Implementar exports e interface de cliente e atendente.
+- [x] Validar testes automatizados e OpenSpec.
+- [ ] Aplicar os três exports no Xano e verificar o fluxo com contas de teste.
+- [ ] Ativar o chat no Streamlit e confirmar o deploy.

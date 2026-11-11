@@ -4,6 +4,8 @@ from collections.abc import Callable
 
 import streamlit as st
 
+from views.service_chat import render_service_chat, service_chat_enabled
+
 from backend_queue import (
     AccessDeniedError,
     InvalidQueueStateError,
@@ -110,4 +112,6 @@ def _render_operation(backend: QueueBackend, user: dict) -> None:
             st.rerun()
         except (AccessDeniedError, InvalidQueueStateError) as exc:
             st.error(str(exc))
+    if current and service_chat_enabled():
+        render_service_chat(backend, user, ticket_id=current["id"])
     st.caption("Filas e estado do atendimento consultados no Xano.")

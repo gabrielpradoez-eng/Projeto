@@ -55,6 +55,7 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
+| [atendimento-chat](../openspec/changes/atendimento-chat/tasks.md) | Código e testes concluídos; ativação no Xano e no Streamlit em acompanhamento. |
 | [account-registration](../openspec/changes/account-registration/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
 | [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |

@@ -321,7 +321,7 @@ class QueueBackend:
                 f"{self.base_url}/{path}", json=payload,
                 headers=self._get_headers(token), timeout=10,
             )
-            if response.status_code in (401, 403):
+            if response.status_code in (401, 403) or (path == "chat" and response.status_code == 404):
                 raise AccessDeniedError("O Xano não autorizou esta operação. Entre novamente ou confira suas permissões.")
             if response.status_code != 200:
                 raise InvalidQueueStateError(f"O Xano recusou a operação (HTTP {response.status_code}). Atualize o painel antes de tentar novamente.")
@@ -361,6 +361,40 @@ class QueueBackend:
     def emit_ticket(self, queue_id: int, user_id: int, token: Optional[str] = None) -> Dict[str, Any]:
         data = self._operation_request("join", {"fila_id": int(queue_id)}, token)
         return self._confirmed_ticket(data, "waiting", queue_id=queue_id).to_dict()
+
+    def issue_customer_ticket(self, queue_id: int, *, token: str) -> dict:
+        return self._operation_request("customer/issue", {"fila_id": queue_id}, token)
+
+    def _service_chat_request(self, ticket_id: int, message: str, token: str) -> dict:
+        data = self._operation_request("chat", {"senha_id": ticket_id, "mensagem": message}, token)
+        active, rows = data.get("atendimento"), data.get("mensagens")
+        if (
+            "atendimento" not in data or not isinstance(rows, list) or len(rows) > 50
+            or (active is None and (rows or message))
+            or (active is not None and (
+                not isinstance(active, dict)
+                or type(active.get("senha_id")) is not int or active["senha_id"] <= 0
+                or (ticket_id > 0 and active["senha_id"] != ticket_id)
+                or type(active.get("numero")) is not int
+                or (active.get("guiche") is not None and not isinstance(active["guiche"], str))
+            ))
+            or any(
+                not isinstance(row, dict) or type(row.get("remetente_id")) is not int
+                or not isinstance(row.get("mensagem"), str) or len(row["mensagem"]) > 500
+                for row in rows
+            )
+        ):
+            raise InvalidQueueStateError("Resposta inválida do chat.")
+        return data
+
+    def get_service_chat(self, ticket_id: int, *, token: str) -> dict:
+        return self._service_chat_request(ticket_id, "", token)
+
+    def send_service_message(self, ticket_id: int, message: str, *, token: str) -> dict:
+        body = message.strip()
+        if type(ticket_id) is not int or ticket_id <= 0 or not 1 <= len(body) <= 500:
+            raise InvalidQueueStateError("Informe um atendimento e uma mensagem de até 500 caracteres.")
+        return self._service_chat_request(ticket_id, body, token)
 
     def call_next_token(self, queue_id: int, attendant_id: int, token: Optional[str] = None) -> Dict[str, Any]:
         data = self._operation_request("call_next", {"fila_id": int(queue_id)}, token)

@@ -125,3 +125,7 @@ Integração e versão publicada confirmadas. Os testes concorrentes de fila pas
 ## Interface empresarial e acesso pelo celular
 
 A versão 2026.10.30.2 traz tema empresarial, cabeçalhos compactos e formulários consistentes. Até 900px, o seletor Navegar para e a saída ficam no conteúdo. Até 640px, colunas e métricas empilham e botões usam a largura disponível. Filtros de relatórios ficam no conteúdo do portal. A navegação permanece restrita ao perfil verificado. A interface foi confirmada no Streamlit. A revisão de novembro ajusta o espaço abaixo da barra fixa em telas estreitas. Veja as [evidências e limites](docs/corporate-responsive-interface.md) e a [mudança OpenSpec](openspec/changes/archive/2026-11-11-corporate-responsive-interface/tasks.md).
+
+## Chat de atendimento
+
+O chat abre após a chamada para o cliente e o atendente responsável. Consulte a [ativação e os testes de implantação](docs/service-chat.md).

@@ -3,6 +3,8 @@ from __future__ import annotations
 import streamlit as st
 
 from streamlit_xano import get_xano_client
+from backend_queue import AccessDeniedError, InvalidQueueStateError
+from views.service_chat import render_service_chat, service_chat_enabled
 from views.issue_error import render_ticket_issue_error
 from views.presentation import format_timestamp, render_receipt, render_status_guidance
 from portal_session import fragment_access_allowed
@@ -75,6 +77,11 @@ def _render_tracking(client) -> None:
 
 def render_client_view() -> None:
     st.header("Atendimento do cliente")
+    user = st.session_state.get("user") or {}
+    use_chat = user.get("role") == "user" and service_chat_enabled()
+    backend = st.session_state.get("backend")
+    if use_chat:
+        render_service_chat(backend, user)
 
     if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
         start_new_client_session()
@@ -126,7 +133,13 @@ def render_client_view() -> None:
         ):
             try:
                 with st.spinner("Solicitando a emissão da senha..."):
-                    issued = client.issue_ticket(selected_queue_id)
+                    if use_chat:
+                        issued = backend.issue_customer_ticket(selected_queue_id, token=user["authToken"])
+                    else:
+                        issued = client.issue_ticket(selected_queue_id)
+            except (AccessDeniedError, InvalidQueueStateError):
+                st.error("Não foi possível confirmar a emissão. Confira a fila antes de tentar novamente.")
+                return
             except QueueUnavailableError as exc:
                 render_ticket_issue_error(
                     exc,
