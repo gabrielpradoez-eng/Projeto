@@ -20,3 +20,5 @@ No portal, os filtros de relatórios ficam em um painel no conteúdo, com campos
 O aplicativo foi reiniciado no Community Cloud e a versão 2026.10.30.2 foi confirmada em About. As abas Entrar e Criar conta foram inspecionadas no site publicado. Em uma área de 390px no Chromium, o conteúdo empilhou em uma coluna, sem rolagem horizontal, e os campos exibiram texto de 16px. Essa inspeção encontrou sobreposição da barra fixa do Streamlit sobre a marca.
 
 A versão 2026.11.11.1 reserva espaço acima do conteúdo em telas de até 900px para corrigir a sobreposição. A inspeção em largura reduzida no Chromium não substitui um teste em aparelho físico. A navegação por perfil foi verificada pelos testes de estado.
+
+Em 11/11/2026, a aplicação foi reativada e a correção foi observada no ambiente publicado. Com a área do aplicativo reduzida a 390px, a marca começou em 88px, abaixo da barra que termina em 60px. O conteúdo mediu 380px tanto na largura visível quanto na largura rolável, e as colunas ficaram empilhadas. O cadastro exibiu quatro campos com fonte de 16px, botão de 48px e sem rolagem horizontal. O CI de Python aprovou a correção nas duas branches.

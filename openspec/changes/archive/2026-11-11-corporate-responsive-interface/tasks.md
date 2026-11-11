@@ -1,6 +1,6 @@
 - [x] Revisar componentes e registrar proposta, decisões e deltas.
 - [x] Implementar identidade empresarial, navegação móvel e filtros acessíveis.
 - [x] Verificar navegação por perfil, testes e OpenSpec.
-- [ ] Publicar nas branches principal e de deploy e inspecionar o site.
+- [x] Publicar nas branches principal e de deploy e inspecionar o site.
 - [x] Registrar evidências e limites da validação responsiva em docs/corporate-responsive-interface.md.
-- [ ] Conferir layout estreito em viewport móvel ou aparelho real após ativação da versão.
+- [x] Conferir layout estreito em viewport móvel ou aparelho real após ativação da versão.

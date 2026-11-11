@@ -56,7 +56,6 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
 | [account-registration](../openspec/changes/account-registration/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
-| [corporate-responsive-interface](../openspec/changes/corporate-responsive-interface/tasks.md) | Implementação e testes aprovados; inspeção visual e publicação em acompanhamento. |
 | [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
 | [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
@@ -91,3 +90,5 @@ python -m pytest -q
 ```
 
 A CLI valida specs vigentes e mudanças ativas; histórico arquivado não é reescrito automaticamente. O workflow de CI usa a mesma versão e comando da validação local, com acesso somente de leitura ao repositório.
+
+A [interface empresarial e responsiva](../openspec/changes/archive/2026-11-11-corporate-responsive-interface/tasks.md) foi sincronizada e arquivada após a verificação da versão publicada em 390px.
