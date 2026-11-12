@@ -2,4 +2,5 @@
 - [x] Implementar exports e interface de cliente e atendente.
 - [x] Validar testes automatizados e OpenSpec.
 - [x] Aplicar os três exports no Xano e verificar o fluxo com contas de teste.
-- [ ] Ativar o chat no Streamlit e confirmar o deploy.
+- [x] Publicar no Streamlit a ativação para a API validada e verificar o carregamento do portal.
+- [ ] Repetir o teste de chat com sessões autenticadas na interface pública.

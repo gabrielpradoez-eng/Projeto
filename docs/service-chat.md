@@ -14,4 +14,4 @@ Senhas emitidas anteriormente pela conta técnica do totem não ganham chat, poi
 
 A tabela e os endpoints de emissão autenticada e de chat estão publicados no Xano. Um teste com dados sintéticos em uma fila de demonstração vazia confirmou a emissão, a descoberta da conversa após a chamada, a leitura e o envio dos dois lados, a recusa de acesso a outro atendente e o bloqueio de leitura e envio após a conclusão. A resposta sempre retorna uma lista de mensagens, inclusive quando a conversa não está disponível.
 
-O Streamlit recebe a ativação junto com o deploy do código. A validação do Xano não substitui o teste autenticado na interface publicada.
+O Streamlit carregou a revisão com a ativação e a tela pública de login foi verificada após o reinício. A troca de mensagens foi validada no Xano; a repetição desse teste com sessões autenticadas no site permanece pendente.
