@@ -4,10 +4,24 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from backend_queue import AccessDeniedError, InvalidQueueStateError, QueueBackend
+from views.service_chat import service_chat_enabled
 
 
 ACTIVE = {"senha_id": 19, "numero": 6, "guiche": "Guichê 1"}
 LITERAL = "<img src=x> [link](https://example.invalid)"
+VALIDATED_API = "https://x8ki-letl-twmt.n7.xano.io/api:queue-management"
+
+
+@pytest.mark.parametrize(("settings", "expected"), [
+    ({"base_url": VALIDATED_API + "/"}, True),
+    ({"base_url": VALIDATED_API, "service_chat_enabled": False}, False),
+    ({"base_url": VALIDATED_API + "-outro"}, False),
+    ({"base_url": "https://xano.invalid/api:queues", "service_chat_enabled": True}, True),
+    ({}, False),
+])
+def test_chat_activation_defaults_to_validated_api_and_respects_override(monkeypatch, settings, expected):
+    monkeypatch.setattr("views.service_chat.st.secrets", {"xano": settings})
+    assert service_chat_enabled() is expected
 
 
 def chat_app(backend):

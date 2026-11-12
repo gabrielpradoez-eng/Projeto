@@ -7,11 +7,18 @@ from backend_queue import AccessDeniedError, InvalidQueueStateError
 from portal_session import fragment_access_allowed
 
 
+_VALIDATED_QUEUE_API = "https://x8ki-letl-twmt.n7.xano.io/api:queue-management"
+
+
 def service_chat_enabled() -> bool:
     try:
-        return st.secrets.get("xano", {}).get("service_chat_enabled") is True
+        settings = st.secrets.get("xano", {})
     except FileNotFoundError:
         return False
+    if "service_chat_enabled" in settings:
+        return settings["service_chat_enabled"] is True
+    base_url = settings.get("base_url", "")
+    return isinstance(base_url, str) and base_url.rstrip("/") == _VALIDATED_QUEUE_API
 
 
 def render_service_chat(backend, user: dict, *, ticket_id: int = 0) -> None:
