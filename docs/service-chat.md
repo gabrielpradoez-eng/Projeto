@@ -12,4 +12,6 @@ Senhas emitidas anteriormente pela conta técnica do totem não ganham chat, poi
 
 ## Estado da implantação
 
-A tabela foi criada no Xano. A emissão autenticada e o chat foram adicionados ao grupo Queue Management. O rascunho revisado do chat retornou `atendimento: null` e nenhuma mensagem ao consultar sem uma senha chamada. A emissão com o perfil de demonstração foi recusada pela verificação de papel de cliente. Nenhuma senha de teste foi criada. É necessário identificar uma conta de teste com papel de cliente para validar a emissão, a conversa nos dois sentidos e a conclusão antes de publicar a revisão e ativar o portal. O chat segue desativado no portal.
+A tabela e os endpoints de emissão autenticada e de chat estão publicados no Xano. Um teste com dados sintéticos em uma fila de demonstração vazia confirmou a emissão, a descoberta da conversa após a chamada, a leitura e o envio dos dois lados, a recusa de acesso a outro atendente e o bloqueio de leitura e envio após a conclusão. A resposta sempre retorna uma lista de mensagens, inclusive quando a conversa não está disponível.
+
+A ativação no Streamlit e a verificação da interface publicada são etapas separadas da validação do Xano.

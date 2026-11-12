@@ -101,7 +101,6 @@ query chat verb=POST {
               where = $db.mensagens_atendimento.atendimento_id == $atendimento.id
               sort = {id: "desc"}
               return = {type: "list", paging: {page: 1, per_page: 50}}
-              output = ["id", "created_at", "remetente_id", "mensagem"]
             } as $recentes
           }
         }
@@ -110,6 +109,6 @@ query chat verb=POST {
   }
   response = {
     atendimento: ($senha != null) ? {senha_id: $senha.id, numero: $senha.numero, guiche: $atendimento.destino_label} : null
-    mensagens: ($senha != null) ? $recentes.items : []
+    mensagens: (($recentes.items ?? [])|map:{id: $$.id, created_at: $$.created_at, remetente_id: $$.remetente_id, mensagem: $$.mensagem})
   }
 }
