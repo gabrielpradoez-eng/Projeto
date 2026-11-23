@@ -1,5 +1,7 @@
 # Revisão de consistência — 30/10/2026
 
+> Auditoria histórica. Para os resultados e pendências de novembro, consulte a [revisão de 23/11/2026](review-2026-11-23.md).
+
 > Fechamento posterior: PR #1 integrado à main pelo merge e12a1ee; versão 2026.10.30.1 confirmada no About. As referências abaixo a main anterior e runtime não confirmado preservam a evidência da auditoria antes do fechamento. Consulte [situação atual](release-readiness.md).
 
 

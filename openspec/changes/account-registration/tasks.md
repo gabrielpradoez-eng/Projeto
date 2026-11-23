@@ -7,4 +7,5 @@
 - [x] Confirmar ativação da versão 2026.10.29.6 no About em 30/10/2026; reinício deixou de ser um bloqueio observado.
 - [x] Conferir formulário público Criar conta e rejeição de envio vazio no site publicado.
 - [x] Validar formulário administrativo em sessão autenticada: estabelecimento e guichê presentes; confirmação obrigatória bloqueia envio vazio.
-- [ ] Concluir cadastro positivo com senha definida pelo próprio titular e liberação de atendente pelo administrador.
+- [x] Confirmar cadastro positivo feito pelo titular e login com perfil Cliente (23/11/2026).
+- [ ] Concluir liberação de uma nova conta de atendente pelo formulário administrativo.

@@ -20,3 +20,7 @@ Verificações locais: 190 testes, incluindo validação de campos, senhas diver
 ## Verificação pública em 30/10/2026
 
 O About confirmou a versão 2026.10.29.6. A aba Criar conta e os quatro campos foram conferidos; envio sem dados foi rejeitado com orientação de nome/e-mail. Não foi criada uma credencial nova nesta revisão. O cadastro positivo e o formulário administrativo autenticado continuam pendentes no checklist OpenSpec.
+
+## Atualização de 23/11/2026
+
+O titular confirmou a criação de uma nova conta. O login dessa conta com perfil Cliente foi verificado no site, seguido da emissão da senha 8 e troca de mensagens com o atendente. A criação e liberação de um novo vínculo pelo formulário administrativo ainda exigem validação própria. Os números e pendências de outubro acima são históricos.

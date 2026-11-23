@@ -14,4 +14,8 @@ Senhas emitidas anteriormente pela conta técnica do totem não ganham chat, poi
 
 A tabela e os endpoints de emissão autenticada e de chat estão publicados no Xano. Um teste com dados sintéticos em uma fila de demonstração vazia confirmou a emissão, a descoberta da conversa após a chamada, a leitura e o envio dos dois lados, a recusa de acesso a outro atendente e o bloqueio de leitura e envio após a conclusão. A resposta sempre retorna uma lista de mensagens, inclusive quando a conversa não está disponível.
 
-O Streamlit carregou a revisão com a ativação e a tela pública de login foi verificada após o reinício. A troca de mensagens foi validada no Xano; a repetição desse teste com sessões autenticadas no site permanece pendente.
+O Streamlit carregou a revisão com a ativação e a tela pública de login foi verificada após o reinício. Em 23/11/2026, a troca de mensagens também foi confirmada no site com duas sessões autenticadas, na senha 8 / Guichê 1: mensagem do atendente recebida pelo cliente e resposta do cliente recebida pelo atendente. O atendimento não foi finalizado nesse teste de interface.
+
+## Limite de consultas
+
+Durante a validação pública ocorreram recusas HTTP 429 do Xano, inclusive na consulta de filas e chamada. A consulta do chat foi reduzida de 8 para 30 segundos. A troca foi concluída pausando temporariamente as atualizações de uma das telas. Isso demonstra o fluxo funcional, mas não garante capacidade para vários usuários simultâneos. Não repita mutações sem conferir o estado após falha de confirmação.

@@ -82,7 +82,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de 30/10/2026 foi verificada com **229 testes aprovados**, **24 itens OpenSpec válidos em modo estrito** e links locais conferidos. Veja o [relatório de auditoria](docs/project-audit.md). Os testes não substituem a validação dos exports no runtime do Xano nem testes de carga. A emissão, chamada e conclusão simultâneas foram [verificadas no Xano](docs/queue-concurrency-validation.md), com encerramento das senhas criadas para o teste.
+A revisão de **23/11/2026** aprovou **237 testes Python** e **24 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-23.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
 
 ## Trabalhar com OpenSpec
 
@@ -114,13 +114,31 @@ O workflow [OpenSpec validation](.github/workflows/openspec-validation.yml) exec
 - [Importação dos exports Xano](docs/xano-import-order.md) e [deploy no Streamlit](docs/streamlit-deploy.md).
 - [Revisão e dados de apresentação](docs/project-review-presentation.md).
 
-**Situação do cadastro:** código e endpoints publicados. Em 30/10/2026, o site confirmou 2026.10.29.6, apresentou Criar conta e rejeitou cadastro vazio. Cadastro positivo e vínculo administrativo continuam pendentes no [checklist](openspec/changes/account-registration/tasks.md). A versão 2026.10.30.1 foi confirmada no About.
+## Situação atual e operação
 
-**GitHub:** o [PR #1](https://github.com/gabrielpradoez-eng/Projeto/pull/1) foi integrado à `main` pelo merge `e12a1ee`. A main e a branch do deploy são mantidas com o mesmo conteúdo no fechamento. O CI inclui [testes Python](.github/workflows/python-tests.yml) e validação OpenSpec; resultados e limites da verificação estão no relatório de auditoria.
+- **Cliente:** o titular criou uma conta e o login com perfil Cliente foi confirmado no portal em 23/11/2026.
+- **Atendente:** login e operação de chamada confirmados. A liberação de uma nova conta pelo formulário administrativo continua em acompanhamento no [checklist de cadastro](openspec/changes/account-registration/tasks.md).
+- **Chat:** troca de mensagens confirmada entre cliente e atendente no site, na senha 8 / Guichê 1. As duas mensagens foram vistas nas duas sessões. Essa evidência não equivale a teste de carga.
+- **GitHub e deploy:** `main` contém a documentação principal; a implantação `filasmarttech` usa `codex/streamlit-deployment-preparation` e `app.py`. Um push Python não publica exports no Xano. As duas branches podem ter históricos diferentes; compare o conteúdo antes de integrar.
+- **Limites conhecidos:** houve respostas HTTP 429 do Xano durante o teste. O chat passou a consultar a cada 30 segundos para reduzir requisições; múltiplas telas e usuários ainda podem exceder a capacidade do serviço. Em recusa ou timeout, confira o estado antes de repetir emissão, chamada ou envio.
+- **Hospedagem:** o Streamlit Community Cloud pode suspender o aplicativo por inatividade; a tela de suspensão permite reativá-lo. Disponibilidade contínua e capacidade para vários usuários precisam de validação própria.
 
-## Fechamento
+O CI inclui [testes Python](.github/workflows/python-tests.yml) e [validação OpenSpec](.github/workflows/openspec-validation.yml). Resultados locais e evidências de runtime estão separados no [relatório atual](docs/review-2026-11-23.md).
 
-Integração e versão publicada confirmadas. Os testes concorrentes de fila passaram no Xano. Cadastro positivo e liberação de atendente dependem da ação do titular/administrador. Consulte o [registro de fechamento](docs/release-readiness.md) e o [checklist](openspec/changes/release-readiness/tasks.md).
+## Configuração e deploy
+
+O modelo [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) lista os campos necessários. Configure valores reais somente no arquivo local ignorado pelo Git ou nos Secrets do Streamlit:
+
+| Seção | Finalidade |
+| --- | --- |
+| `[xano]` | URLs de autenticação, API de filas, acompanhamento e conta técnica do totem |
+| `[tv_display]` | Feed de chamadas e credencial restrita do display |
+| `[analytics]` | URLs de autenticação, opções e relatório administrativo |
+| `[xano_seed]` | Provisionamento exclusivo de teste; não habilitar seed em produção |
+
+O modelo deixa `service_chat_enabled = false`. Após publicar e validar os três exports do chat, configure `true` em `[xano]`; `false` sempre desativa a interface. Quando a chave não existe, o código ativa automaticamente apenas para a API de filas validada do FilaSmart. Consulte [chat](docs/service-chat.md), [ordem de importação](docs/xano-import-order.md) e [deploy](docs/streamlit-deploy.md).
+
+Contas Xano/Streamlit não são contas do portal. O cadastro público cria somente clientes; o administrador habilita atendentes. Não publique senhas, tokens ou o arquivo real de Secrets. Recuperação de acesso depende do responsável pelo sistema, conforme [controle de acesso](docs/access-control.md).
 
 ## Interface empresarial e acesso pelo celular
 
@@ -128,4 +146,4 @@ A versão 2026.10.30.2 traz tema empresarial, cabeçalhos compactos e formulári
 
 ## Chat de atendimento
 
-O chat abre após a chamada para o cliente e o atendente responsável. Consulte a [ativação e os testes de implantação](docs/service-chat.md).
+O chat privado abre após a chamada para o cliente e o atendente responsável, mostra até 50 mensagens de até 500 caracteres e deixa de permitir acesso ao finalizar o atendimento. Não há anexos, WhatsApp, SMS ou notificações push. Consulte a [ativação e os testes de implantação](docs/service-chat.md).

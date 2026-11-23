@@ -1,6 +1,9 @@
 # Preparação para deploy do FilaSmart
 
-> Estado atualizado em 30/10/2026: deploy público ativo; About confirmou 2026.10.29.6 e o formulário Criar conta rejeitou envio vazio. Login administrativo, relatórios e TV foram validados em 29/10. As anotações abaixo preservam a sequência histórica e alguns bloqueios já foram superados. O fechamento posterior confirmou 2026.10.30.1 no About e integração à main pelo PR #1. Cadastro positivo e concorrência permanecem pendentes. Veja [auditoria atual](project-audit.md).
+> Situação em 23/11/2026: cadastro e login de cliente confirmados pelo fluxo público; chat testado nos dois sentidos com cliente e atendente. HTTP 429 ainda limita consultas simultâneas. A liberação de novo atendente pelo formulário administrativo e testes de capacidade continuam pendentes. Veja [revisão atual](review-2026-11-23.md) e [chat](service-chat.md). As seções datadas abaixo são evidências históricas, não o estado atual de todas as funcionalidades.
+
+
+> Registro histórico de 30/10/2026: deploy público ativo; About confirmou 2026.10.29.6 e o formulário Criar conta rejeitou envio vazio. Login administrativo, relatórios e TV foram validados em 29/10. As anotações abaixo preservam a sequência histórica e alguns bloqueios já foram superados. O fechamento posterior confirmou 2026.10.30.1 no About e integração à main pelo PR #1. Cadastro positivo e concorrência permanecem pendentes. Veja [auditoria atual](project-audit.md).
 
 
 O ponto de entrada da aplicação unificada é `app.py`. As dependências de execução estão em `requirements.txt`.
@@ -18,7 +21,7 @@ Os endereços de login, filas, emissão, acompanhamento, painel de TV e relatór
 
 Antes de importar os componentes do Xano, consulte `docs/xano-import-order.md` e confirme as correções e restrições de segurança indicadas. Use inicialmente um workspace de teste, sem dados reais. Não habilite o endpoint de seed em produção.
 
-## Pendências antes do uso completo
+## Configuração operacional
 
 - O painel de atendentes consulta `attendant/dashboard` para ler filas e o atendimento atual no Xano. Cadastros devem ser mantidos no console Xano até existir uma API administrativa com autorização adequada. A interface não oferece mais os cadastros temporários da sessão.
 - Configure `login_url` do grupo Authentication e `base_url` do grupo Queue Management. O login legado com `authToken` e `user_id` é confirmado por `auth/me` (ou `me_url` explícita).
