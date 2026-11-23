@@ -26,7 +26,7 @@ def render_service_chat(backend, user: dict, *, ticket_id: int = 0) -> None:
     view = "Cliente" if customer else "Administração"
     managed = bool(st.session_state.get("_portal_managed"))
 
-    @st.fragment(run_every="8s")
+    @st.fragment(run_every="30s")
     def chat() -> None:
         if managed and not fragment_access_allowed(view):
             return
