@@ -73,3 +73,28 @@ def test_client_refuses_cross_ticket_response_and_invalid_outgoing_message(monke
     with pytest.raises(InvalidQueueStateError):
         backend.send_service_message(19, "x" * 501, token="session-token")
     assert post.call_count == 1
+
+
+def test_chat_pauses_failed_reads_then_recovers_without_replaying_messages(monkeypatch):
+    clock = [100.0]
+    monkeypatch.setattr('views.service_chat.time.monotonic', lambda: clock[0])
+    backend = Mock()
+    backend.get_service_chat.side_effect = InvalidQueueStateError('HTTP 429')
+    app = chat_app(backend)
+    assert backend.get_service_chat.call_count == 1
+    clock[0] = 129
+    app.run()
+    assert backend.get_service_chat.call_count == 1
+    clock[0] = 130
+    app.run()
+    assert backend.get_service_chat.call_count == 2
+    clock[0] = 189
+    app.run()
+    assert backend.get_service_chat.call_count == 2
+    backend.get_service_chat.side_effect = None
+    backend.get_service_chat.return_value = {'atendimento': ACTIVE, 'mensagens': []}
+    clock[0] = 190
+    app.run()
+    assert backend.get_service_chat.call_count == 3
+    assert app.chat_input and not app.exception
+    backend.send_service_message.assert_not_called()

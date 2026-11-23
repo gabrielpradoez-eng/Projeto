@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import streamlit as st
+import time
 
 from backend_queue import AccessDeniedError, InvalidQueueStateError
 from portal_session import fragment_access_allowed
@@ -25,20 +26,29 @@ def render_service_chat(backend, user: dict, *, ticket_id: int = 0) -> None:
     customer = user["role"] == "user"
     view = "Cliente" if customer else "Administração"
     managed = bool(st.session_state.get("_portal_managed"))
+    retry_key = f"_chat_retry_{user['id']}_{ticket_id}"
 
     @st.fragment(run_every="30s")
     def chat() -> None:
         if managed and not fragment_access_allowed(view):
             return
         st.subheader("Chat do atendimento")
+        retry_at, failures = st.session_state.get(retry_key, (0, 0))
+        if time.monotonic() < retry_at:
+            st.info("Atualização pausada temporariamente para reduzir consultas. Aguarde a próxima tentativa.")
+            return
         try:
             state = backend.get_service_chat(ticket_id, token=user["authToken"])
         except AccessDeniedError:
             st.info("Esta conversa não está disponível para sua conta.")
             return
         except InvalidQueueStateError:
+            failures = min(failures + 1, 4)
+            st.session_state[retry_key] = (time.monotonic() + 30 * 2 ** (failures - 1), failures)
             st.warning("Não foi possível carregar a conversa. O painel tentará atualizar em instantes.")
             return
+
+        st.session_state.pop(retry_key, None)
 
         active = state["atendimento"]
         if active is None:

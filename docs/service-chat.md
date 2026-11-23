@@ -19,3 +19,9 @@ O Streamlit carregou a revisão com a ativação e a tela pública de login foi 
 ## Limite de consultas
 
 Durante a validação pública ocorreram recusas HTTP 429 do Xano, inclusive na consulta de filas e chamada. A consulta do chat foi reduzida de 8 para 30 segundos. A troca foi concluída pausando temporariamente as atualizações de uma das telas. Isso demonstra o fluxo funcional, mas não garante capacidade para vários usuários simultâneos. Não repita mutações sem conferir o estado após falha de confirmação.
+
+## Recuperação de falhas de leitura
+
+O chat pausa as leituras após falha de consulta por 30, 60, 120 e até 240 segundos consecutivos, por sessão/usuário e senha selecionada. Uma leitura bem-sucedida reinicia a contagem. Durante a pausa, o histórico e o envio não ficam disponíveis; as verificações de sessão continuam obrigatórias. Não há repetição automática de mensagens. Essa proteção reduz as consultas do chat, mas não estabelece a capacidade total da instância nem cobre todos os consumidores da API.
+
+Validação local adicional: 238 testes aprovados, incluindo pausa, recuperação e ausência de reenvio. Testes com vários usuários reais e o provisionamento administrativo de uma nova conta ainda precisam de confirmação no runtime.

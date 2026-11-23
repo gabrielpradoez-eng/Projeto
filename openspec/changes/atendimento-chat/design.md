@@ -3,3 +3,7 @@ O cliente emite pelo endpoint autenticado. O chat identifica participantes pela 
 
 ## Verification
 Validar autorização, ciclo da chamada, conteúdo literal, tamanho, transporte e publicação. Nenhuma mensagem de teste será enviada a uma pessoa real.
+
+## Recuperação de consultas
+
+Falhas de leitura pausam o chat por 30/60/120/240 segundos, com estado isolado por usuário e senha na sessão. A contagem é zerada após leitura bem-sucedida. Não são armazenados históricos durante a pausa nem repetidas mutações automaticamente. A confirmação de identidade precede a consulta ou pausa. Isso reduz pressão do chat, sem substituir teste de capacidade da API completa.

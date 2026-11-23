@@ -5,3 +5,4 @@
 - [x] Publicar no Streamlit a ativação para a API validada e verificar o carregamento do portal.
 - [x] Repetir o teste de chat com sessões autenticadas na interface pública (23/11/2026, senha 8 / Guichê 1, duas mensagens confirmadas nos dois perfis).
 - [ ] Validar capacidade com múltiplos usuários e tratamento sustentado de HTTP 429 antes de ampliar o uso.
+- [x] Implementar pausa progressiva das consultas do chat e testar recuperação sem reenvio automático (238 testes locais).
