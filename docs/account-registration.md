@@ -23,4 +23,4 @@ O About confirmou a versão 2026.10.29.6. A aba Criar conta e os quatro campos f
 
 ## Atualização de 23/11/2026
 
-O titular confirmou a criação de uma nova conta. O login dessa conta com perfil Cliente foi verificado no site, seguido da emissão da senha 8 e troca de mensagens com o atendente. A criação e liberação de um novo vínculo pelo formulário administrativo ainda exigem validação própria. Os números e pendências de outubro acima são históricos.
+O titular confirmou a criação de uma nova conta. O login dessa conta com perfil Cliente foi verificado no site, seguido da emissão da senha 8 e troca de mensagens com o atendente. A criação de novo vínculo pelo formulário administrativo e o novo login como Atendente foram confirmados posteriormente em 23/11/2026. Os números e pendências de outubro acima são históricos.

@@ -28,6 +28,7 @@ Projeto/
 ├── openspec/
 │   ├── config.yaml                  # Contexto, schema e regras do projeto
 │   ├── specs/                       # Contratos vigentes por capacidade
+│   │   ├── account-registration/spec.md
 │   │   ├── analytics-and-reports/spec.md
 │   │   ├── core-queue-ops/spec.md
 │   │   ├── project-review/spec.md
@@ -37,12 +38,12 @@ Projeto/
 │   │   ├── unified-streamlit-experience/spec.md
 │   │   └── verified-role-navigation/spec.md
 │   └── changes/
-│       ├── account-registration/    # Exemplo de mudança em acompanhamento
+│       ├── atendimento-chat/        # Mudança em acompanhamento
 │       │   ├── .openspec.yaml
 │       │   ├── proposal.md
 │       │   ├── design.md
 │       │   ├── tasks.md
-│       │   └── specs/account-registration/spec.md
+│       │   └── specs/atendimento-chat/spec.md
 │       ├── ...                      # Demais mudanças no índice do guia
 │       └── archive/                 # Histórico preservado por data e nome
 │           ├── ...
@@ -82,7 +83,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de **23/11/2026** aprovou **237 testes Python** e **24 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-23.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
+A revisão de **23/11/2026** aprovou **238 testes Python** e **24 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-23.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
 
 ## Trabalhar com OpenSpec
 
@@ -117,7 +118,7 @@ O workflow [OpenSpec validation](.github/workflows/openspec-validation.yml) exec
 ## Situação atual e operação
 
 - **Cliente:** o titular criou uma conta e o login com perfil Cliente foi confirmado no portal em 23/11/2026.
-- **Atendente:** login e operação de chamada confirmados. A liberação de uma nova conta pelo formulário administrativo continua em acompanhamento no [checklist de cadastro](openspec/changes/account-registration/tasks.md).
+- **Atendente:** login e operação de chamada confirmados. A liberação de nova conta e o novo login como Atendente foram confirmados em 23/11/2026; veja o [checklist de cadastro](openspec/changes/archive/2026-11-23-account-registration/tasks.md).
 - **Chat:** troca de mensagens confirmada entre cliente e atendente no site, na senha 8 / Guichê 1. As duas mensagens foram vistas nas duas sessões. Essa evidência não equivale a teste de carga.
 - **GitHub e deploy:** `main` contém a documentação principal; a implantação `filasmarttech` usa `codex/streamlit-deployment-preparation` e `app.py`. Um push Python não publica exports no Xano. As duas branches podem ter históricos diferentes; compare o conteúdo antes de integrar.
 - **Limites conhecidos:** houve respostas HTTP 429 do Xano durante o teste. O chat passou a consultar a cada 30 segundos para reduzir requisições; múltiplas telas e usuários ainda podem exceder a capacidade do serviço. Em recusa ou timeout, confira o estado antes de repetir emissão, chamada ou envio.

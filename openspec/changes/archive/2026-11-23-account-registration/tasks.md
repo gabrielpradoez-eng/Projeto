@@ -8,4 +8,4 @@
 - [x] Conferir formulário público Criar conta e rejeição de envio vazio no site publicado.
 - [x] Validar formulário administrativo em sessão autenticada: estabelecimento e guichê presentes; confirmação obrigatória bloqueia envio vazio.
 - [x] Confirmar cadastro positivo feito pelo titular e login com perfil Cliente (23/11/2026).
-- [ ] Concluir liberação de uma nova conta de atendente pelo formulário administrativo.
+- [x] Concluir liberação de uma nova conta de atendente pelo formulário administrativo e confirmar novo login com perfil Atendente (23/11/2026, estabelecimento de demonstração / Guichê 1).

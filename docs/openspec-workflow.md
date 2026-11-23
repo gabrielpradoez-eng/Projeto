@@ -55,22 +55,21 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
-| [atendimento-chat](../openspec/changes/atendimento-chat/tasks.md) | Troca pública de mensagens confirmada; capacidade e HTTP 429 em acompanhamento. |
-| [account-registration](../openspec/changes/account-registration/tasks.md) | 1 tarefa pendente: liberação positiva de novo atendente; consultar checklist. |
-| [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [published-tracking-navigation](../openspec/changes/published-tracking-navigation/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [queue-concurrency](../openspec/changes/queue-concurrency/tasks.md) | 1 tarefa pendente: vínculo positivo após confirmação administrativa. |
-| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [release-readiness](../openspec/changes/release-readiness/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
-| [reorganize-openspec-structure](../openspec/changes/reorganize-openspec-structure/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [atendimento-chat](../openspec/changes/atendimento-chat/tasks.md) | 1 tarefa(s) pendente(s); consultar checklist. |
+| [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [deployment-access-hardening](../openspec/changes/deployment-access-hardening/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [project-consistency-audit](../openspec/changes/project-consistency-audit/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [published-tracking-navigation](../openspec/changes/published-tracking-navigation/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [queue-concurrency](../openspec/changes/queue-concurrency/tasks.md) | 1 tarefa(s) pendente(s); consultar checklist. |
+| [queue-debugging](../openspec/changes/queue-debugging/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [release-readiness](../openspec/changes/release-readiness/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [reorganize-openspec-structure](../openspec/changes/reorganize-openspec-structure/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
 | [streamlit-deployment-preparation](../openspec/changes/streamlit-deployment-preparation/tasks.md) | 2 tarefa(s) pendente(s); consultar checklist. |
-| [totem-tv-runtime-validation](../openspec/changes/totem-tv-runtime-validation/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [xano-operations-integration](../openspec/changes/xano-operations-integration/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [xano-runtime-identity](../openspec/changes/xano-runtime-identity/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [xano-test-provisioning](../openspec/changes/xano-test-provisioning/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
-| [xano-ticket-issue-diagnostics](../openspec/changes/xano-ticket-issue-diagnostics/tasks.md) | Tarefas concluídas; revisar sincronização histórica antes de arquivar. |
+| [totem-tv-runtime-validation](../openspec/changes/totem-tv-runtime-validation/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [xano-operations-integration](../openspec/changes/xano-operations-integration/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [xano-runtime-identity](../openspec/changes/xano-runtime-identity/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [xano-test-provisioning](../openspec/changes/xano-test-provisioning/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
+| [xano-ticket-issue-diagnostics](../openspec/changes/xano-ticket-issue-diagnostics/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |
 
 ## Arquivamentos desta reorganização
 
@@ -93,3 +92,7 @@ python -m pytest -q
 A CLI valida specs vigentes e mudanças ativas; histórico arquivado não é reescrito automaticamente. O workflow de CI usa a mesma versão e comando da validação local, com acesso somente de leitura ao repositório.
 
 A [interface empresarial e responsiva](../openspec/changes/archive/2026-11-11-corporate-responsive-interface/tasks.md) foi sincronizada e arquivada após a verificação da versão publicada em 390px.
+
+## Revisão estrutural de 23/11/2026
+
+Cadastro sincronizado em `openspec/specs/account-registration/spec.md` e arquivado pela CLI após liberação positiva e novo login de atendente. Mudanças antigas com checklists completos permanecem ativas quando seus deltas precisam ser comparados às specs atuais; não foram arquivadas em massa. Capacidade e concessão concorrente continuam pendentes. O OpenSpec organiza especificações e mudanças; não exige mover os módulos Python para dentro de `openspec/`.

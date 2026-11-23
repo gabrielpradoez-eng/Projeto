@@ -34,3 +34,7 @@ O item de formulário administrativo autenticado está verificado. Não houve cr
 ## Continuação: Xano e concorrência verificados
 
 A sessão Xano foi restabelecida. Uma falha de emissão simultânea foi reproduzida e corrigida com bloqueio de fila dentro da transação. Emissão, chamada e conclusão simultâneas passaram no runtime; as três senhas criadas foram concluídas e o dashboard confirmou a fila de testes vazia, preservando a espera original. Os detalhes e os limites estão no [relatório de concorrência](queue-concurrency-validation.md). O código foi verificado com 224 testes e 23 itens OpenSpec. Cadastro positivo e liberação de conta continuam dependentes do titular/administrador.
+
+## Atualização de 23/11/2026
+
+Cadastro positivo realizado pelo titular, liberação de nova conta pelo formulário administrativo e novo login com perfil Atendente foram confirmados. O resultado de sucesso foi observado no site. Pendências de capacidade e de concessões concorrentes continuam separadas nos checklists correspondentes; relatos de bloqueio acima são históricos.

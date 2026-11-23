@@ -1,6 +1,6 @@
 # Preparação para deploy do FilaSmart
 
-> Situação em 23/11/2026: cadastro e login de cliente confirmados pelo fluxo público; chat testado nos dois sentidos com cliente e atendente. HTTP 429 ainda limita consultas simultâneas. A liberação de novo atendente pelo formulário administrativo e testes de capacidade continuam pendentes. Veja [revisão atual](review-2026-11-23.md) e [chat](service-chat.md). As seções datadas abaixo são evidências históricas, não o estado atual de todas as funcionalidades.
+> Situação em 23/11/2026: cadastro e login de cliente confirmados pelo fluxo público; chat testado nos dois sentidos com cliente e atendente. HTTP 429 ainda limita consultas simultâneas. A liberação de novo atendente e o novo login foram confirmados; capacidade e concessões concorrentes continuam pendentes. Veja [revisão atual](review-2026-11-23.md) e [chat](service-chat.md). As seções datadas abaixo são evidências históricas, não o estado atual de todas as funcionalidades.
 
 
 > Registro histórico de 30/10/2026: deploy público ativo; About confirmou 2026.10.29.6 e o formulário Criar conta rejeitou envio vazio. Login administrativo, relatórios e TV foram validados em 29/10. As anotações abaixo preservam a sequência histórica e alguns bloqueios já foram superados. O fechamento posterior confirmou 2026.10.30.1 no About e integração à main pelo PR #1. Cadastro positivo e concorrência permanecem pendentes. Veja [auditoria atual](project-audit.md).

@@ -4,4 +4,5 @@
 - [x] Aplicar e publicar correções no workspace.
 - [x] Repetir emissões e chamadas paralelas; verificar estado e encerrar dados do teste.
 - [x] Publicar código e evidências no GitHub.
-- [ ] Validar vínculo positivo e concorrente após confirmação administrativa da conta e do acesso a conceder.
+- [x] Validar vínculo positivo pelo formulário administrativo e novo login com perfil Atendente (23/11/2026).
+- [ ] Validar duas concessões concorrentes para a mesma conta elegível, verificando que apenas um vínculo é persistido.

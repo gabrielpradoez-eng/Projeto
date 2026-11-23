@@ -33,7 +33,7 @@ Filas presenciais desorganizadas geram insatisfação dos clientes, falta de pre
 - Avaliação de satisfação ao término do atendimento.
 
 ## 7. Arquitetura e Princípios de Desenvolvimento
-- **Atualização periódica:** A interface Streamlit consulta o Xano por fragmentos agendados (TV com intervalo configurável e acompanhamento a cada 15 segundos). WebSockets, Server-Sent Events e Push são possibilidades de evolução; não descrevem a implementação publicada atual.
+- **Atualização periódica:** A interface Streamlit consulta o Xano por fragmentos agendados (TV com intervalo configurável e acompanhamento a cada 15 segundos e chat a cada 30 segundos, com pausa progressiva de 30 até 240 segundos após falhas de leitura). WebSockets, Server-Sent Events e Push são possibilidades de evolução; não descrevem a implementação publicada atual.
 - **Separação de Camadas:** Regras de transição de status da senha e controle de filas centralizados no Backend.
 - **Idioma:** Documentação e artefatos em português brasileiro (pt-BR).
 
@@ -42,3 +42,5 @@ Filas presenciais desorganizadas geram insatisfação dos clientes, falta de pre
 O portal atual usa Streamlit e APIs REST do Xano. Login e menus dependem da identidade remota; dados locais legados do adaptador não são fonte da operação. Reflex não é utilizado pelo aplicativo publicado. Cadastro público cria clientes; administrador libera atendentes por estabelecimento e guichê.
 
 Notificações externas e avaliação de satisfação fazem parte dos objetivos; sua presença no escopo inicial não comprova um fluxo completo disponível no portal. Consultar os checklists OpenSpec e os guias de operação para evidências e pendências.
+
+O chat privado cliente–atendente funciona somente durante o atendimento chamado, com até 50 mensagens visíveis e texto de até 500 caracteres. Cadastro positivo, liberação administrativa e novo login como atendente foram confirmados em 23/11/2026. Capacidade simultânea e limites HTTP 429 continuam em acompanhamento.

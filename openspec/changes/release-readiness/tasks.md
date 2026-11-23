@@ -3,9 +3,9 @@
 - [x] Confirmar versão 2026.10.30.1 no About do site publicado.
 - [x] Examinar documentação oficial sobre transações e bloqueio de registros.
 - [x] Validar formulário administrativo em sessão autenticada: login admin confirmado, estabelecimento/guichê carregados e envio sem confirmação bloqueado.
-- [ ] Concluir cadastro positivo com senha definida pelo titular e liberação pelo administrador.
+- [x] Concluir cadastro positivo com senha definida pelo titular, liberação pelo administrador e novo login como Atendente (23/11/2026).
 - [x] Executar concorrência real de emissão, chamada e conclusão no Xano; evidência em docs/queue-concurrency-validation.md.
-- [ ] Finalizar verificações dependentes de autenticação e atualizar evidências.
+- [x] Finalizar verificações de login/cadastro dependentes de autenticação e atualizar evidências (23/11/2026); capacidade e concessão concorrente seguem nos checklists próprios.
 
 ## Histórico do bloqueio de acesso anterior
 
@@ -18,3 +18,7 @@ O formulário seguro foi concluído e o portal confirmou perfil Administrador. A
 ## Continuação no Xano
 
 Sessão restabelecida, correções publicadas e cenários concorrentes de fila aprovados. Cadastro positivo e concessão de acesso continuam pendentes da intervenção do titular/administrador.
+
+## Confirmação em 23/11/2026
+
+Liberação concluída no formulário administrativo com mensagem de sucesso e novo login exibindo perfil Atendente e painel operacional. Essa evidência supera o bloqueio histórico de cadastro descrito acima; não comprova concessões concorrentes nem capacidade de carga.

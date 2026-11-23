@@ -20,4 +20,4 @@ Os scripts independentes de demonstração, como `kiosk_app.py`, não são rotas
 
 Validação: os testes automatizados cobrem navegação por perfil, logout, verificação canônica, expiração e fragmentos após revogação. O login administrativo positivo e o logout foram confirmados no site em 29/10/2026. A revisão de 30/10/2026 confirmou a tela anônima e o formulário público de cadastro; validação de criação positiva de conta e vínculo de atendente permanece pendente. Consulte project-audit.md para o resultado mais recente.
 
-Atualização de 23/11/2026: login positivo de cliente e atendente e troca privada de mensagens confirmados no site. A liberação de novo atendente pelo formulário administrativo permanece pendente. Veja [revisão atual](review-2026-11-23.md).
+Atualização de 23/11/2026: login positivo de cliente e atendente e troca privada de mensagens confirmados no site. A liberação de novo atendente pelo formulário administrativo e o novo login foram confirmados posteriormente em 23/11/2026. Veja [revisão atual](review-2026-11-23.md).
