@@ -10,6 +10,10 @@ def render_company_catalog(backend, user):
     if user.get('role') != 'admin' or not company_settings()['catalog_enabled']:
         return
     st.subheader('Serviços e filas da empresa')
+    saved_id = st.session_state.pop('_company_catalog_saved_id', None)
+    if saved_id is not None:
+        st.session_state['company_catalog_selection'] = saved_id
+        st.success('Catálogo salvo. Dados confirmados atualizados.')
     try:
         rows = backend.company_catalog(token=user['authToken'])
         options = get_analytics_client(auth_token=user['authToken']).list_options()
@@ -20,7 +24,10 @@ def render_company_catalog(backend, user):
     if not sites:
         st.info('Cadastre o estabelecimento no provisionamento inicial.')
         return
-    selected = st.selectbox('Serviço e fila', [0] + [r['fila_id'] for r in rows],
+    valid_ids = [0] + [r['fila_id'] for r in rows]
+    if st.session_state.get('company_catalog_selection', 0) not in valid_ids:
+        st.session_state['company_catalog_selection'] = 0
+    selected = st.selectbox('Serviço e fila', valid_ids,
         format_func=lambda k: 'Novo serviço e fila' if k == 0 else next(
             f"{r['estabelecimento_nome']} · {r['servico_nome']} · {r['fila_nome']} ({r['status']})"
             for r in rows if r['fila_id'] == k), key='company_catalog_selection')
@@ -44,10 +51,12 @@ def render_company_catalog(backend, user):
         st.warning('Informe o nome do serviço e da fila.')
         return
     try:
-        backend.company_catalog(token=user['authToken'], payload={'acao':'salvar', 'fila_id':selected,
+        saved_rows = backend.company_catalog(token=user['authToken'], payload={'acao':'salvar', 'fila_id':selected,
             'estabelecimento_id':site, 'servico_nome':name.strip(), 'fila_nome':queue.strip(),
             'tempo_estimado':int(minutes), 'status':status})
     except (AccessDeniedError, InvalidQueueStateError):
         st.error('Não foi possível confirmar a alteração. Consulte o catálogo antes de tentar novamente.')
         return
-    st.success('Catálogo salvo. Atualize a página para consultar os dados confirmados.')
+    new_ids = [r['fila_id'] for r in saved_rows if r['fila_id'] not in valid_ids]
+    st.session_state['_company_catalog_saved_id'] = selected or (new_ids[0] if len(new_ids) == 1 else 0)
+    st.rerun()

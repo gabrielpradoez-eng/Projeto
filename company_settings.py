@@ -1,5 +1,6 @@
 """Configuração de uma instalação independente; nunca seleciona empresa pelo navegador."""
 import re
+from collections.abc import Mapping
 import streamlit as st
 
 
@@ -7,6 +8,8 @@ def company_settings():
     try:
         config = st.secrets.get('company', {})
     except FileNotFoundError:
+        config = {}
+    if not isinstance(config, Mapping):
         config = {}
     name = config.get('name', 'FilaSmart')
     if not isinstance(name, str) or not name.strip():

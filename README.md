@@ -83,7 +83,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de **23/11/2026** aprovou **238 testes Python** e **24 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-23.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
+A revisão de **24/11/2026** aprovou **249 testes Python** e **26 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-24.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
 
 ## Trabalhar com OpenSpec
 
@@ -124,7 +124,7 @@ O workflow [OpenSpec validation](.github/workflows/openspec-validation.yml) exec
 - **Limites conhecidos:** houve respostas HTTP 429 do Xano durante o teste. O chat passou a consultar a cada 30 segundos para reduzir requisições; múltiplas telas e usuários ainda podem exceder a capacidade do serviço. Em recusa ou timeout, confira o estado antes de repetir emissão, chamada ou envio.
 - **Hospedagem:** o Streamlit Community Cloud pode suspender o aplicativo por inatividade; a tela de suspensão permite reativá-lo. Disponibilidade contínua e capacidade para vários usuários precisam de validação própria.
 
-O CI inclui [testes Python](.github/workflows/python-tests.yml) e [validação OpenSpec](.github/workflows/openspec-validation.yml). Resultados locais e evidências de runtime estão separados no [relatório atual](docs/review-2026-11-23.md).
+O CI inclui [testes Python](.github/workflows/python-tests.yml) e [validação OpenSpec](.github/workflows/openspec-validation.yml). Resultados locais e evidências de runtime estão separados no [relatório atual](docs/review-2026-11-24.md).
 
 ## Configuração e deploy
 
@@ -135,6 +135,7 @@ O modelo [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) list
 | `[xano]` | URLs de autenticação, API de filas, acompanhamento e conta técnica do totem |
 | `[tv_display]` | Feed de chamadas e credencial restrita do display |
 | `[analytics]` | URLs de autenticação, opções e relatório administrativo |
+| `[company]` | Nome, cor da marca e ativação explícita do catálogo administrativo |
 | `[xano_seed]` | Provisionamento exclusivo de teste; não habilitar seed em produção |
 
 O modelo deixa `service_chat_enabled = false`. Após publicar e validar os três exports do chat, configure `true` em `[xano]`; `false` sempre desativa a interface. Quando a chave não existe, o código ativa automaticamente apenas para a API de filas validada do FilaSmart. Consulte [chat](docs/service-chat.md), [ordem de importação](docs/xano-import-order.md) e [deploy](docs/streamlit-deploy.md).
@@ -151,4 +152,19 @@ O chat privado abre após a chamada para o cliente e o atendente responsável, m
 
 ## Configuração para outras empresas
 
-A evolução comercial adota **uma instalação independente por empresa**. Nome e cor da marca são opcionais em `[company]`. O painel administrativo inclui catálogo de serviços e filas após ativação explícita e implantação do novo endpoint Xano. Guichês usam o cadastro administrativo de atendentes. Consulte o [guia de instalação](docs/company-installation.md) e as [pendências de entrega](openspec/changes/company-install/tasks.md). Não é uma plataforma SaaS compartilhada nem uma garantia de capacidade em produção.
+O modelo adotado é **uma instalação independente por empresa**, com aplicativo, workspace Xano, Secrets e usuários próprios. Não é um SaaS compartilhado.
+
+O catálogo administrativo está publicado e foi testado no Xano e na demonstração Streamlit. Administradores podem criar serviço e fila, editar nomes e duração estimada e abrir/fechar filas, preservando os registros históricos. Depois de salvar, a interface seleciona a fila confirmada e atualiza os dados sem repetir a escrita. Guichês usam o cadastro administrativo de atendentes.
+
+Configuração opcional nos Secrets:
+
+```toml
+[company]
+name = "Minha empresa"
+primary_color = "#2457A7"
+catalog_enabled = true
+```
+
+Ative o catálogo somente após publicar e testar `POST admin/catalog` no workspace de destino. O modelo de Secrets mantém essa opção desativada por padrão. A cor configura a marca; ajuste também `primaryColor` em `.streamlit/config.toml` para os controles nativos. A criação atual produz um serviço com uma fila; editar o serviço afeta suas filas vinculadas.
+
+Consulte o [guia de instalação](docs/company-installation.md), a [ordem de importação](docs/xano-import-order.md) e o [checklist](openspec/changes/company-install/tasks.md). A demonstração não comprova prontidão comercial. Ainda faltam provisionar a primeira empresa real e validar capacidade, backups/restauração e monitoramento. Logotipo personalizado, horários automáticos e cobrança por assinatura não fazem parte da implementação atual.

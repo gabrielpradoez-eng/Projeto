@@ -1,0 +1,3 @@
+- [x] Reproduzir falhas com regressões.
+- [x] Corrigir formulário e configuração.
+- [x] Executar suíte e validação OpenSpec, atualizar README e publicar.

@@ -55,6 +55,7 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
+| [catalog-review](../openspec/changes/catalog-review/tasks.md) | Correções de configuração e atualização do catálogo verificadas com testes locais. |
 | [company-install](../openspec/changes/company-install/tasks.md) | Catálogo e marca implementados; implantação Xano e primeira empresa em acompanhamento. |
 | [atendimento-chat](../openspec/changes/atendimento-chat/tasks.md) | 1 tarefa(s) pendente(s); consultar checklist. |
 | [corrigir-login-xano-app](../openspec/changes/corrigir-login-xano-app/tasks.md) | Checklist concluído; reconciliar deltas históricos antes de arquivar. |

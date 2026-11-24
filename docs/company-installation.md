@@ -24,3 +24,7 @@ Não há cobrança automática, gestão de assinaturas, instalação automática
 ## Validação na instalação de demonstração
 
 Em 24/11/2026, o endpoint #4136989 foi criado e executado no Xano: leitura administrativa retornou o catálogo; criação gerou o serviço 5 e fila 5, Orientação cadastral, mantida fechada; edição alterou a duração de 15 para 20 minutos; estabelecimento inexistente foi rejeitado; perfil cliente recebeu acesso negado. A configuração company foi salva no Streamlit. Após atualizar a implantação, o administrador abriu o formulário e salvou a duração em 15 minutos pelo site, com mensagem de sucesso; a fila permaneceu fechada. Nenhuma instalação de uma empresa real foi provisionada.
+
+## Revisão de robustez
+
+Em 24/11/2026, foram adicionadas proteções para configuração company malformada, seleção de fila removida e atualização após salvar, com 249 testes locais aprovados. Veja [revisão](review-2026-11-24.md).

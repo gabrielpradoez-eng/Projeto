@@ -1,0 +1,1 @@
+Configuração que não seja uma tabela deve usar defaults. A seleção é reconciliada antes de criar o widget. Após sucesso, a próxima execução seleciona a fila confirmada e exibe mensagem de sucesso. Dados do catálogo são relidos, sem repetir a mutação.
