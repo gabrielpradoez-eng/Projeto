@@ -321,9 +321,10 @@ def test_streamlit_secret_template_uses_placeholders_and_local_file_is_ignored()
     assert "[xano]" in example
     assert "[tv_display]" in example
     assert "[analytics]" in example
-    assert "[xano_seed]" in example
-    assert 'bootstrap_secret = "<configure-out-of-band>"' in example
-    assert 'admin_password = "<local-test-only-password>"' in example
+    assert "[xano_seed]" not in example
+    seed_example = (ROOT / "scripts" / "seed-secrets.toml.example").read_text()
+    assert "[xano_seed]" in seed_example
+    assert 'bootstrap_secret = "<configure-out-of-band>"' in seed_example
     assert 'credential = "<configure-local-display-credential>"' in example
     assert "<workspace>" in example
     assert ".streamlit/secrets.toml" in gitignore

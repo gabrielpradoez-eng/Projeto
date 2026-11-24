@@ -339,15 +339,10 @@ def test_totem_shows_xano_status_and_message_when_ticket_issue_is_rejected():
     issue_request = requests[-1]
     assert issue_request.full_url.endswith("/totem/issue")
     assert json.loads(issue_request.data.decode("utf-8")) == {"fila_id": 9}
-    assert any(
-        "HTTP 400" in item.value
-        and "Esta fila está fechada no momento." in item.value
-        for item in app.error
-    )
-    assert "ERROR_CODE_INPUT_ERROR" in str([item.value for item in app.code])
-    assert "Esta fila está fechada no momento." in str(
-        [item.value for item in app.code]
-    )
+    assert "Esta fila está fechada no momento." in str([item.value for item in app.warning])
+    assert not app.code
+    assert not any(item.label == "Detalhes técnicos para suporte" for item in app.expander)
+    assert "HTTP 400" not in str([item.value for item in app.error])
     assert "ticket_reference" not in app.session_state
 
 
@@ -520,15 +515,10 @@ def test_public_client_view_reports_xano_issue_rejection_without_confirming_tick
         ).click().run()
 
     assert not app.exception
-    assert any(
-        "HTTP 400" in item.value
-        and "Esta fila está fechada no momento." in item.value
-        for item in app.error
-    )
-    assert "ERROR_CODE_INPUT_ERROR" in str([item.value for item in app.code])
-    assert "Esta fila está fechada no momento." in str(
-        [item.value for item in app.code]
-    )
+    assert "Esta fila está fechada no momento." in str([item.value for item in app.warning])
+    assert not app.code
+    assert not any(item.label == "Detalhes técnicos para suporte" for item in app.expander)
+    assert "HTTP 400" not in str([item.value for item in app.error])
     assert not app.success
     assert "client_ticket_reference" not in app.session_state
 
@@ -542,10 +532,8 @@ def test_ticket_issue_error_shows_clear_fallback_when_xano_body_is_empty():
     ):
         render_ticket_issue_error(error)
 
-    show_error.assert_called_once_with("Xano recusou a emissão (HTTP 404)")
-    show_caption.assert_called_once_with(
-        "O Xano não forneceu detalhes adicionais no corpo da resposta."
-    )
+    show_error.assert_not_called()
+    show_caption.assert_not_called()
 
 
 def test_public_client_view_retains_last_confirmed_tracking_result_on_temporary_error():

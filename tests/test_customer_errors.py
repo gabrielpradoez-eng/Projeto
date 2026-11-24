@@ -17,3 +17,18 @@ render_ticket_issue_error(QueueUnavailableError(
     assert not app.code
     assert not app.error
     assert not app.expander
+
+
+def test_admin_also_sees_no_debug_payload_or_panel():
+    app = AppTest.from_string('''
+import streamlit as st
+from views.issue_error import render_ticket_issue_error
+from xano_client import QueueUnavailableError
+st.session_state.user = {"role":"admin"}
+render_ticket_issue_error(QueueUnavailableError(status_code=400,
+ api_code="INTERNAL_DEBUG_CODE", api_message="Fila fechada.",
+ api_body='{"internal_debug":"details"}'))
+''').run()
+    assert not app.exception and app.warning[0].value == 'Fila fechada.'
+    assert not app.code and not app.expander
+    assert 'INTERNAL_DEBUG_CODE' not in str(app)

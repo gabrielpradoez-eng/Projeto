@@ -1,0 +1,5 @@
+- [x] Retirar diagnóstico das telas e separar modelo de seed.
+- [x] Executar testes e validar OpenSpec.
+- [x] Publicar código e documentação atualizados.
+- [ ] Revisar dados de demonstração persistidos no Xano e confirmar eventual exclusão irreversível.
+- [x] Renomear estabelecimento para Central de Atendimento, removendo o rótulo Demonstração sem alterar vínculos.

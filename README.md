@@ -83,7 +83,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de **24/11/2026** aprovou **249 testes Python** e **26 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-24.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
+A revisão de **24/11/2026** aprovou **250 testes Python** e **27 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-24.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
 
 ## Trabalhar com OpenSpec
 
@@ -136,7 +136,7 @@ O modelo [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) list
 | `[tv_display]` | Feed de chamadas e credencial restrita do display |
 | `[analytics]` | URLs de autenticação, opções e relatório administrativo |
 | `[company]` | Nome, cor da marca e ativação explícita do catálogo administrativo |
-| `[xano_seed]` | Provisionamento exclusivo de teste; não habilitar seed em produção |
+
 
 O modelo deixa `service_chat_enabled = false`. Após publicar e validar os três exports do chat, configure `true` em `[xano]`; `false` sempre desativa a interface. Quando a chave não existe, o código ativa automaticamente apenas para a API de filas validada do FilaSmart. Consulte [chat](docs/service-chat.md), [ordem de importação](docs/xano-import-order.md) e [deploy](docs/streamlit-deploy.md).
 
@@ -168,3 +168,7 @@ catalog_enabled = true
 Ative o catálogo somente após publicar e testar `POST admin/catalog` no workspace de destino. O modelo de Secrets mantém essa opção desativada por padrão. A cor configura a marca; ajuste também `primaryColor` em `.streamlit/config.toml` para os controles nativos. A criação atual produz um serviço com uma fila; editar o serviço afeta suas filas vinculadas.
 
 Consulte o [guia de instalação](docs/company-installation.md), a [ordem de importação](docs/xano-import-order.md) e o [checklist](openspec/changes/company-install/tasks.md). A demonstração não comprova prontidão comercial. Ainda faltam provisionar a primeira empresa real e validar capacidade, backups/restauração e monitoramento. Logotipo personalizado, horários automáticos e cobrança por assinatura não fazem parte da implementação atual.
+
+## Operação sem dados de desenvolvimento
+
+As telas não exibem painel técnico nem corpo de resposta da API. O modelo operacional de Secrets contém somente integrações e personalização; a carga de fixtures fica em `scripts/seed-secrets.toml.example`, exclusiva de workspace descartável e executada manualmente com `--config`. Não use a carga de testes na operação. A suíte de testes é mantida para evitar regressões. A remoção de registros de teste já persistidos no Xano é independente do deploy e exige identificação e confirmação antes de exclusão definitiva.

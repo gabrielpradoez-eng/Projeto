@@ -1,0 +1,1 @@
+Erros continuam exibindo orientação operacional; códigos e corpo da API deixam de ser mostrados na interface, inclusive ao administrador. Fixtures e testes permanecem em ferramentas separadas. Não apagar registros remotos sem identificar seu escopo e confirmar exclusões irreversíveis.

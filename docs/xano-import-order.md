@@ -108,3 +108,7 @@ Importe a tabela `xano/table/mensagens_atendimento.xs` após as tabelas de usuá
 ## Catálogo por instalação independente (opcional)
 
 Após tabelas, autenticação e endpoints analíticos, publicar `xano/api/queue_management/admin/catalog_POST.xs` no grupo Queue Management, autenticando `usuarios`. Testar leitura e escrita como admin e rejeição como cliente/atendente e fora do estabelecimento. O export reutiliza `estabelecimentos`, `servicos` e `filas`, sem migração de esquema. Apenas após esses testes, ativar `[company].catalog_enabled = true` no Streamlit. A criação não é idempotente: conferir o catálogo após timeout antes de tentar de novo.
+
+## Configuração de operação e fixtures
+
+O modelo `.streamlit/secrets.toml.example` não contém mais seed. Para testar exclusivamente em workspace descartável, copie `scripts/seed-secrets.toml.example` para um arquivo local ignorado e execute `python scripts/seed_xano.py --config scripts/seed-secrets.toml --confirm-test-target`. As contas indicadas nesse script são fixtures e não devem ser usadas como defaults de instalação. O script não é chamado pelo portal.
