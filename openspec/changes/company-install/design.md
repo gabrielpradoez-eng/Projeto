@@ -1,0 +1,2 @@
+# Decisões
+Cada empresa recebe aplicativo, workspace Xano, credenciais e contas próprios. A autorização do catálogo é sempre feita pelo Xano. Uma criação gera serviço e fila em transação; a edição usa a fila como identidade e não permite mudar estabelecimento. Referências históricas não são apagadas. Fechar a fila é uma ação explícita e não encerra senhas. Guichês usam o cadastro administrativo existente. A marca usa texto escapado e cor hexadecimal validada. O catálogo é ativado por flag apenas após publicar e testar o export.

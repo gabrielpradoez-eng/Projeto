@@ -70,6 +70,8 @@ def _render_operation(backend: QueueBackend, user: dict) -> None:
         st.info("Consulte os indicadores na visão Relatórios ou cadastre um atendente abaixo.")
         from views.registration_view import render_attendant_registration
         render_attendant_registration(backend, user)
+        from views.company_catalog import render_company_catalog
+        render_company_catalog(backend, user)
         return
     if user.get("role") != "attendant":
         st.info("Utilize a visão Cliente para emitir e acompanhar sua senha.")

@@ -6,17 +6,22 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import streamlit as st
+from html import escape
+from company_settings import company_settings
 
 
 def apply_theme() -> None:
+    settings = company_settings()
     styles = (Path(__file__).resolve().parents[1] / "assets" / "styles.css").read_text()
-    st.markdown(f"<style>{styles}</style>", unsafe_allow_html=True)
+    st.markdown(f"<style>{styles} :root {{ --primary-color: {settings['primary_color']}; }} .fs-mark {{ background: {settings['primary_color']}; color: white; }}</style>", unsafe_allow_html=True)
 
 
 def render_brand() -> None:
+    name = escape(company_settings()["name"])
+    initial = escape(company_settings()["name"][0].upper())
     st.markdown(
-        '<div class="fs-brand"><span class="fs-mark">F</span>'
-        '<div><strong>FilaSmart</strong><small>GESTÃO DE ATENDIMENTO</small></div></div>',
+        f'<div class="fs-brand"><span class="fs-mark">{initial}</span>'
+        f'<div><strong>{name}</strong><small>GESTÃO DE ATENDIMENTO</small></div></div>',
         unsafe_allow_html=True,
     )
 

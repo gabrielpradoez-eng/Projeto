@@ -104,3 +104,7 @@ Atualizar `xano/api/authentication/auth/signup_POST.xs` e importar `xano/api/que
 
 ### Chat de atendimento
 Importe a tabela `xano/table/mensagens_atendimento.xs` após as tabelas de usuários e atendimentos. Não gere rotas CRUD para ela. Publique `xano/api/queue_management/customer/issue_POST.xs` e `xano/api/queue_management/chat_POST.xs` no grupo Queue Management, com autenticação de usuários. Veja [ativação e validação](service-chat.md).
+
+## Catálogo por instalação independente (opcional)
+
+Após tabelas, autenticação e endpoints analíticos, publicar `xano/api/queue_management/admin/catalog_POST.xs` no grupo Queue Management, autenticando `usuarios`. Testar leitura e escrita como admin e rejeição como cliente/atendente e fora do estabelecimento. O export reutiliza `estabelecimentos`, `servicos` e `filas`, sem migração de esquema. Apenas após esses testes, ativar `[company].catalog_enabled = true` no Streamlit. A criação não é idempotente: conferir o catálogo após timeout antes de tentar de novo.

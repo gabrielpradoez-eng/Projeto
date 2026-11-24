@@ -478,3 +478,19 @@ class QueueBackend:
                     "called": len([t for t in self.tickets.values() if t.queue_id == queue.id and t.status == "called"]),
                 })
         return rows
+
+    def company_catalog(self, *, token: str, payload: dict | None = None) -> list[dict]:
+        data = self._operation_request('admin/catalog', payload or {'acao': 'listar'}, token)
+        rows = data.get('filas')
+        if not isinstance(rows, list):
+            raise InvalidQueueStateError('Resposta inválida do catálogo.')
+        seen = set()
+        for row in rows:
+            if (not isinstance(row, dict)
+                or any(type(row.get(k)) is not int or row[k] <= 0 for k in ('fila_id', 'servico_id', 'estabelecimento_id'))
+                or type(row.get('tempo_estimado')) is not int or not 1 <= row['tempo_estimado'] <= 1440
+                or any(not isinstance(row.get(k), str) or not row[k].strip() for k in ('fila_nome', 'servico_nome', 'estabelecimento_nome'))
+                or row.get('status') not in ('aberta', 'fechada') or row['fila_id'] in seen):
+                raise InvalidQueueStateError('Resposta inválida do catálogo.')
+            seen.add(row['fila_id'])
+        return rows

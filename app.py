@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import streamlit as st
+from company_settings import company_settings
 
 from backend_queue import AccessDeniedError, QueueBackend, SessionVerificationUnavailable
 from portal_session import ROLE_LABELS, ROLE_VIEWS, logout, render_login, verify_current_session
@@ -37,7 +38,7 @@ def _initialize_session() -> None:
 
 def main() -> None:
     st.set_page_config(
-        page_title="FilaSmart",
+        page_title=company_settings()["name"],
         page_icon="⏱️",
         layout="wide",
         initial_sidebar_state="auto",
@@ -87,7 +88,7 @@ def main() -> None:
             st.write("1. Escolha o serviço e retire sua senha no Totem.")
             st.write("2. Guarde o comprovante para acompanhar a posição.")
             st.write("3. Confira o guichê no Painel TV quando for chamado.")
-        st.caption("FilaSmart · Atendimento com mais clareza")
+        st.caption(f"{company_settings()['name']} · Atendimento com mais clareza")
 
     if not (selected_view == "Painel TV" and st.session_state.get("tv_presentation_mode")):
         render_mobile_navigation(allowed_views, on_logout=logout)

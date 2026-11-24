@@ -1,0 +1,5 @@
+- [x] Implementar configuração de catálogo e marca.
+- [x] Testar contratos, formulário e configuração.
+- [x] Publicar código e documentação nas branches.
+- [ ] Publicar e testar o export no Xano antes de ativar o catálogo no portal.
+- [ ] Provisionar uma instalação independente com dados e contas da primeira empresa.

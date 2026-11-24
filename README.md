@@ -148,3 +148,7 @@ A versão 2026.10.30.2 traz tema empresarial, cabeçalhos compactos e formulári
 ## Chat de atendimento
 
 O chat privado abre após a chamada para o cliente e o atendente responsável, mostra até 50 mensagens de até 500 caracteres e deixa de permitir acesso ao finalizar o atendimento. Não há anexos, WhatsApp, SMS ou notificações push. Consulte a [ativação e os testes de implantação](docs/service-chat.md).
+
+## Configuração para outras empresas
+
+A evolução comercial adota **uma instalação independente por empresa**. Nome e cor da marca são opcionais em `[company]`. O painel administrativo inclui catálogo de serviços e filas após ativação explícita e implantação do novo endpoint Xano. Guichês usam o cadastro administrativo de atendentes. Consulte o [guia de instalação](docs/company-installation.md) e as [pendências de entrega](openspec/changes/company-install/tasks.md). Não é uma plataforma SaaS compartilhada nem uma garantia de capacidade em produção.

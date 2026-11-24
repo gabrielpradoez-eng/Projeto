@@ -3,6 +3,8 @@ from __future__ import annotations
 import time
 
 import streamlit as st
+from html import escape
+from company_settings import company_settings
 
 from backend_queue import AccessDeniedError, SessionVerificationUnavailable, InvalidQueueStateError
 
@@ -115,9 +117,11 @@ def render_customer_registration() -> None:
 
 
 def render_login() -> None:
+    name = escape(company_settings()["name"])
+    initial = escape(company_settings()["name"][0].upper())
     st.markdown(
         '<section class="fs-login-heading"><div class="fs-public-brand">'
-        '<span class="fs-mark">F</span><strong>FilaSmart</strong></div>'
+        f'<span class="fs-mark">{initial}</span><strong>{name}</strong></div>'
         '<span class="fs-eyebrow">PLATAFORMA DE ATENDIMENTO</span>'
         '<h1>Organização para sua operação.<br>Clareza para cada atendimento.</h1>'
         '<p>Acesse sua conta para gerenciar filas ou acompanhar sua senha.</p></section>',
