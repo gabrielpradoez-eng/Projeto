@@ -2,5 +2,5 @@
 - [x] Testar contratos, formulário e configuração.
 - [x] Publicar código e documentação nas branches.
 - [x] Publicar export #4136989 e testar leitura, criação, edição, estabelecimento inválido e rejeição de cliente no Xano; configuração de ativação salva no Streamlit.
-- [ ] Confirmar formulário do catálogo na interface pública após atualizar a implantação.
+- [x] Confirmar formulário do catálogo na interface pública após atualizar a implantação; edição de duração salva com mensagem de sucesso.
 - [ ] Provisionar uma instalação independente com dados e contas da primeira empresa.
