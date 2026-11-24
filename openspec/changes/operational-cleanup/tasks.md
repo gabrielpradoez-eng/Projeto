@@ -1,5 +1,5 @@
 - [x] Retirar diagnóstico das telas e separar modelo de seed.
 - [x] Executar testes e validar OpenSpec.
 - [x] Publicar código e documentação atualizados.
-- [ ] Revisar dados de demonstração persistidos no Xano e confirmar eventual exclusão irreversível.
+- [x] Revisar mensagens de teste no Xano e excluir os IDs 1, 2, 3 e 4 de mensagens_atendimento, após confirmação do usuário em 24/11/2026. O Xano confirmou 4 linhas removidas e 0 registros restantes nessa tabela. Contas, senhas de atendimento e históricos não foram excluídos.
 - [x] Renomear estabelecimento para Central de Atendimento, removendo o rótulo Demonstração sem alterar vínculos.
