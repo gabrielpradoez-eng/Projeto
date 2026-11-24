@@ -20,3 +20,7 @@ Cada empresa deve receber aplicativo Streamlit, workspace/instância Xano, Secre
 Definir responsável por cada instalação, canal de suporte e rotina de atualização. Antes de cada atualização, registrar a versão do aplicativo e a versão dos exports e preparar uma cópia recuperável dos dados. Combinar retenção de mensagens com a empresa e validar restauração; esse procedimento não cria backups automaticamente. Definir monitoramento de disponibilidade, erros HTTP 429 e tempo de resposta. Dimensionar hospedagem e Xano com testes controlados de carga antes de assumir capacidade ou SLA.
 
 Não há cobrança automática, gestão de assinaturas, instalação automática de novas empresas nem garantia de operação contínua nesta entrega. O teste acadêmico e os testes locais não certificam prontidão comercial. As pendências estão no [checklist](../openspec/changes/company-install/tasks.md).
+
+## Validação na instalação de demonstração
+
+Em 24/11/2026, o endpoint #4136989 foi criado e executado no Xano: leitura administrativa retornou o catálogo; criação gerou o serviço 5 e fila 5, Orientação cadastral, mantida fechada; edição alterou a duração de 15 para 20 minutos; estabelecimento inexistente foi rejeitado; perfil cliente recebeu acesso negado. A configuração company foi salva no Streamlit. A verificação da nova interface após atualização do deploy é uma etapa separada. Nenhuma instalação de uma empresa real foi provisionada.
