@@ -5,6 +5,7 @@ import streamlit as st
 from backend_queue import AccessDeniedError, InvalidQueueStateError
 from streamlit_xano import get_analytics_client
 from xano_client import XanoClientError
+from views.presentation import select_or_show
 
 
 def render_attendant_registration(backend, user: dict) -> None:
@@ -23,7 +24,7 @@ def render_attendant_registration(backend, user: dict) -> None:
         return
     with st.form("attendant_registration", clear_on_submit=True):
         email = st.text_input("E-mail da conta do atendente", autocomplete="off")
-        establishment = st.selectbox("Estabelecimento do atendente", options=list(establishments), format_func=establishments.get)
+        establishment = select_or_show("Estabelecimento do atendente", establishments, format_func=establishments.get, key="attendant_establishment")
         destination = st.text_input("Guichê de atendimento", max_chars=80, placeholder="Ex.: Guichê 02")
         confirmed = st.checkbox("Confirmo a liberação desta conta para atender neste estabelecimento")
         submitted = st.form_submit_button("Cadastrar atendente", type="primary")

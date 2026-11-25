@@ -83,10 +83,9 @@ def render_client_view() -> None:
     if use_chat:
         render_service_chat(backend, user)
 
-    if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
-        start_new_client_session()
-
     if st.session_state.get("client_ticket_reference"):
+        st.button("Iniciar novo atendimento", icon=":material/restart_alt:",
+                  on_click=start_new_client_session, key="client_new_attendance")
         render_receipt(
             st.session_state["client_ticket_number"], st.session_state["client_ticket_reference"],
             st.session_state.get("client_ticket_service", "—"),
@@ -165,6 +164,8 @@ def render_client_view() -> None:
             st.success(f"Senha emitida: {number}")
 
     if st.session_state.get("client_ticket_reference"):
+        st.button("Iniciar novo atendimento", icon=":material/restart_alt:",
+                  on_click=start_new_client_session, key="client_new_attendance")
         render_receipt(
             st.session_state["client_ticket_number"], st.session_state["client_ticket_reference"],
             st.session_state.get("client_ticket_service", "—"),

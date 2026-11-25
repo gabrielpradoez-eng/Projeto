@@ -134,9 +134,8 @@ def test_report_is_not_requested_before_admin_submits_authorized_options():
     assert not app.exception
     assert fake.options_requests == 1
     assert fake.requested_filters == []
-    assert app.selectbox(key="analytics_establishment_id").options == [
-        "Unidade Central"
-    ]
+    assert not [w for w in app.selectbox if w.key == "analytics_establishment_id"]
+    assert app.session_state["analytics_establishment_id"] == 42
 
 
 def test_queue_choices_are_limited_to_the_selected_service():
@@ -146,10 +145,8 @@ def test_queue_choices_are_limited_to_the_selected_service():
     app.button[1].click().run()
 
     assert not app.exception
-    assert app.selectbox(key="analytics_queue_id").options == [
-        "Todas as filas",
-        "Atendimento geral · Fila principal",
-    ]
+    assert not [w for w in app.selectbox if w.key == "analytics_queue_id"]
+    assert app.session_state["analytics_queue_id"] == 13
     assert fake.requested_filters[0]["servico_id"] == 7
     assert fake.requested_filters[0]["fila_id"] in (None, 13)
 
@@ -292,7 +289,7 @@ def test_breakdown_renders_only_aggregated_fields_in_backend_order():
 
     assert not app.exception
     rendered_rows = app.table[0].value
-    assert list(rendered_rows["fila_nome"]) == ["Fila B", "Fila A"]
+    assert list(rendered_rows["Fila"]) == ["Fila B", "Fila A"]
     assert "Dado pessoal" not in str(rendered_rows)
     assert "ticket_id" not in str(rendered_rows)
 
@@ -316,9 +313,9 @@ def test_removed_establishment_resets_all_selections_and_discards_old_report():
     fake.options = {"estabelecimentos": [{"id": 99, "nome": "Nova unidade"}], "filas": []}
     app.run()
     assert not app.exception
-    assert app.selectbox(key="analytics_establishment_id").value == 99
+    assert app.session_state["analytics_establishment_id"] == 99
     assert app.selectbox(key="analytics_service_id").value is None
-    assert app.selectbox(key="analytics_queue_id").value is None
+    assert app.session_state["analytics_queue_id"] is None
     assert not app.metric
     assert len(fake.requested_filters) == 1
 
@@ -355,3 +352,49 @@ def test_failed_options_refresh_clears_cached_report():
     assert not app.exception
     assert "analytics_report" not in app.session_state
     assert not app.metric
+
+
+def test_service_change_immediately_selects_single_queue_without_requesting_report():
+    fake = FakeAnalyticsClient()
+    app = analytics_app(fake)
+    app.selectbox(key="analytics_service_id").select(7).run()
+    assert not app.exception
+    assert app.session_state["analytics_queue_id"] == 13
+    assert fake.requested_filters == []
+    app.selectbox(key="analytics_service_id").select(8).run()
+    assert not app.exception
+    assert app.session_state["analytics_queue_id"] == 14
+    assert fake.requested_filters == []
+    app.button[1].click().run()
+    assert fake.requested_filters[-1]["servico_id"] == 8
+    assert fake.requested_filters[-1]["fila_id"] == 14
+
+
+def test_multiple_authorized_establishments_and_queues_remain_selectable():
+    fake = FakeAnalyticsClient()
+    fake.options["estabelecimentos"].append({"id": 99, "nome": "Outra unidade"})
+    fake.options["filas"].append(dict(fake.options["filas"][0], fila_id=15, fila_nome="Fila extra"))
+    app = analytics_app(fake)
+    assert len(app.selectbox(key="analytics_establishment_id").options) == 2
+    app.selectbox(key="analytics_service_id").select(7).run()
+    assert len(app.selectbox(key="analytics_queue_id").options) == 3
+    app.selectbox(key="analytics_queue_id").select(15).run()
+    app.button[1].click().run()
+    assert fake.requested_filters[-1]["fila_id"] == 15
+    app.selectbox(key="analytics_establishment_id").select(99).run()
+    assert not app.exception
+    assert app.session_state["analytics_service_id"] is None
+    assert app.session_state["analytics_queue_id"] is None
+
+
+def test_report_formats_millisecond_timestamps_with_explicit_timezones():
+    fake = FakeAnalyticsClient()
+    fake.report["generated_at"] = 1793212528244
+    app = analytics_app(fake)
+    app.button[1].click().run()
+    text = str([item.value for item in app.caption])
+    assert "01/10/2026 às 00:00:00 UTC" in text
+    assert "08/10/2026 às 00:00:00 UTC" in text
+    assert "28/10/2026 às 15:35:28" in text
+    assert "1793212528244" not in text
+    assert any(m.label == "Senhas do período concluídas" and m.value == "58.8%" for m in app.metric)

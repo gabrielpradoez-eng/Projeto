@@ -403,6 +403,7 @@ def test_public_client_view_issues_and_tracks_ticket_with_server_side_xano_clien
         app.run()
         assert app.radio(key="app_view").value == "Cliente"
         assert "Cliente" in app.radio(key="app_view").options
+        assert not any(b.label == "Iniciar novo atendimento" for b in app.button)
         next(
             button for button in app.button if button.label == "Emitir senha"
         ).click().run()

@@ -43,6 +43,8 @@ def _open_tracking() -> None:
 
 
 def _render_issued_ticket(*, centralized: bool) -> None:
+    st.button("Iniciar novo atendimento", icon=":material/restart_alt:",
+              on_click=start_new_session, key="totem_new_attendance")
     st.divider()
     st.subheader(f"Sua senha: {st.session_state.ticket_number}")
     st.caption("Senha já emitida nesta sessão. Para outra pessoa, use Iniciar novo atendimento.")
@@ -78,10 +80,6 @@ def render_totem_view(*, centralized: bool = False) -> None:
             unsafe_allow_html=True,
         )
     st.header("Retire sua senha")
-
-    if st.button("Iniciar novo atendimento", icon=":material/restart_alt:"):
-        start_new_session()
-        st.rerun()
 
     if st.session_state.get("ticket_reference"):
         st.button("Emitir senha", type="primary", icon=":material/confirmation_number:", disabled=True)
@@ -231,7 +229,7 @@ def render_tracking_view(*, centralized: bool = False) -> None:
                     f"{estimate} min" if estimate is not None else "—",
                 )
         st.caption(f"Atualizado: {format_timestamp(result['atualizado_at'])} · horário de São Paulo")
-        st.caption("Atualização automática a cada 15 segundos. A estimativa pode variar.")
+        st.caption("Atualização automática a cada 30 segundos. A estimativa pode variar.")
 
     render_tracking()
 

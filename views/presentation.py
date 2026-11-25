@@ -64,7 +64,7 @@ def render_intro(view: str, *, role: str = "") -> None:
     )
 
 
-def format_timestamp(value: object) -> str:
+def format_timestamp(value: object, *, zone: str = "America/Sao_Paulo") -> str:
     try:
         if isinstance(value, (int, float)) and not isinstance(value, bool):
             if value <= 0:
@@ -76,7 +76,7 @@ def format_timestamp(value: object) -> str:
                 parsed = parsed.replace(tzinfo=timezone.utc)
         else:
             return "Horário indisponível"
-        return parsed.astimezone(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y às %H:%M:%S")
+        return parsed.astimezone(ZoneInfo(zone)).strftime("%d/%m/%Y às %H:%M:%S")
     except (ValueError, TypeError, OverflowError, OSError):
         return "Horário indisponível"
 
@@ -110,3 +110,20 @@ def render_status_guidance(status: str) -> None:
     }
     if status in messages:
         st.info(messages[status])
+
+
+def select_or_show(label, options, *, format_func, key, container=None, help=None):
+    """Present authorized single choices without an unnecessary input widget."""
+    area = container if container is not None else st
+    options = list(options)
+    if not options:
+        st.session_state.pop(key, None)
+        area.caption(f"{label}: nenhuma opção disponível")
+        return None
+    if st.session_state.get(key) not in options:
+        st.session_state[key] = options[0]
+    if len(options) == 1:
+        st.session_state[key] = options[0]
+        area.text(f"{label}: {format_func(options[0])}")
+        return options[0]
+    return area.selectbox(label, options, format_func=format_func, key=key, help=help)

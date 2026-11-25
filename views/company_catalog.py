@@ -4,6 +4,7 @@ from backend_queue import AccessDeniedError, InvalidQueueStateError
 from company_settings import company_settings
 from streamlit_xano import get_analytics_client
 from xano_client import XanoClientError
+from views.presentation import select_or_show
 
 
 def render_company_catalog(backend, user):
@@ -35,13 +36,15 @@ def render_company_catalog(backend, user):
     if row and row['estabelecimento_id'] not in sites:
         st.warning('O estabelecimento não está mais disponível. Atualize a página.')
         return
+    st.caption('Serviço é o atendimento oferecido, como avaliação técnica. Fila organiza as senhas que aguardam esse serviço, como recepção. Os nomes podem ser iguais, mas têm funções diferentes.')
     with st.form(f'company_catalog_{selected}'):
-        site = st.selectbox('Estabelecimento do serviço', list(sites), format_func=sites.get,
-            index=list(sites).index(row['estabelecimento_id']) if row else 0, disabled=bool(row))
-        name = st.text_input('Nome do serviço', value=row['servico_nome'] if row else '', max_chars=100)
+        site = select_or_show('Estabelecimento do serviço',
+            [row['estabelecimento_id']] if row else list(sites), format_func=sites.get,
+            key=f'catalog_site_{selected}')
+        name = st.text_input('Nome do serviço', value=row['servico_nome'] if row else '', max_chars=100, help='Qual atendimento o cliente procura? Ex.: Avaliação técnica.')
         minutes = st.number_input('Duração estimada (minutos)', min_value=1, max_value=1440,
             value=row['tempo_estimado'] if row else 10, step=1)
-        queue = st.text_input('Nome da fila', value=row['fila_nome'] if row else '', max_chars=100)
+        queue = st.text_input('Nome da fila', value=row['fila_nome'] if row else '', max_chars=100, help='Identifica a espera por esse serviço. Ex.: Recepção técnica.')
         status = st.selectbox('Estado da fila', ['aberta', 'fechada'], index=1 if row and row['status']=='fechada' else 0)
         st.caption('Fechar uma fila pausa a operação disponível para ela; as senhas e o histórico são preservados. Alterar um serviço afeta todas as filas vinculadas a ele.')
         submitted = st.form_submit_button('Salvar serviço e fila')

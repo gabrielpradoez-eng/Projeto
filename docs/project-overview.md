@@ -33,7 +33,7 @@ Filas presenciais desorganizadas geram insatisfação dos clientes, falta de pre
 - Avaliação de satisfação ao término do atendimento.
 
 ## 7. Arquitetura e Princípios de Desenvolvimento
-- **Atualização periódica:** A interface Streamlit consulta o Xano por fragmentos agendados (TV com intervalo configurável e acompanhamento a cada 15 segundos e chat a cada 30 segundos, com pausa progressiva de 30 até 240 segundos após falhas de leitura). WebSockets, Server-Sent Events e Push são possibilidades de evolução; não descrevem a implementação publicada atual.
+- **Atualização periódica:** A interface Streamlit consulta o Xano por fragmentos agendados (TV com intervalo configurável e acompanhamento a cada 30 segundos e chat a cada 30 segundos, com pausa progressiva de 30 até 240 segundos após falhas de leitura). WebSockets, Server-Sent Events e Push são possibilidades de evolução; não descrevem a implementação publicada atual.
 - **Separação de Camadas:** Regras de transição de status da senha e controle de filas centralizados no Backend.
 - **Idioma:** Documentação e artefatos em português brasileiro (pt-BR).
 

@@ -81,7 +81,7 @@ O **Totem** é um modo de emissão de senhas, não um perfil selecionável no ca
 
 A atualização é periódica, aproximadamente a cada 30 segundos, podendo demorar mais em caso de falha ou limitação de consultas. A espera é uma estimativa, não uma garantia de horário.
 
-**Iniciar novo atendimento** limpa o acompanhamento local e permite iniciar outra solicitação; não cancela uma senha já emitida. Guarde o comprovante antes de utilizar essa opção.
+O botão **Iniciar novo atendimento** aparece após a emissão de uma senha e limpa o acompanhamento local e permite iniciar outra solicitação; não cancela uma senha já emitida. Guarde o comprovante antes de utilizar essa opção.
 
 ### 5.3. Cliente: acompanhar uma senha pelo comprovante
 
@@ -144,6 +144,8 @@ Essa operação é destinada a uma conta de cliente existente, sem vínculo ante
 
 **Pré-requisito:** catálogo habilitado pelo responsável pela instalação.
 
+**Serviço** é o atendimento oferecido (ex.: avaliação técnica). **Fila** organiza as senhas que aguardam esse atendimento (ex.: recepção técnica). Os nomes podem ser iguais, mas representam conceitos diferentes. Quando existe um único estabelecimento autorizado, ele aparece como informação fixa; com mais de um, escolha o desejado.
+
 1. Abra **Administração** e localize **Serviços e filas da empresa**.
 2. Para criar, selecione **Novo serviço e fila** no campo **Serviço e fila**.
 3. Escolha o **Estabelecimento do serviço**.
@@ -160,16 +162,16 @@ Fechar uma fila pausa sua operação disponível e preserva senhas e histórico.
 
 1. Abra **Relatórios**.
 2. Em **Filtros do relatório**, selecione o **Estabelecimento**.
-3. Escolha um **Serviço** e uma **Fila**, ou mantenha as opções de todos.
-4. Defina **Data inicial (UTC)** e **Data final exclusiva (UTC)**.
+3. Escolha um **Serviço** e, quando houver várias filas, uma **Fila**, ou mantenha as opções de todos. Se o serviço possui uma única fila, o aplicativo a utiliza automaticamente e mostra seu nome. Um único estabelecimento autorizado também aparece como informação fixa.
+4. Defina **Data inicial (UTC)** e **Data limite (UTC)**.
 5. Clique em **Gerar relatório**.
-6. Consulte senhas emitidas, chamadas, atendimentos concluídos, conclusão da coorte, espera média e duração média.
+6. Consulte senhas emitidas, chamadas, atendimentos concluídos, percentual de senhas do período concluídas, espera média e duração média.
 7. Observe o status dos tickets, o gráfico de **Atividade diária** e o **Detalhamento por serviço e fila**.
 8. Para outra consulta, altere os filtros e clique novamente em **Gerar relatório**.
 
 **Resultado esperado:** os indicadores refletem o período e o escopo solicitados. Se não houver eventos ou amostras, o aplicativo informa essa condição.
 
-A data final não entra na consulta. Por exemplo, de **25/11/2026** até **26/11/2026** consulta o dia 25 em UTC. UTC e horário de São Paulo são diferentes; considere essa diferença ao analisar um dia de operação. A conclusão da coorte se refere ao conjunto de senhas emitidas no período; chamadas e conclusões no período podem incluir senhas emitidas anteriormente.
+A data final não entra na consulta. Por exemplo, de **25/11/2026** até **26/11/2026** consulta o dia 25 em UTC. UTC e horário de São Paulo são diferentes; considere essa diferença ao analisar um dia de operação. O percentual de senhas do período concluídas se refere ao conjunto de senhas emitidas no período; chamadas e conclusões no período podem incluir senhas emitidas anteriormente.
 
 ### 5.9. Funcionalidades complementares: Totem e Painel TV
 
@@ -223,7 +225,7 @@ Para uma apresentação, prepare previamente uma conta de cliente, uma conta de 
 ## 7. Limitações conhecidas
 
 - **Capacidade do Xano:** o plano utilizado pode responder HTTP 429. Há controle de intervalo entre chamadas e pausa após limitação, mas isso não garante operação com muitos usuários simultâneos. A capacidade e os testes de carga continuam pendentes.
-- **Atualização periódica:** acompanhamento e chat consultam aproximadamente a cada 30 segundos; falhas podem ampliar a pausa. Não há atualização instantânea garantida. O acompanhamento ainda pode exibir uma legenda antiga de 15 segundos; o agendamento atual é de 30 segundos.
+- **Atualização periódica:** acompanhamento e chat consultam aproximadamente a cada 30 segundos; falhas podem ampliar a pausa. Não há atualização instantânea garantida. A orientação de atualização apresentada nas telas corresponde ao agendamento de 30 segundos.
 - **Disponibilidade:** a hospedagem Streamlit Community Cloud pode suspender o aplicativo por inatividade. Não há garantia de disponibilidade contínua.
 - **Chat:** somente texto, até 500 caracteres por mensagem e até 50 mensagens visíveis. Não há anexos, WhatsApp, SMS, push ou consulta da conversa encerrada pela interface. A conclusão bloqueia o acesso ao chat, mas não apaga automaticamente as mensagens armazenadas.
 - **Acesso:** sem recuperação de senha pelo portal, escolha pública de perfil ou cadastro público de administrador. Atendentes precisam de liberação administrativa. Referências antigas de acompanhamento podem ficar indisponíveis.

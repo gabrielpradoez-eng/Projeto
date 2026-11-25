@@ -8,6 +8,7 @@ import streamlit as st
 
 from streamlit_xano import analytics_login, get_analytics_client
 from xano_client import XanoClientError, XanoConfigurationError
+from views.presentation import format_timestamp, select_or_show
 
 
 def _utc_midnight(value: date) -> str:
@@ -58,11 +59,12 @@ def _report_form(options: dict[str, Any], *, centralized: bool = False) -> tuple
     filter_area = st.expander("Filtros do relatório", expanded=True) if centralized else st.sidebar
     with filter_area:
         st.caption("Defina o período e o escopo da consulta.")
-        with st.form("analytics_filters"):
+        with st.container():
             scope_column, period_column = st.columns(2, gap="medium")
-            establishment_id = scope_column.selectbox(
+            establishment_id = select_or_show(
                 "Estabelecimento",
                 options=list(establishment_by_id),
+                container=scope_column,
                 format_func=lambda item_id: establishment_by_id[item_id]["nome"],
                 key="analytics_establishment_id",
             )
@@ -72,7 +74,8 @@ def _report_form(options: dict[str, Any], *, centralized: bool = False) -> tuple
                 key="analytics_period_start",
             )
             period_end = period_column.date_input(
-                "Data final exclusiva (UTC)",
+                "Data limite (UTC)",
+                help="O relatório inclui a data inicial e termina antes desta data. Para incluir o dia 25, escolha 26 como limite.",
                 value=default_end,
                 key="analytics_period_end",
             )
@@ -109,9 +112,10 @@ def _report_form(options: dict[str, Any], *, centralized: bool = False) -> tuple
             if st.session_state.get("analytics_queue_id") not in queue_choices:
                 st.session_state["analytics_queue_id"] = None
             queue_by_id = {item["fila_id"]: item for item in service_queues}
-            queue_id = scope_column.selectbox(
+            queue_id = select_or_show(
                 "Fila",
-                options=queue_choices,
+                options=[service_queues[0]["fila_id"]] if service_id is not None and len(service_queues) == 1 else queue_choices,
+                container=scope_column,
                 format_func=lambda item_id: (
                     "Todas as filas"
                     if item_id is None
@@ -120,12 +124,13 @@ def _report_form(options: dict[str, Any], *, centralized: bool = False) -> tuple
                 ),
                 key="analytics_queue_id",
             )
-            submitted = st.form_submit_button("Gerar relatório", type="primary")
+            st.caption("Período em UTC: a data inicial é incluída; a data limite não é incluída. Para consultar um dia, use o dia seguinte como limite. UTC difere do horário de São Paulo.")
+            submitted = st.button("Gerar relatório", type="primary")
 
     if not submitted:
         return False, None
     if period_start >= period_end:
-        st.error("A data inicial deve ser anterior à data final exclusiva.")
+        st.error("A data inicial deve ser anterior à data limite (não incluída).")
         return True, None
 
     return True, {
@@ -137,15 +142,23 @@ def _report_form(options: dict[str, Any], *, centralized: bool = False) -> tuple
     }
 
 
+def _chart_day(value):
+    # Display conversion only; backend order and aggregated values are unchanged.
+    try:
+        return datetime.strptime(format_timestamp(value, zone="UTC"), "%d/%m/%Y às %H:%M:%S").date()
+    except ValueError:
+        return None
+
+
 def _render_report(report: dict[str, Any]) -> None:
     summary = report["summary"]
     has_events = any(
         summary.get(key, 0) > 0 for key in ("emitidas", "chamadas", "concluidas")
     )
     st.caption(
-        f"Período UTC: {report['filters']['period_start']} até "
-        f"{report['filters']['period_end']} (fim exclusivo) · "
-        f"Gerado: {report['generated_at']}"
+        f"Período consultado: {format_timestamp(report['filters']['period_start'], zone='UTC')} UTC "
+        f"até {format_timestamp(report['filters']['period_end'], zone='UTC')} UTC (limite não incluído). "
+        f"Gerado em {format_timestamp(report['generated_at'])} · horário de São Paulo."
     )
 
     with st.container(horizontal=True):
@@ -154,8 +167,9 @@ def _render_report(report: dict[str, Any]) -> None:
         st.metric("Atendimentos concluídos", summary.get("concluidas", 0), border=True)
         completion_rate = summary.get("taxa_conclusao_coorte_pct")
         st.metric(
-            "Conclusão da coorte",
+            "Senhas do período concluídas",
             f"{completion_rate}%" if completion_rate is not None else "Sem dados",
+            help="Percentual das senhas emitidas no período que já estão concluídas, mesmo que a conclusão tenha ocorrido depois. Não é a divisão dos eventos de conclusão pelas emissões do período.",
             border=True,
         )
 
@@ -178,7 +192,7 @@ def _render_report(report: dict[str, Any]) -> None:
         st.caption(f"Amostras de duração: {summary.get('duracao_amostras', 0)}")
 
     cohort = summary.get("coorte_status", {})
-    st.subheader("Status atual dos tickets emitidos no período")
+    st.subheader("Situação atual das senhas emitidas no período")
     with st.container(horizontal=True):
         st.metric("Aguardando", cohort.get("aguardando", 0), border=True)
         st.metric("Chamados", cohort.get("chamado", 0), border=True)
@@ -192,9 +206,10 @@ def _render_report(report: dict[str, Any]) -> None:
     st.subheader("Atividade diária")
     if daily and has_events:
         st.line_chart(
-            daily,
-            x="bucket_start",
-            y=["emitidas", "chamadas", "concluidas"],
+            [{"Dia (UTC)": _chart_day(row["bucket_start"]),
+              "Emitidas": row["emitidas"], "Chamadas": row["chamadas"], "Concluídas": row["concluidas"]} for row in daily],
+            x="Dia (UTC)",
+            y=["Emitidas", "Chamadas", "Concluídas"],
             alt="Volume diário de senhas emitidas, chamadas e concluídas",
         )
     elif not daily and has_events:
@@ -217,9 +232,14 @@ def _render_report(report: dict[str, Any]) -> None:
             "coorte_concluido",
             "coorte_cancelado",
         )
+        labels = dict(zip(breakdown_columns, (
+            "Serviço", "Fila", "Emitidas", "Chamadas", "Concluídas", "Espera média (min)",
+            "Senhas usadas na média de espera", "Duração média (min)", "Atendimentos usados na média de duração",
+            "Do período: aguardando", "Do período: chamadas", "Do período: concluídas", "Do período: canceladas",
+        )))
         st.table(
             [
-                {key: row.get(key) for key in breakdown_columns}
+                {labels[key]: row.get(key) for key in breakdown_columns}
                 for row in report["breakdown"]
             ]
         )

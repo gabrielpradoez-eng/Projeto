@@ -66,7 +66,8 @@ def test_totem_lists_backend_options_and_confirms_issue():
     assert not app.exception
     assert fake_client.list_calls == 1
     assert app.selectbox[0].value == 9
-    app.button[1].click().run()
+    assert not any(b.label == "Iniciar novo atendimento" for b in app.button)
+    next(b for b in app.button if b.label == "Emitir senha").click().run()
 
     assert not app.exception
     assert fake_client.issued_queue_ids == [9]
@@ -77,23 +78,23 @@ def test_totem_lists_backend_options_and_confirms_issue():
 def test_totem_repeated_click_does_not_issue_another_ticket_and_reset_allows_next():
     fake_client = FakeXanoClient()
     app = kiosk_app(fake_client)
-    app.button[1].click().run()
+    next(b for b in app.button if b.label == "Emitir senha").click().run()
     assert app.get("download_button")
-    app.button[1].click().run()
+    next(b for b in app.button if b.label == "Emitir senha").click().run()
     assert not app.exception
     assert fake_client.issued_queue_ids == [9]
-    assert app.button[1].disabled
-    app.button[0].click().run()
+    assert next(b for b in app.button if b.label == "Emitir senha").disabled
+    next(b for b in app.button if b.label == "Iniciar novo atendimento").click().run()
     assert not app.get("download_button")
-    assert not app.button[1].disabled
-    app.button[1].click().run()
+    assert not next(b for b in app.button if b.label == "Emitir senha").disabled
+    next(b for b in app.button if b.label == "Emitir senha").click().run()
     assert fake_client.issued_queue_ids == [9, 9]
 
 
 def test_issued_receipt_remains_available_without_another_catalog_request():
     fake_client = FakeXanoClient()
     app = kiosk_app(fake_client)
-    app.button[1].click().run()
+    next(b for b in app.button if b.label == "Emitir senha").click().run()
     calls_after_issue = fake_client.list_calls
     app.run()
     assert not app.exception
@@ -117,7 +118,7 @@ def test_tracking_page_displays_backend_status_and_position():
 def test_closed_queue_rejection_does_not_show_a_ticket_confirmation():
     fake_client = FakeXanoClient(issue_error=QueueUnavailableError())
     app = kiosk_app(fake_client)
-    app.button[1].click().run()
+    next(b for b in app.button if b.label == "Emitir senha").click().run()
 
     assert not app.exception
     assert app.warning
@@ -164,7 +165,8 @@ def test_new_totem_session_clears_previous_customer_data():
     app.session_state["ticket_reference"] = "previous-reference"
     app.session_state["ticket_number"] = 21
     app.session_state["tracking_result"] = fake_client.track_result
-    app.button[0].click().run()
+    app.run()
+    next(b for b in app.button if b.label == "Iniciar novo atendimento").click().run()
 
     assert not app.exception
     assert "ticket_reference" not in app.session_state
