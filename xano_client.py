@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from xano_transport import paced_request
+
 import json
 import math
 from datetime import datetime, timezone
@@ -203,7 +205,7 @@ class DisplayFeedClient:
             method=method,
         )
         try:
-            with urlopen(request, timeout=timeout) as response:
+            with paced_request(urlopen, request, timeout=timeout) as response:
                 body = response.read()
         except HTTPError as exc:
             error = XanoRequestError("O feed de chamadas recusou a solicitação.")
@@ -359,7 +361,7 @@ class XanoClient:
 
         request = Request(url, data=data, headers=headers, method=method)
         try:
-            with urlopen(request, timeout=self._timeout) as response:
+            with paced_request(urlopen, request, timeout=self._timeout) as response:
                 body = response.read()
         except HTTPError as exc:
             api_body, api_code, api_message = _api_error_details(exc)

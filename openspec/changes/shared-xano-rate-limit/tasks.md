@@ -1,0 +1,5 @@
+- [x] Implementar transporte compartilhado sem repetição de mutações.
+- [x] Reduzir acompanhamento automático para 30 segundos.
+- [x] Executar testes e validação OpenSpec: 253 testes e 28 itens aprovados.
+- [x] Publicar nas branches principal e de deploy.
+- [ ] Validar vários usuários no aplicativo publicado.

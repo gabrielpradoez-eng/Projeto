@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from xano_transport import paced_request
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -163,7 +165,7 @@ class QueueBackend:
         if not self.login_url.endswith("/auth/login"):
             raise InvalidQueueStateError("O cadastro está indisponível. Contate o responsável.")
         try:
-            response = requests.post(self.login_url.removesuffix("/auth/login") + "/auth/signup",
+            response = paced_request(requests.post, self.login_url.removesuffix("/auth/login") + "/auth/signup",
                                      json={"name": name, "email": email, "password": password}, timeout=10)
             if response.status_code != 200:
                 raise InvalidQueueStateError("Não foi possível cadastrar. Se já possui conta, entre; caso contrário, confira os dados.")
@@ -193,7 +195,7 @@ class QueueBackend:
             raise AccessDeniedError("Configure [xano].login_url para autenticação.")
 
         try:
-            response = requests.post(url, json=payload, timeout=10)
+            response = paced_request(requests.post, url, json=payload, timeout=10)
 
             if response.status_code == 200:
                 data = response.json()
@@ -211,7 +213,7 @@ class QueueBackend:
                 ):
                     if not self.me_url:
                         raise AccessDeniedError("Configure login_url e me_url do Xano.")
-                    identity_response = requests.get(
+                    identity_response = paced_request(requests.get, 
                         self.me_url,
                         headers=self._get_headers(auth_token.strip()),
                         timeout=10,
@@ -285,7 +287,7 @@ class QueueBackend:
         if not self.me_url:
             raise SessionVerificationUnavailable("A verificação de sessão não está configurada.")
         try:
-            response = requests.get(self.me_url, headers=self._get_headers(token), timeout=10)
+            response = paced_request(requests.get, self.me_url, headers=self._get_headers(token), timeout=10)
             if response.status_code in (401, 403, 404):
                 raise AccessDeniedError("Sessão expirada ou acesso revogado. Entre novamente.")
             if response.status_code != 200:
@@ -317,7 +319,7 @@ class QueueBackend:
         if not token:
             raise AccessDeniedError("Entre novamente para realizar esta operação.")
         try:
-            response = requests.post(
+            response = paced_request(requests.post, 
                 f"{self.base_url}/{path}", json=payload,
                 headers=self._get_headers(token), timeout=10,
             )
@@ -410,7 +412,7 @@ class QueueBackend:
         if not self.base_url:
             raise InvalidQueueStateError("Configure [xano].base_url para o grupo Queue Management.")
         try:
-            response = requests.get(
+            response = paced_request(requests.get, 
                 f"{self.base_url}/attendant/dashboard",
                 headers=self._get_headers(token), timeout=10,
             )

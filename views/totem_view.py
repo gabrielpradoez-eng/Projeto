@@ -176,7 +176,7 @@ def render_tracking_view(*, centralized: bool = False) -> None:
 
     managed_session = bool(st.session_state.get("_portal_managed"))
 
-    @st.fragment(run_every="15s")
+    @st.fragment(run_every="30s")
     def render_tracking() -> None:
         if managed_session and not fragment_access_allowed("Acompanhar senha"):
             return

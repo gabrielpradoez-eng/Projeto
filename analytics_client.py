@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from xano_transport import paced_request
+
 import json
 import math
 from datetime import datetime, timezone
@@ -28,7 +30,7 @@ def _request_json(
 
     request = Request(url, data=data, headers=headers, method=method)
     try:
-        with urlopen(request, timeout=timeout) as response:
+        with paced_request(urlopen, request, timeout=timeout) as response:
             body = response.read()
     except HTTPError as exc:
         error = XanoRequestError("O serviço Xano recusou a solicitação analítica.")

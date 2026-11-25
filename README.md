@@ -83,7 +83,7 @@ python -m pip install pytest
 python -m pytest -q
 ```
 
-A revisão de **24/11/2026** aprovou **250 testes Python** e **27 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-24.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
+A revisão de **24/11/2026** aprovou **253 testes Python** e **28 itens OpenSpec em modo estrito**. Consulte a [revisão atual](docs/review-2026-11-24.md) e a [auditoria histórica](docs/project-audit.md). Testes locais não substituem execução dos exports no Xano, testes de carga ou validação em produção. A emissão, chamada e conclusão simultâneas têm [registro de validação no Xano](docs/queue-concurrency-validation.md).
 
 ## Trabalhar com OpenSpec
 
@@ -172,3 +172,7 @@ Consulte o [guia de instalação](docs/company-installation.md), a [ordem de imp
 ## Operação sem dados de desenvolvimento
 
 As telas não exibem painel técnico nem corpo de resposta da API. O modelo operacional de Secrets contém somente integrações e personalização; a carga de fixtures fica em `scripts/seed-secrets.toml.example`, exclusiva de workspace descartável e executada manualmente com `--config`. Não use a carga de testes na operação. A suíte de testes é mantida para evitar regressões. A remoção de registros de teste já persistidos no Xano é independente do deploy e exige identificação e confirmação antes de exclusão definitiva.
+
+### Controle de chamadas ao Xano
+
+O transporte compartilha um intervalo mínimo de 2,5 segundos por host entre sessões e clientes do mesmo processo Streamlit. Após HTTP 429, novas chamadas aguardam pelo menos 30 segundos (ou Retry-After numérico maior). Operações não são repetidas automaticamente. Acompanhamento de senhas consulta a cada 30 segundos. Isso reduz rajadas no plano gratuito; não aumenta sua capacidade. Outros processos e consultas externas ainda podem consumir o limite. Testes: 253 aprovados; OpenSpec: 28 itens válidos. Validação simultânea com usuários no deploy permanece pendente.
