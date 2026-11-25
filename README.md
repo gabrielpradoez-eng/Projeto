@@ -290,7 +290,7 @@ npm run spec:validate
 
 Node.js 20.19+ é necessário somente para a ferramenta OpenSpec; o CI utiliza Node 24 e a CLI está fixada em 1.15.0. Leia [AGENTS.md](AGENTS.md) e o [fluxo OpenSpec](docs/openspec-workflow.md) antes de desenvolver. O OpenSpec organiza especificações e mudanças; não exige mover a aplicação para dentro dessa pasta.
 
-A revisão de 24/11/2026 registrou 253 testes Python aprovados e 28 itens OpenSpec válidos em modo estrito. Esses números são evidências daquela revisão, não uma nova execução causada por esta atualização documental. Testes locais não substituem publicação e testes no Xano, validação do deploy ou testes de carga.
+A revisão de 24/11/2026 registrou 253 testes Python aprovados e 28 itens OpenSpec válidos em modo estrito. Esses números são evidências daquela revisão. A melhoria de clareza da interface em 25/11/2026 foi validada com 256 testes Python e 29 itens OpenSpec em modo estrito; a versão 2026.11.25.1 foi confirmada no deploy. Testes locais não substituem publicação e testes no Xano, validação do deploy ou testes de carga.
 
 O transporte limita chamadas por host no mesmo processo Streamlit e aguarda após HTTP 429. Isso reduz rajadas, sem aumentar o limite do serviço nem controlar outros consumidores da API. Mutações não são repetidas automaticamente.
 

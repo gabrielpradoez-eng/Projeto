@@ -55,7 +55,6 @@ A tabela abaixo é um índice documental. Um checklist concluído não significa
 
 | Mudança em acompanhamento | Situação registrada |
 |---|---|
-| [interface-clarity](../openspec/changes/interface-clarity/tasks.md) | Formulários contextuais e relatórios legíveis; consultar validação e deploy no checklist. |
 | [operational-cleanup](../openspec/changes/operational-cleanup/tasks.md) | Diagnósticos removidos; separação de fixtures e limpeza remota em acompanhamento. |
 | [catalog-review](../openspec/changes/catalog-review/tasks.md) | Correções de configuração e atualização do catálogo verificadas com testes locais. |
 | [company-install](../openspec/changes/company-install/tasks.md) | Catálogo e marca implementados; implantação Xano e primeira empresa em acompanhamento. |
@@ -100,3 +99,7 @@ A [interface empresarial e responsiva](../openspec/changes/archive/2026-11-11-co
 ## Revisão estrutural de 23/11/2026
 
 Cadastro sincronizado em `openspec/specs/account-registration/spec.md` e arquivado pela CLI após liberação positiva e novo login de atendente. Mudanças antigas com checklists completos permanecem ativas quando seus deltas precisam ser comparados às specs atuais; não foram arquivadas em massa. Capacidade e concessão concorrente continuam pendentes. O OpenSpec organiza especificações e mudanças; não exige mover os módulos Python para dentro de `openspec/`.
+
+## Clareza da interface em 25/11/2026
+
+A mudança [interface-clarity](../openspec/changes/archive/2026-11-25-interface-clarity/tasks.md) foi sincronizada e arquivada: seleções contextuais, serviço/fila explicados, horários e relatórios legíveis e reinício após emissão. Validação local: 256 testes Python aprovados e 29 itens OpenSpec válidos. A versão 2026.11.25.1 foi confirmada na tela About do deploy após reinício; as telas autenticadas foram verificadas por AppTest local.
