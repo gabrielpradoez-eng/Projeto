@@ -1,0 +1,6 @@
+- [x] Conferir rótulos e funcionalidades no código e evidências de uso recentes.
+- [x] Escrever README com sete seções e manual por perfil.
+- [x] Preparar roteiro de gravação com divisão de cinco minutos.
+- [ ] Gravar navegação real com cliente, atendente e administrador.
+- [ ] Editar, conferir áudio e duração e exportar o MP4.
+- [x] Validar documentação: 29 itens OpenSpec aprovados em modo estrito.
