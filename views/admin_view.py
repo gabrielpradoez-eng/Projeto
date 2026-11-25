@@ -102,7 +102,7 @@ def _render_operation(backend: QueueBackend, user: dict) -> None:
     else:
         st.info("Nenhuma senha em atendimento nesta fila.")
 
-    if st.button("Chamar próxima senha", disabled=current is not None):
+    if st.button("Chamar próxima senha", disabled=current is not None or queue["total_aguardando"] == 0):
         try:
             backend.call_next_token(queue_id, user["id"], token=user["authToken"])
             st.rerun()
